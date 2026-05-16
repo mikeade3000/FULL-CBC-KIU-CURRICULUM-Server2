@@ -796,6 +796,38 @@ app.post('/api/ownership', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ── Fetch institution website content ────────────────────────────────────────
+app.get('/api/fetch-institution', async (req, res) => {
+  const { url } = req.query;
+  if (!url) return res.status(400).json({ error: 'url required' });
+  try {
+    const r = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; KIU-CBE-Bot/1.0)',
+        'Accept': 'text/html,application/xhtml+xml',
+      },
+      signal: AbortSignal.timeout(12000),
+    });
+    if (!r.ok) return res.status(r.status).json({ error: 'Fetch failed: '+r.status });
+    const html = await r.text();
+    // Strip HTML tags and clean up whitespace
+    const text = html
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .trim()
+      .slice(0, 6000);
+    res.json({ content: text, url, length: text.length });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── Start ─────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`KIU CBE API v4.0 (Google Sheets) — port ${PORT}`);
