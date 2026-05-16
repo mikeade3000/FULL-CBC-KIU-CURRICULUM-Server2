@@ -8,12 +8,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-:root{--nv:#0f2d4a;--nv2:#1a3d60;--tl:#117a7a;--tl2:#1a9c9c;--gd:#c8942a;--gd2:#e8aa30;--g50:#f7f8fa;--g100:#ebedf2;--g200:#d8dce6;--g300:#b8bed0;--g500:#7a8099;--g700:#3d4257;--gn:#1a7a4a;--gnl:#d4f0e4;--rd:#c0392b;--rdl:#fde8e6;--ff:'Source Sans 3',sans-serif;--fm:'JetBrains Mono',monospace;--sh:0 2px 8px rgba(15,45,74,.12);--r:6px}
+:root{--nv:#1a5c38;--nv2:#236b47;--tl:#2e8b57;--tl2:#3aaa6b;--gd:#c8942a;--gd2:#e8aa30;--g50:#f2f8f4;--g100:#e4f0ea;--g200:#c8dfd2;--g300:#9ec0ae;--g500:#6b8f7c;--g700:#2d4a38;--gn:#1a7a4a;--gnl:#d4f0e4;--rd:#c0392b;--rdl:#fde8e6;--ff:'Source Sans 3',sans-serif;--fm:'JetBrains Mono',monospace;--sh:0 2px 8px rgba(26,92,56,.12);--r:6px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--ff);background:var(--g50);color:var(--g700);font-size:14px;line-height:1.5}
-.hdr{background:linear-gradient(135deg,var(--nv),var(--nv2));color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 4px 16px rgba(15,45,74,.25)}
+.hdr{background:linear-gradient(135deg,var(--nv),var(--nv2));color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 4px 16px rgba(26,92,56,.3)}
 .hdr-top{display:flex;align-items:center;gap:14px;padding:10px 20px;border-bottom:3px solid var(--gd)}
-.seal{width:52px;height:52px;flex-shrink:0;background:radial-gradient(circle,var(--gd2),var(--gd));border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:var(--nv);box-shadow:0 0 0 3px rgba(200,148,42,.3)}
+.seal{height:52px;flex-shrink:0;display:flex;align-items:center}
+.seal img{height:48px;width:auto;object-fit:contain;filter:brightness(0) invert(1)}
 .hdr h1{font-size:16px;font-weight:700}.hdr p{font-size:11px;opacity:.75;margin-top:1px}
 .tabs{display:flex;overflow-x:auto;background:rgba(0,0,0,.25)}
 .tab{padding:10px 20px;cursor:pointer;color:rgba(255,255,255,.6);font-size:13px;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;user-select:none}
@@ -122,7 +123,7 @@ body{font-family:var(--ff);background:var(--g50);color:var(--g700);font-size:14p
 <!-- HEADER -->
 <div class="hdr">
   <div class="hdr-top">
-    <div class="seal">KIU</div>
+    <div class="seal"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0MDgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAz/wAARCACHAWgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKACuY+MfxK/4VB8ONS8Rf2Rq2vf2cqH7BpkPnXU+51T5F743ZPsDXT14V+2N8a/iL4P8N3uifDTwH4g13xDdRKI9VWJPsNmrA5ZSWy8g7KQACQcnGDnWnyQb/wCCeRnuYLBYCrXbkmk7csXOV7aWit3fpt3aR8Ofthf8FO/+Fs/FLwDr/h7wnq+kwfD7UXuJH1NVEj3BePdEQpKrgRgcnOSeOK+zP2ZP2/z+11r4t/CXgXxFaabbtm91bVGiS0gX+6pRmLyHsB078V+anxK8f/Ev4W+EJvhX488P2unxa3qo8QXMl7ZgahK7uSSJQfullbt681+x/wAGPCWjeCfhdodhoGnWul6ZHZxNFb26bVXKg/ifc814+Xzq1Ksm5dr6dT8L8MMwznNc6xdarinFfu5VoOmoy57OKik78qUYrme700W51FFFFe4f0WFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAflN/wW/n+z/tXaE/8Ac0C3P/ke4r9Kv2f9U/tv4G+ELvOftOj2smfXMSmvy3/4LN+L4PE37YxtIjk6PplraS+zZkcj/wAfFfpd+x25k/ZR+HLEkk+HLEkn/rglePgnfF1bH4N4eYlT43zuMHdNr8Hb/M9Jooor2D95CiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAPxL/AOCnDFv28fHvtfwge3+jQV+tf7HP/JqHw4/7Fyx/9EJX5Kf8FNzn9vHx9/1/w/8ApNBX61/scn/jE/4cf9i5Y/8AohK8LLf95q/11P5s8JP+Sxzn/FP/ANOyPSaKhOoQD/lvD/32KdFcxzn5JEfHXa2cV7p/SXMiSionvoUYgzRAjgguOKEvoZGAWWIk9AGHNAcyJaKikvYYn2tLGpHUFgDSf2jB/wA94f8AvsUBzImopktzHCAXdFz03NjNM/tG3/57w/8AfYoDmRNRSI4kUFSCD0IPWloGFFNEqmTbuXcOSueaV3Ea5YgAdST0oAWimxTLOm5GV19VORSSXCROFZ0Ut0BOCaAutx9FFRrdRvJsEiF/7oYZoC5JRRTI7iOZiFdGI6gNnFAD6Kia/gRiDNECOCC44ojvIpWwssbH0DA0C5kS0UZpkU6Tj5HV8ddpzQMfRTZJViGWYKM4yTinUAFFFMadEkCF1DHopPJoAfRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFAH4Wft2eMIvHX7Y/jvUoDmKXV2jU/wDXNUjP6oa/Tm5+Jdp8LP8AglVp2r3F/JpzDwRb2trPHnetzLbLHDtx0PmMvPavyT+N5x8cPFR/6jV2f/I719wftjfFq40f/gk18LNJgSGSLxHDaWk7N95Ft1Eg2/8AAkANfLYOtyutU8n+Z/GPAvEDwlfPcyl8Tpzkv8UptLb+9JHwJdeLdRmuXb7dctlicmQkn8a/TL/ghp4Gb/hWPivxZdSXz3d7fLpsYlJ8poY0STcvqd7sM+2K/LyGPzpVT+8QK/dD9gT4aS/Cf9kTwRpU8sM0z2AvmeJcA/aGacD3IEgGfajJ6fNX5n0RHgLlTxfETxc9Y0IN/wDb0vdX4OX3H5I/tw+IL61/a3+Iccd3cKi6/egDeeP371s/8E5PEF7d/tq/D6OS6ndG1RcqXPPyNXNft0/8ne/ET/sP3v8A6Petn/gm5/ye58PP+wov/oDVyR/3pf4v1PhsNKX+t0Nf+Ypf+njr/wDgrHrl5YftxeLo4bmeNP8ARSFDnA/0SDpXzvo/ibUH1W2X7bc4aVQcSEdxXvv/AAVu/wCT6PF30tf/AEkhr500X/kMWv8A12T+YqcT/Hl6v8zm4zlL/WTHa/8AL6p/6Wz9D/8Ags5qVxp/wZ+D7QzyxlrSYMVc/N+6tetfnsnijUd4/wBMuOv9+v0D/wCC1H/JFvg9/wBek3/oq1r87U++PrW2Zf7w/l+SPoPF2UlxTiLP7NL/ANNQP3S/4J/zvc/sZfDt5GZ3fSELMxySdzV7DXjf/BPj/kyz4c/9gdP/AEJq9kr6rD/wo+iP7V4W/wCRLg/+vVP/ANIR8neFtV+w/wDBWDxq1xc+TZW3hWKaQySbYolEVuWY5OAAB1PTmsHx78R/E3/BR34lT+CvA811o3wm0aYDXvEKqVOruDxBD6r3x34LYAUNwv7QvwD1v9pT/gpx4j8KWOvz6Bol7o9m+uPA2Jbi0SOFmiUdyzbR6c5IIGD0nheS9/4JfftLWPht7hbn4RfESbdbTXDvv0W5QBWLNyCSCuem4c8bDny+aWsZaQ5nd/P8u5+L/XMVKeIwuMi4Zc8XWjVqJ2cnKb5YvrGle0aklq720ipM+x/hr8ONH+D/AIF0/wAPaFbfY9K0uLy4ULlz6lmY8lickk9STX58/tHaJ4g/aS+IvxM+LGkahdCx+Ed7aQaNaWu65t9TENwPMlB+7tCoZGC56jmvsn9tn48D4A/sweJPE1pMwvjam30ySNBIPtMoKxMecbckEn0r5q/Zo8RfFL4Hfs6QeBj+z54h1qyvYZft80+twRfazMu2TCBMopHAGcj1rfGcsmqPRK+ifotvv+R9Lx48JisRRyB80aUIOb9nCcuV2cKKtTjKyUuaavp7iVn0+yPgr8S7T4xfCjQfE1lKssGr2aTFlUqBJ92RcEA8OGH4V+cHw01W6+Dn7V2sfFJr2WXT7X4nXvhm/hnz9mtLe4aQGd5P4dvmNgHjKivdf+CU/wAUr3wlrHjP4Q+JbCbQtc0K9bU7KxurrzZI4JQC0K8dEwrE5587pXI/Cz4Lf8L/APgV+1H4bjhuri9m8Y31zYxW7hXluYneSFeexdVBHvWVWbrQpyXxa/ekeHnePrZ/gcrxdFf7RD2sraq1ajC7jZ6r3o2s1ez6n2j8c/ija/CL4MeIfFE1xHFHplg80MhQyK0pG2IYHXdIyD8a+Lv+CRdh4h0n9o74pweJpN2qTafY38qq2UBuSbgEY4+7Kv0ra8WfG+f9qn4K/A3wFHfGPVvHF+v9vCK3/wBHENgu6aGQZyCW8k4HHvXX/smwJa/8FKv2goo0WOKK30xERRgIogjAAHpVyqe1r05x2X6pv/I9PGZnHN+IsszDDv8AdQmorzlVoVKkr69Iqn6Xe/Tz39nz9jrwd+1P8bvjVeeLP7Ymm0jxdc29t9mvmhVUaWYkYwe4rQ/az/YX8I/sofCCb4geBNc1nw54l8N3cNxaS3Oo+YLkk7DEoOMsQ273CEYwTWH8BPgn8Sfip8c/jZP4I+KU3gK0tfF9ylzbppi3f2lzLKQ+SwxgAivV7D/gnDr/AMRfFmn3/wAXPilrHxAstGcS2NhHaLZQCTcCTIMsGBAx2OMjOCaxhR56do09XfXTvv30Pncu4fjj8pnTwuVXrzlVUcQ3TilL2k7T5lJ1bw6e7dtW21NT9rb9orVvCv7ANhrdtJG3irxro9nbW4t5DFL591Cm+SFVyxK7yQB6ivP/ANinw5d/sWftSz/C3WdUnv7Txro0Go2F1NAR9pvo03SpG3PyhTL97n5Bmqn7WXxD1vx/+2v4b0Dwh4J1PxnYfCOOG/u9NspI7NIrttskf7xgR5e1YBtA7MK4z9uD4mfE7xc3hH4gal8GdY8Gy/DzVIbybVDrCzeZbM4VoCEUYVmK5bBwM9jTq1f3jq6+7ZbP/t7+vI6c7zlRzKpnN5yngpQhG0KjjKMbrEtyjFxTfM1q9HTV92j3z/gq/cSW37OGkNHI8bHxNZrlGKnBSb0r6XsT/oUX+4v8q+Rv+CivxD0/4s/sVeD/ABJpcsc1jrGu6fcxsjbgMxzblzgZ2tkdOor65sf+PKH/AHF/lXfSadebXZfqfpeS1oVuI8dVpu8ZUsO0+jT9rZkjuI1JJAAGST2r81fiZqHiX4t+LPif8e9EuNSuIfh5r1nZaFbvcqfskNsN1yTHnayFnVgM5O419g/8FAfjWfgh+zDr93aywrrOsqNJ0yJ1ZjPNN8rKoXB3CPzGHPVa+ePgV4p+K3w6/ZgtPANz+zvf6zbXNnKl3cnVIYFvjMzPvdNucgMByc4Uc1z4ySnNUnfRX0TevTb7z5fxBxNHHY+GTzlNKnCVRuEJztUacaN+SMmrPmmr9Yxe9j7U+GXj+y+Kvw80TxLp3mCw12yivoBIPnCSKGAOO4zzW7Xxp/wSB+Ier6R4F8RfCzxREbDX/A123l2cqMJ1hZvn3E8EB2AGOzLX2XXZhqvtaamff8KZ3/a+U0ce1aUl7y7TWkl8pJhRRRW59CFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFZ/irWB4e8L6lftwLG1luD9EQt/SgmclGLk9kfgP8cW/4vX4qP8A1Gbvn/tu9d5+0j8ZLTx18FPhR4dtrm4afwvpEkV7CSfLWR5WZSB0J2Fea8t8d6yPEPjXVr9TkXt5LOD67nLf1rLkmaYjcxbAAGewFfCe0a5kuv8Amf5sPMp0/rNKntW0fopqf5pHY/s8/D+5+Kfxu8L6Ba2n26XUtRiiMGceYm7c+fbaGP4V+/Ol6ZBommW9naxLBa2kSwwxqMLGigBVHsABX5A/8Ebvh3ZeOf2x7K6u2mV/Dun3Gp24RsBpV2RDd7Ylb9K/Yavoclp2pOfd/kf1P9HnKlRyjEZg96s7L0gv82/wPwj/AG6f+TvfiJ/2H73/ANHvWz/wTc/5Pc+Hn/YUX/0Bqxv26f8Ak734if8AYfvf/R71s/8ABNz/AJPc+Hn/AGFF/wDQGrxIf70v8X6n864b/kr4f9hS/wDTx0n/AAVu/wCT6PF30tf/AEkhr500X/kMWv8A12T+Yr6L/wCCt3/J9Hi76Wv/AKSQ186aL/yGLX/rsn8xU4n/AHiXq/zObjT/AJKTHf8AX6p/6Wz9Cf8AgtR/yRb4Pf8AXpN/6Kta/O1Pvj61+iX/AAWo/wCSLfB7/r0m/wDRVrX52p98fWtsz/3h/L8kfQeL3/JU4j/DS/8ATUD9z/8Agnx/yZZ8Of8AsDp/6E1eyV43/wAE+P8Akyz4c/8AYHT/ANCavZK+rw/8KPoj+1+Fv+RLg/8Ar1T/APSEeN6D+zLf6R+2jrfxRbU7R7DVdJTTlsRG3nIypEu4t0x+7P5j0rrP2i/gbpv7Rnwg1fwnqeyNNQi/cXBiV2s5hykq56Ee3Ykd66LUfHWj6T4qsdEudRtINX1NHktLR5AJbhVBLFR3wAfyqC7+Jvh6w8axeHJ9a02HXriITRWEk6rPKhzgqpOT0PT0NHs6ai49Hv8AMUMryulh6+EduStOXOm73lU1ktXo3fReeh8tWv8AwT58eeKfh78P/BnjHxZoGteFvBGprcvGi3IuNRtQ6kQSEnadqhkXjgEelfYEMS28KogwqAKo9AKVnCKSeABkn0rmofjN4VuPA8/iVNf0xtAtnMct+Jx5EbBguC3TOSB+IpU6VOlt/VjPKcky3Jub2Ds5JXcpNvlpxUVrJ3tFfnd6s8z8dfsl6hqX7Yvh74seH9dg0qS2shpusWUlsG+3W4Yn5WxwxDEEnptTB4IOl+yr+zVffs+av8Qrm91O11FfGniK41uFYI2T7MkjMQjZ6kAjkelbH/DYPwu/6H3wx/4HJ/jWl4R/aP8AAfj3XYdM0XxboWp6hPny7e2uleR8DJwB7CpjCjz8yet7799DhwuAyCOOWLoVI+0c5TVql/fnFQlaN7apbJb67nlX7Mv7BMX7PP7QfijxjFrBm0zUBPDo+kpvMenRTSLJJksT83yIPl989sdN8IP2Yr74a/tVfEr4hTanaXNp46S1WG0SNhJbeSiqdxPBzt7etdV4i/ae+HnhHW7nTdT8ZeH7C/s3MU8E92qPEw6gg96qRftefDCeVUTx34Zd3IVVF8hJP50o06EbJPZ336mWFyzhvBRpUaM4R9jUlUivabTkpRfXtJpR2SsktEZH7Mv7N998CPGXxH1O71K1v08b67Jq8CQxsptlZ5GCNnqcOOnoa9auPM8h/K2ebtOzf93PbPtWH49+KXh34W6bBeeItZ0/RrW5fy4pbuYRrI2CcAnvgE1ysH7YfwsuZlRPH/hUs5wB/aEYyfzrWPs6a5E7Hs4R5XlVJYGFSMEm3ZyV/ebk93fVtnK/shfsmX3wA8T+OfEfiDU7XW/EnjTVGu3u4DLiG3PzLB85JwrFse2B2r1v4heC7X4j+A9Z0C9yLXWrKaylYKGKLIhXcAeMjOR7gVY8N+LdK8ZWButI1PT9VtQxQzWdwk8YYdRuUkZ9qqaB8StA8VeIdR0nTtY0681TSXKXlpFOrTWxBwdy9RgkD60QhCEeRbF5fl+XYLBxwFC3s5c1k3fm5ruWrd5N3bZ8za1/wT78Yat+x9a/DFvGemy3Gka+NS0y+e1YLb2yo2IiB1bzHds4xg4rQT4B/tOIgA+NHh7AGOdFj/8AjNfS/iPxHY+EdDudS1O6hsbCzTzJ55m2pEvqTTtD12z8TaRb3+n3MN5ZXaCWGeJtySqehB7isfqlNOybWnRvZHgLgXKIVIwozqQlGEY2hWqRfJC6je0le12k36HzZ4l/Yu8ffGPWfhzJ8QvHNlrln4P1ObUr+G2tzbf2g2F8jAUKAUIYZwOHI5r6ern/ABP8VfDXgrXrHS9X13S9N1DUzi0t7m5WN5+QPlBPqQPqas+NvH2i/DfQzqWvanZ6TYB1jNxcyCOMMegyfoa1pwhC7Xz1PZyvLcuy11qlGfvPl55Sm5S92KS5pSba0V9erb3bPJfEX7J+oj9s/TPitoetpYwvafZNb0+QyY1BREY1xg7eAIzg94wa9xrzf/hsH4Xf9D74Y/8AA5P8a0PCv7SvgDxxr0Gl6P4v0HUtRuiRDb292rySEDJwB7A0oeyi3yvd33IyyeTYSdRYSrC9abm1zp3nKydlfS9r2W7u92dxRXP+E/it4b8da1qGnaPrenalfaU228gt5g72xyVwwHTkEfhUvjv4j6D8MNDfUvEOsado1kgY+bdzrEGwCxC5PzHAJwMmtuZWvfQ9v63QdJ1+dci63VtN9dtDbory34XftqfC74yapLZaB4y0q5vIio8mctavJuOBsEoXfk/3c16Rret2nhvR7m/v7iK0srONpp55W2pEijJYnsAKUakZK8XdGWDzPB4ul9YwtWM4fzRkmvvTsWqKyvBnjnR/iHoaanoeo2mq2EjFFuLaQSIWHUZHcVH4z+Ieh/Duzgn1zVLLSobmUQxPcyhBI56KM96fMrX6G/1mj7L2/OuTe91a3e+xs0UA5rn9I+KvhzX/ABneeHbLWtPudc08FrmxjmBmgAwCWXqMbh+YouluVUrU6bSnJJydld7vsu7Ogoqnr2v2XhbRbnUdRuYbKxsozLPPM21IkHVmPYVX8HeNtJ+IOhR6nomo2mqafKSqXFtIHjYg4IBHoaLq9g9tT9p7LmXNa9r62727GpRRRTNBskgijLMQqqMkk4AFfn5+23/wWNn8AeO5/DXwxTTNQSwV4b7VrmMzRvMeMQAMo+T+8cgnjHFet/tb/tB2/wAU/ibovwZ0K61W3t9e1ePSvEusWIKrZKUeQ2iy4x5rhMMM8KSPp+XH7V0Phm0/aG8VW/g61Nl4btb029jCQQUVFVD155ZWPPrXi5ljZxjak+trn88+LviJjMJhfYZJVUUp8kpp+9zJczjDyjopS7vlWzO1b/gpr8c2/wCah6v+ENv/APG64r4hftYfEf4pz+ZrvjPX78lShVroohUjBBVMKePavPQM1ojwhqZ8NyauLC7OlxTrbPdiJjCspUsEL4xuKgnGc4FfPutVkrOTfzP5gr8QZxioOlWxNWcd2nObX3NszaKKKxPEPoT/AIJefEub4bftneEmF9HYWerSvp140hAR4pEJCk9sukePfFfthX88XgHXh4W8b6RqRjMwsLyK48sHBfY4bAP4V/QT4I8UxeOPBeka1BG8UOsWUN9Gj/eRZY1cA+4DV9JklS8JQ7H9ZfR1zXnwOKy6T+CSmvSSs/xj+J+G/wC3T/yd78RP+w/e/wDo962f+Cbn/J7nw8/7Ci/+gNWN+3T/AMne/ET/ALD97/6Petn/AIJuf8nufDz/ALCi/wDoDV40P96X+L9T8Bw3/JXw/wCwpf8Ap46T/grd/wAn0eLvpa/+kkNfOmi/8hi1/wCuyfzFfRf/AAVu/wCT6PF30tf/AEkhr500X/kMWv8A12T+YqcV/vEvV/mc3Gn/ACUmO/6/VP8A0tn6E/8ABaj/AJIt8Hv+vSb/ANFWtfnan3x9a/RL/gtR/wAkW+D3/XpN/wCirWvztT74+tbZn/vD+X5I+g8Xv+SpxH+Gl/6agfuf/wAE+P8Akyz4c/8AYHT/ANCavZK8b/4J8f8AJlnw5/7A6f8AoTV7JX1eH/hR9Ef2vwt/yJcH/wBeqf8A6Qj5b/aAGf8Agpt8Ev8AsGaif/IM/wDifzrxD9uT4beJPiJ/wUgkm8JaiNP1/wAK+C4fEVoChb7S1vM+Yhgjkhzj6Y717f8AH/8A5Sb/AAS/7Beo/wDomeqS/wDKZQ/9k7/9uRXnVYKblF9Zr8kflGeZdTx8sTg6raU8fTV07NfuKdmn3T1R6x+yn+0vp/7UfwJg12B4U1eCE22sWaZBsrpVw64PIU/eXr8rCvHv+CZnw60T4rfsKTaD4h0+HVNIvtZuhPay5CSbXjZehB4KqRz2FYnx10+X/gnv+0q/xH04Xn/Ct/iBMY/E1rDb+ZHYXDDHmqFGRuYhx3Y7xzkV2X/BIK5S7/Y9hkiJaN9ZvCpIxkZWtIScq0adTdJp+e2vzPTyzMKuM4gw2V5qk69GliIVE1pOLdHlmlr7tSO6/mUo9Dxf/gp3+yZ8OPgz4M8G3Hhfwnp2jT6hrQt7h7dnzLHtztOWPFfXXw7/AGLPhb8JvFttrvh3wXpWlatZ7vJuYTJuj3AqcZYjoSOnc14T/wAFif8AkQPAP/YwL/6DX2PV0aNP6xP3Vpy9PU9DIMhyyPE+YqOGprkWHcfcj7rtN3jpo7parsfDvwS+BPw1+MP7Vfx5fx7pGianJY6/GLM38/lmMMZy+0bh12rn6V7JafsR/s8rdRmHwn4P80MCmy8Oc9v+WleHfCb9jXwB+1L+1f8AHa48Z6Vc6jLpGvxrbGK+mtwgkM+7IjYZ+4vX0r2Lw/8A8Eo/gl4Z1u11C08NXy3VlKs8TNq904V1IYHBkweQKxw9OTjdQi9Xq9935HhcMZPia2FdSGXYarF1a3vzlab/AH073XsZbbL3nolscp/wVV0+z1AfBe1vUgewn8dWcNwkxHlvExAZWzxtK5znjFeq6l+zd8DNXs5YJ/DXgNopxtcKIUJH1BBH4V5J/wAFafC9l400/wCDuj6jG02n6p43tbO5jVyheKT5HAYcjKseR0rK/aK/4I4/DrUPhfqE3gWy1DR/EdjG1xbB72a6juyoJ8plkZuvYrg5x2q58/tajjBS239PQ68fHHRzrM62EwNLEqKpNqcrS/h7RXs5J382g/4J4aFoXgr9sX40aJ4LvZrrwXai2azCztNbxzfL5gVjwdr71z3Cjk4rw/VbHxZ8HP2n/iv8a/DE8V3B4I8Xy2er6U6t/pFncyyB2yDjhgvb5ThuikV9Vf8ABL/4t+FfG/wQfQtJ0LTPCniPw1L9j1vSreLypTImEE7g/OSwUAluQysvaqv7D2nQax8aP2i7S6hjuLW68UvDNFIu5JUZrgMpHcEEg1iqKnTpxi922rdN3+B4VPIqWOy3KcPhayjz1K1SEoJpU5OFSpFJPW1OVouLtezTSOi/a0+JGl/Fr/gnx4t8RaLdRXVhqWjiWN4n3BG8xNyk+qsCD7iur/YeAT9kT4e9gNEt+n+4K+Kf2gLy9/YS8P8AxJ+FGqz3d14D8c6a+o+GbsWZxBetKu+3yox0C55wPlP8Rr3PXPjc/wCz/wD8EnNH1yA3CX8nhyCwspIHCyQzzJ5aSDPXaTuIHOBWtPEL2rnPRxjr957GVcVRlnWIx2YR5KmHwtq0f5ZQqSbt5SVpR7po8b+LHwvvf2zfF3xg+K2nXczjwH5Nt4UltCY4LhbeTzJZtzZDMsaFsYxl1r6/+HH/AAif7bX7MXhy58Q2EXiDTr6GOS6guhsP2uHMcjEIePnD455BHY14H+zZ8NP2iPgf8E7HwzpPgv4bXWl3CNcXA1HU5ZZbsygb/MwdvK4BA4qP/gmh4k1r4FfHHx78HPF2n2ml6nPcnxBYR2kbmB/MUeasbfd8tQE2++70NZ0PdmudfHvdaX3X+R53DM1hMfRePoSX15SjW9pBqDrNupBe8rPRyp67qMfnkft7fse/DP4X698IYtA8H6ZpkeveM7TT9QWEyf6Vbsyho2yx4Oa+ofAX7Efwp+F/iyz13QPBOkaZq2nsXt7mLzN8LEEEjLEdCR+NeUf8FNP+Rl+Bf/Y/2X/oa19V11UaNP20/dWlunkfYZBw/lcc+zDlw1NckqTj7kfdfs0/d001106n5/8A/BLG5Fn+2B8f5GzshupHIHYfbbgnFdB+zJ8PrL/goh8XvFfxN8cWt9f+FNPvPsHhzSbgvHaGNSf3jKGwzBQobsWY5zjFc5/wS5tzd/td/tCRL96W4kQZ9TeXAr0v/glX4gn8CeHfGHwn1o2MGueBtXmARJf3l1G7ndIFP8Ibbgjs61x4ZKSpwl8N5fffT9T4HhCjTxNDLMFjVfDyqYp8rV4yqRm3CMuj0c5JPdxR6r8ev2IPh/8AGrwhNbt4b03TtXtrdxpt9p8YtJrSXKshBQAEbkX7wPtXgHwh+Lev+Pv+CbHxh8O+KXe81z4e2eqeHrq8kn877V5UT7ecDO0YTJzu25zk19meOfGmn/DvwfqOt6rcw2lhpkDTzSyyCNQAOmTwMnAHua+FP2c7W81v/gn9+0T4yksZLHTvHVzrOq6ekrhn8opICDj0bIz3xxxXTiIxjU93dp39LH2HFeGw2FzaDwSUZ1aFf2iikuaEYLllJJdJWUZPXVrYwv2H/GWr/sS3ngK71eSe7+HHxgs4VW6lm+XS9RwTyMYAPzDryDnPy4r1z/gsGyzfCfwQylWVvEMRVhyCCp/pXSfBH4B6T+0l/wAE0vB/hfVYYGN1oaPZ3EibjZXALeXKp6jB646qSO9fIvx8+O+pX/wi0n4S+MTHD4y+GniW3tA5cn+0LQr+7cZ6soIHH8Ow9TXHO9LDezfwyWnr1X6o+DzCc8m4UeV1X/s+IoxnSb+zNqMp0vR6zh/28uiP0s+NfxUtfgl8INf8V3gjeLQ7CS7ETyiP7Q6qSsYY9CzYUe5r8/PBvhzW/wBmTTPhL8dH2yv4p1a7i8SMbhkmuYLwholcsCNq+S7E4HJUV7T/AMFWdV1z4paf4O+DvhNPtWt+Mrtbu5t2j/dtbQkurNJ/CA8ZY45whqr8cfAP7Snxb+BOp+Db/wAJ/DZNOls44xJbXsr3CeTtZTGGONx2Afia3xTc6j5U/d2suu/+X3n0vGeIq5jmVeOGp1JSwkF7Nwg5JV241NWtrRjCLv0nLpe/uH7dV1HffsT/ABImhdZYZvDlzJG6nKupjyCD6VwP/BIEf8YO6D7316T7nz2rz7wL8a7r4u/8EmfiBZ6qJl17wbo17oGorLGIyrQx/uxgekRjU+6mvQf+CQP/ACY5oH/X9e/+j2rWnUVTERmusf1PVy3NKWZ8V4PMKPw1MHKXpepG6fmno/NH09RRRXon60eJ/t6a/o3w0/Zg8UeIbqz/ANLsY99jLbERTw3kp8qOZW/vKXyT1wDX5JfAL9k3xn+1hF4s1TQLWS7Gg2rX07ufmuZWYlYVyeXYBz/wHnqK+1P+C3nxIutfm8DfDbSo/tN7qd19ueOGUmV3OYYoig67jJkZ7gV9VfsTfs3Wf7L/AMANH0CKGMalMgu9TmEexprhwM7gST8qhUxn+H3rxa9BYrFOD+GK19T+eOI+G4cY8ZTwM7xw2Ehabjo3UmrpJ23272UWup+SH7Blp4eT9rHwzpPjLw5Fr+nanef2XLY3MeQss2YlZlP912BI9jX6i/8ABSTw5Z6T+wj44gsrG2ghgt7ZljhhVRGFuIhkADjC5/CvkX/grD+xK/we8bJ8UPBdnd2umahOZ9V+zSEfYLtmyJVI5RXYg9eHJxjIFfbWq+KrD4//ALCV9rT20i2Wu+E5rvyZTuZSLdmGT3IZajB0XCNXDS3OPgHIq2W4bOeFMZFKqoScZ2+KE4ON07XaWnXRtre5+GKrukC/3jivq79pr9nCy+Fv/BPD4Q69Np1quv6teTzzXsKfPJbXCtNEjnvgbQK82vPhrpk37M/hbVRZrBqmo+K72xkvMHc8KwWzKvpgMz/ma/SD/goF8EX0D/gmtP4Y0q2k1ZvClnYLG5QNIsVu8Ykl9sRqxOO2a8/C4bmp1G/5f+CflnBnCLxWWZpXmruGHjKPWzlaokl3aha62Px6RzG4I6g5Fftx/wAEzviPN8Sv2NPCNzd6imo39hFJYTsHBeIRSMsaNjoREI/wxX4jsu1sHqODX6Yf8EHviTFd+CvGvhL7K6zWl3FqxuN3yusiLFsx6gxZz71WT1OWvy90d/gPmv1XiVYdvStCUfmveXz0f3s+Jv26f+TvfiJ/2H73/wBHvWz/AME3P+T3Ph5/2FF/9Aasb9un/k734if9h+9/9HvWz/wTc/5Pc+Hn/YUX/wBAauWH+9L/ABfqfFYb/kr4f9hS/wDTx6D/AMFlfAd54X/bG1DU5x/o3iCzt7q3PqFjEJ/WI18qadN5GoQPjdskVseuDX6Uf8FyvgFf+IdF8O+P7FLi5g0qL+zL5ETK26F2dJCe2Wcr+VfmirFGz0IP5VeYU3DES89Tv8VMrqZfxTi4tWU5c8fNT1v/AOBXXysfoB/wWY8T22ofCn4OWaOv2g6U12Uz8wR47cA4/wCAmvz/AFOGH1roviJ8WvEfxYuNPl8Ratd6s+lWcdhaGcj9xAmdqDAHAyfetD4A/BPV/wBoP4q6R4W0aCaS51S4WJ5EiMgtoyfnlYDHyouWPPRazxFT29bmit7f5Hl8U5vLiLPJYrC03eryRjHq2oxgvvaP2e/4J9KU/Yt+HGQR/wASeM4Ix3avY6zvCPhyDwf4W07SrZI44NOto7dFjXaoCqBwO3StGvs6UeWCj2R/oBk+DeEwFDCSd3ThGP8A4DFL9DzPx3+zdb+Of2j/AAZ8RH1Wa3uPB9vcW6WSwBkuhKkiEl85XG/PQ/dHvUQ/Zkth+1wfix/a032r+wf7C/s/yBs2+Zv8zfuzn22/jWsf2kPCg+Oh+HJvnHisW4uvs3lHaUKB87un3SD+Ndrf3sem2M1xKdsUEbSOfRQMn+VQoU5Xa73+aPPpZblGIlUq0kpNVeeTUnpVglG710aSSa27oxPit8MNI+M/w71bwvrsLT6VrNu1tcKh2uAf4lPZh1B7EVyX7JH7NNr+yd8IIvCNnqk+sQRXct0LiWERMTJjI2gkdvXvVr4UftTeDPjV4J1vxD4f1JrvS/D8rw30rRFfKZUDnjv8pBrQ+B37QHhb9ovwpJrPhTUV1CyhmMEh27XjYeq9Rkcj1oXspTU1a9tPQVOWTYrH0cwpyhKs4SUJKWrhdc1rP3kml3t5XZy37W/7J1t+1foehWVzrdxoq6HffblaK3WbzjtxtOSMeteu1ynxh+NGgfArwvDrHiO5e1sZ7uOyR0QuTJJnaMenykk+1QfFz48+GvghJoa+Irx7Q+Ib1dPstsZbzJjjAPp1H50/3cZOXXS/6G18rweKxGMcoxqSUPaNy6aqndN2V9UtFfzPFfEP/BPvxAfit4s8UeGfi74j8JHxdem9u7WytPl3ZYqCRKu7bubBx3pR+w58Sgf+TiPG/wD4Cn/4/Xsx/aC8Kp8a/wDhXz6ksXik2Qv0tXXb5sZ/unu3fHpXa1isLRd+X83/AJnhUeDOH68qksPzaSlzKNaskpN3krRqJJ3d2rLc8d+Mn7Jn/C6tA+Hdrqfia+a78A6ra6sbx7dXk1SSHGd/zAKWxyRnr0r2KuEb9pHwkPHfibw4NR36p4Q046pqiIm5beEAE/MONwBGR15ryg/8FZPgmD/yMd0fpZOav2lGm7tpX8+x2/2rw/ltWdeVeEJVHZtz3dP3LaveOz899TprX9jaPwr+1Hc/Ezwx4lvNAfWtn9uaStqs1tquBhuSw8skBTkA4Zc9yK6P4H/s6QfBPxx481uHVJtQfx1qp1SSJ4RGLQ7pG2Agnd/rMZ4+6OK4zwF/wUt+EnxL8aaZoGka5dT6nq9ylrbRmzdQ0jnCgk9OTW18af27vhv8AfHjeGvEmrXFtrCwpcGCK1eU7HyVPy/Q1nF4de/Frfv1Z5+FrcKUY/2jQrU1GNSUuZVPdVSpFqVve5U5JvS1m25Wvqa/7Vn7MGi/tZfCuTwzrE0tntnW6tbuFAz20q5GcHGVIJBGRnj0FcN4t/YIt/GnhD4YeHr3xNJNoXw3aCRrSTTkYau8TIcyHf8AKGVduAD941JoX/BTr4N63qUds3iWXT/M4Et7YywRZ9CxXGa9w8K+K9N8ceHLPV9IvbfUdM1CITW1zA4eOZD0INVy0KrbVmzojg+Gs7r1K9JwqzlGMZ8s9XGMuaPMoy2Uu612d1oXo4xDGqqAqqMADoBXkvxM/ZLsfH37RvhX4l22t6jo+teHIxbTxwqGi1G3DlxE3I2/ekBPOQ/TgVkfFv8A4KK/C/4Q+JTo1xqt3rWqRvIlxbaPbfamtShAIkOQo5Pr2PpXXfAX9qvwN+0lYNJ4V1qK6uoYxJcWEo8q7tQWZfnjPTlT0zVOpRqS9m2m/wDI6sRmfD+aV1ldStTqVIyUlFTXMpQd1azvdNbLzT0uVf2j/wBme3/aJ1HwVcT6tNpZ8Ga7DrcYjgEv2po2B8s5I2g4xnnr0r0+uU17406B4b+K+ieC7u6dNf8AEFvLc2UIQlZEjDFst2OFb8jXmfxI/wCCkHwo+E/jnUvDmt63dW2q6TMYLmNbN2CsACcEcHrTc6UG5NpX3N6uYZLl1WtjKtaFOU5KM25W96MVaLu7JqNnZW01Hfsv/sQWf7M3xb8ceLLfxBc6tN41maWWCS0EQtszSS4DBjuxvx0HSpv2jP2EPCvx+8Tx+JoLvUvCnjS1Vfs+t6XJskDKyFTIoI34CADkHHeuc/4eyfBM9PEd03+7ZOa9B0P9sLwPr/irwrpEV/cRXHjW1F5ozzQGOK9Qgn5WPf5SMevFYx+rSh7NNNep4GF/1Or4H+y6FSlOlzX5efmtKctGndtNyejTTTdkeYt/wTjvPHN7BF8RPir4x8daHbMZV0yYm3iaXoGY+Y+QBnjA69eK9t+IvwW03xr8C9Y8BWPl6Fpep6TJpMJtoQVs42jKDanAOB2zXZVwPgf9pXwn8SfihrHhLQrybU9U0DK6g8MJNvasDgo0nTcGBGPUGtVSpU9O+nmz2cPkWSZZehGKjKv7nvSlKc9H7vNKTm0ld2T01eho/An4UxfA74QaB4ShvH1CLQbUWqXDx+WZQCTkrk46+pryj9rz/gnr4f8A2sPGmg+IZNSfw/q2jjZLPb2iyteoGDIGyy8qd+Dz98+gr6Eoq5UISh7OS0O7HcOZbjMvjleJpKVGKilG705bcut76W3vfueU2H7KenRftXX3xWu9Sub7UJbFbKxspI8R6aBGsbMjZ53APxgf61uvFerUUVcYRjfl66ndgsuw2DU1ho8vPKU5b6ylu3f/AIZKyWiPm+X/AIJ1abZ698VZNL8Rz6ZpPxVspLa709LFXWykccyoxfn5i7YwM7+vArmPh5/wTT8W/CfwvFovhz46+LNH0qBmeO1trIpGhY5YgCfuTX1vRXO8HRbvb8WfN1OAMinNVPYuLXNblqVI255c0kuWa0cne23ZHmP7OXwN8S/Bj+2P+Ei+ImuePv7S8j7P/aMRT7Bs8zds/ePnfvXPT/VjrRXp1FdEIKEeWJ9Ll+Ao4LDxw2Hvyxva8pServ8AFJuT1fV+Wx+eOtftKfsz+Kv2sIfi1q3i3xHqWpWiqttYS+H5jaQssexG/wBXkleSMnqc9hXuA/4LA/AtuniHVz9NEuj/AOyV8Y+I7fxO37H3w6TwxdeKxPLa2ht7Kz0u2fSri7+0p5fnTsQ6vuxgYIzjPFen+MNf0fwT8Sb2/wBB/s/w94U0XwVqlxdanoVjDPcWviAPbC/2K5w7r+74OF+ZsHrXhU8VVjflstm9O/zP50ynizOML7SeH9jT9o4VJv2UvelV1bv7f7NtbuNrrRJntHj7/gqR+zx8TfBWqeH9Z1nVbrStYtntLqL+x7pd8bjBGQmQefqK4X4Nftv/ALPvwc/Z9vPh5D488W6npl3Dc28dxd6PctLbxTJsKJ8mMLkkD1Jr5c+M4t/2if2edZ8U+DvDbJptp41FxqLR2yROEXToxLdSqpIQSPucqCQCxxXsmsaTLZ/Fe8svE1lo1h4C07UtMb4cG3SLa7nZhYCud8LR+az7iRvVckHil9bqynzaetns/n5feYLjPPMXjHimqLajyxqeynZwnzN3ftV7v7vR6+80la7ZNdfF39lzUPAPw88N3fjDxNNYfD++nv1U+H5kOqNLKJCJsR9OAuR2r234m/8ABUf4CfE74ca74buPFGt2tvrthNp8ksWiXJeJZUKEqCmMgHjNeE/EjUYPE1+dUT7P4hhufDGuGHxFd2sEF4zpeRr/AGdLFGSo8nG9WOGKyitTxR8OfDMvi7UtW8OxabN/wkHijVbzSLS6eMzWusW+mSJjnAXNyoaFOh+XinGrVjdQt06Pa3qbYLOM2wkalHAqgoyVOMv3c7uHIoR/5fO6StHRvdNN3ueJyfCD9lSWVj/wtXx9kknH/COvn/0VXrX7IPxi/Z2/Y28eXWs6H8TvGl9FqFsba7srrw9IsU4HKEkR5BUkkY9a8F+O02s/DT9qf4eaudakn8SXFnp895PNp8Npe28ryFJEuo0LKZtpIYnBIK8V6H4m8XWHxN8QfGz/AIT/AFfUhpukapotnYz6fYQT3FsgvZCkaISg2Fj8xznHrXHTnyS5oxSa/wAr/wAx8NlGLjgsdKphcNRpV6M2ovknbSnKd2/rDSuotNe8tdW9Q+MGj/su/GP4na74ou/ib45tbjXL2a9lii8PSFImkcuVBMWcDdjmrXwGH7L3wD+Lmh+L7H4meNr270O5FzFBN4fkEcpAIwSI8457VuftWWOur8C9cTwvL4hhgbXte+1W2l6bBJYXMS3aZN1KTvjKx52hQR9K5j4O6T4Qm+HXw9mvLq/TxH/wiN+be1jsYnsply3zSyltwb0+U1ptV+FX3vZ/5nZVoujm3NHDUPaLlq87hUScnNbf7Q7tN3tpd6W1Pr/XP+CsnwA8SaNc2Go6tqF7YXsTQzwT6DcvFMjDDKwKYIIr4a+PPw3/AGZ/GOpte+BPiFrXhkzSgtZX+hXlxbKm052OE3g7sHByMZr1j4lWl2/iTT0ubjXp9CTwFdtFa3emwRaVbN/Zabmt5VO6Ryc53AY7Gmx6HfeIbO6AfSYPhr4d1nQJfBivpts9tfw/aYkHk3G8Si5YPIZBtbIU7gK1rznW92ok7eX/AAdj3uJcdmGep4fM6dGpyXs/ZSUl7vM3dV01Gy7vXlXLd6fNFt8DfhcZ08z4w2/l7hv8vw1qBYDvgeX1r7G/ZF/aT/ZY/Y70qf8AsTXde1DWbvKXOq3miXPnuhYkIAE2ooGBgdcZNcl4H1vRvBHxR8Dp4M1O/ltNT+JPiS31U6hYQQFm8hS0KgFg0IYDaTj6CuW8A6jqPxs/ZKvNW1+R7W8vLXVZ7/WDb291p+ttAjmGO+QlWt7pSqrAy9QF4JrCh+7fNTSv6N9F/e8zw8hw/wDYmJdfL6dH26Umm4Tmlyxpv3ZSrtJv2iV7LRPW9ov9Qvhr8RdK+LXgPS/EmiTPcaTrEAubWR42jZ0PQlWwR071uV41/wAE9Dn9ib4a/wDYEi/rXstfS0pOUFJ9Uf1jk2LqYvL6GKq/FOEZO213FN2PiOb/AJTYH/sBL/6SJX2R43/5EvV/+vKb/wBFtXxv8Xo0+Dn/AAV38KeJtb1DTrHRfFekvBDNPN5YhKW5jO8nAGXRQDn+OvrT4w+MtN8HfCvW9S1C/srK0FhNsmnmVEdjGxVQScEnsB1rlwrsqif8zPiODZxowzWFV2ccTWbv0UlGSfo07nxJ/wAEteP2MvjP/wBhS7/9I468n/YX8V6/+x54Z8NfFLfeal4B8XajPoniC3R8Jp8gcCGXbnGRyd2OhZc5YV7n/wAE1PAF74X/AOCfPjrWrsps8VyX99Aq9lSLyT+bRnHtXRf8Ey/hjpHxk/4J2SeGtdtY7vTdVv72KRGGdh3qVdfRlYBgexArgp0pSVJLRqLa+9H5jk+S4nF08nhh5ezrww1WpTfaXPBxv3jKLtJfyyfU6L/gqjqMOr/su6DdW0izW9z4jsJYpFOQ6skpBH1BrH/4Ks/8f/wY/wCxxh/mlfNfxv8AiFrfwV+G83wD8Yqz33h7xHZal4fvlYul5YyGb5enAVice5K9FzX0p/wVY/4//gx/2OMP80q51faRqS6+7f1uz0cyzmOaYXNcTy8k1DCRnF7wnGrNSi/R7PqrPZjv+CkPhKX4aeMvhv8AGnSoX+2+DdUW01JorQSj7HMCpkkIG47fuL/11r6R8Z/FrSPCHwfvfGk1wRottpv9picRliYim9TtHJyCOKj+Nfwyt/jL8Hde8MXSI6axYtCm9iFWUDdGxI5+Vwp/CvhtfjFrvxa/ZL8L/BqG6vR4wuvEs3hG/uJZcxtbwMCd2BvMQjliXp/yyOa6qk/Yzk19pXXrt+Oh9pnOYS4ezHFVqausTT54LvXhany+s1Kn68ru0egfsc+A7yX9jD4l/EfXLcw+IfiZaalq06tAE8uJklZNh6lG3bhn2rjP+CWHj74ReG/2YHt/Gmq+BLPWP7Ynby9Wmt1uPL8uEKcPztyGx2619h/FXwtY+B/2XvEWjaZbR2enaX4bubW2gj+5DGluyqo9gAK+SP8AglF+y/8ADn4tfstPqvifwnomsakNZnh+0XUe59gjhIXr0yx/OsXSlCrThCzdnv8AK589iMlxWXZ1lmAwKhOpChVu6l+Vtyg5y0Td3Jt7dT6i+HHi74L+NPFdvbeFL74falrURM8EemvbSXCbRksoT5hgdxXyr8a/FWheC/8Ags7pGo+JL/TNM0mHQY/NuNQkWOBCYJQuWbgEnGPevrz4d/st/DX4U+JotX8N+E9C0jVIlZI7i2jxIoYFSAc9wSPxr5C+N3w/0T4of8Fm9I0bxDplrq+lXOgRmW1uF3RuRBKQSPYgH8KvFKahC9r8y22PT4ypZjDLsGq0KSrfWqNlDm5Otua6T33sttj6H+Kn7Rf7Puo/D3VRrXiH4fa1p0du7y2cU9tcSzYHREBJL+mOc15t/wAEovDPiCP9mHxXNZfbdJ0nWdVupfCq38vn/ZIDkKduTwH5P945PfNVf2zP+CeHh7wxoVl4++GnhnSbbXPB8i3s2kNHustThjy5zGcgupwewIBHpXrvwj/a7s/ix+x7e/EXwzonn32l6fcSSaHEwDi7hUloBtBIDMPlOMlWBxzTXM6/72yaTtbr8/LsXhniZ8Sc+dqFGdClNwVJSftYSspPndn7lvgSvdqXY+aP+Cfn7Svw8/ZQ0y98G/EW1PhHx/Lqsiz317pjRG5ifBQvNt+VAQfvHHOR1r6C0X9nfwF8WP2h9F+LXw+8T6Zbz6UXttUGhNDLBqhPzFZSn8RDYY9SNvoK0fg740+HX/BQD4M6bqOs6N4d1W7dVmvtLm2zS6fMvGDkB8DIw2ADmvC/iz8F/C37Lv7afwtk+GdxJpmo+JtZeHWdHtb8GKOHEACmLlkRlLdeDjI6Vmk4U47ShpbozzMPRnl2U4SUlSxWAjKl7OS5qdWPNKKhLS6lJNrms4tq91vf0f44f8pPvg5/2BdQ/wDRVxXuvjP4UeGNWstTvbrw7otzdzQyPJNLZRtJI208liMk14V8cP8AlJ98HP8AsC6h/wCirivpTxH/AMi9ff8AXvJ/6Ca66CTdS/8AN+iPtuHaNOpXzRVIp/7Q91f/AJc0T4s/4JEfDnw/4o+GvxDfUdD0m+eHxdPFG1xapIUQQxYUZBwOTx717R+21+x1ZftC/BxLbQLOx03xd4a23Ph27Qm3Nq6MG8pWXG1Wxgdlba38NeYf8Ea/+SYfEf8A7HG4/wDRMVfY9Z4WlGeGUZLdHlcEZJgsw4PoYTEwTjUg09Nfiet+6eqfRpM+JG/4KR3HiT9lmHSdKjY/GG8u38Mw6ZayCe5S4RcG728naQO/8ZPYE19A/sbfsyW37MPwmTTmmnvfEGsy/wBpa7eTSeY9zeSDL89wpO0HqcZPJNeA+EfCOl6f/wAFoNWEGn2kIPhVr/CxgD7QWRTLj++RxmvtijCRlJudR3cdF/n6sfBGExOLxFTHZpU9pUw0pUIO1laNuadv56mnN2SsuoUUUV3n6cFFFFABRRRQAUUUUAfH0H/BFz4fWumLZRePPi7FZIQy26a3bLEpByCF+zYGDyKrJ/wRC+GMdu8Q8YfFMRSby8Y1a02vvxvyPsuDuwM+uBmiiuT6hh/5UfEPw34Zejwcfx/zJNP/AOCJvw20nTriztPGnxWtbO7GJ7eHWLWOKcYx86i1w3HHNMk/4Ij/AA0lgs428ZfFVo9NBWzQ6valbQE5IjH2X5OfTFFFH1DD/wAqD/iG3DNuX6nC3z9e/cSL/giF8MYI3RPGHxTRJGZ3VdWtQGZsbiR9l5JwM+uBSf8ADkH4Y+YG/wCEw+KW4TC5Df2taZEw6Sf8ev3/APa60UUfUMP/ACIX/ENeGP8AoDh+P+Yl9/wQ8+F2qanJe3Xiz4n3N7M/mSXE2qWjyu394sbXJPvmkb/gh38LnE2fFvxQP2lg02dUtP3xByC3+i8kHpnpRRR9Qw/8qF/xDThe9/qUPx/zL0X/AARi8Aw2U1snj/4wLbXBYyxLrluElLfeLL9mwc989apx/wDBD/4YQiMJ4u+KKCJTHGF1W0Hlqeqj/ReB7UUUfUcP/KU/Dfhl74OP4/5lu5/4IvfD+8tI7ebx58XZbeJDHHE+t2zIikYKgG2wARxj0qsP+CI3wzWwtrQeMfioLWzlM9vANWtfLt5D1dF+y4Vvcc0UUfUcP/KD8N+GW7vBx/H/ADEj/wCCIfwyidGXxj8U1aOVpkYatagpI3DOP9F4Y9z1NJB/wRB+GFrpc9jH4v8AijHY3brJPbJqtoIZ2X7rOn2XDEdiRxRRR9Qw/wDIhf8AENeGP+gOH4/5n1L8HPhZp/wR+F+ieE9KmvLjTtBtVtLeS7dXndBnBcqqqTz2UV01FFdSSSsj7OhQp0KUaNJWjFJJdktEjgvj3+zP4M/aW8OLp3i7SI78Qq4trlGMdxZsylS0bjuM5wcrkDINeLaT/wAEk/AEGp6fJq3iv4meJ9P0+QSLpera3HJZS4UqAypCjAAHjayn3oorKeGpTfNKN2eHmPCWTY+v9ZxmGhOfVtb225v5l5O59Df8Ky0e2+GzeE7G1XTNE+xHT44LQBPIiK7cLkEZx3IPPXNYP7Nn7OmifstfDCLwn4futUvNOhuJblZNQkjkm3SHJGURFwO3y0UVpyRupW1R6n9m4X28MSoLnhFxi+0Xa6XlovuMX9pb9jPwZ+1TNo1x4ijvrW/0Obzba909o4rgrkExszo+UyAcY45wRk1pftA/sxaD+0hN4YfXLvV7U+FNTXVbQWMsaebKuMLJvR8rwOBg+9FFS6MHe633+Ry1sgy6q60qlGLdbl59Pi5Phv3t0PRVXaoHpxXj/hn9ibwn4T/af1D4r2t5rn9vaijq9k0sP9nxM8aRs6RiIOGIQc7zyTRRVShGVuZbHTjMtwuLdOWJgpOnJSjfpJbNeZ6f4w8MW/jbwnqejXbSpa6ray2czREB1SRSpKkgjODxkH6V8raP/wAEaPAHh60Nvp/jr4tWNuW3+Vb61bRpn1wLbHaiioqUKdR3mrnBm/DOV5pONTMKKqSjdJu+ie50vw2/4JgeFfhh490jxBa+O/ipfXGj3Ud3Hb32tQy20zIwYLIogBKkjkAjI716Bqf7H3hnVf2p7T4uyXmuDxLZWYskt1mi+xFAjJkp5e/OGP8AH+FFFKOGpRVkvP5mWF4TyjD01So0IqKmppa/HHaW+6PVJI1mjZWUMrDDKRkEehryv4GfseeFv2ePiR4o8R+G7nWoT4scyXOmyTx/2fbMXLkwxLGpU5JHLHjiiitHCLabWqPVxGXYavWp4itBOdNtxfWLas7eqOO+Kv8AwTM+HfxJ8ZHXtPvPFfgbUpvMN0/hjUVs1vC7BiXV43A5HATaOTwa3v2ev2DPAf7Omuya1Yrq/iDxJI7t/bWu3Yu71QwUFQVVEAwo527veiislhqSlzqKueTR4QyWlivrtLCwVS9722fdLZPzSudb4q/Z50Xxf8ePDXxCubrVE1rwtazWlpBFJGLWRZVdWMilCxIDnGGHbg1297arfWcsL5CzIUYjqARiiitVFK9up7NDBUKLqSpRSdR80vN2Su/kkvkec/sz/ss+H/2VdB1rTvD15rF5Dr2pvqtw2oyxyMkrqqlU2RoAuFGAQT716XRRRGKiuWOwYHA0MHQjhsLFRhHZLZHmtn+yz4fsf2nJ/iul5rB8RXGl/wBktbGWP7EIsg7gvl79/A5349q9KooojFR2DC4GhhudUIqPPJydusnu/VhRRRVHUFFFFABRRRQAUUUUAf/Z" alt="KIU Logo"></div>
     <div><h1>KIU CBE Programme Generator</h1><p>Competency-Based Education Programme Development Tool &middot; NCHE Compliant</p></div>
   </div>
   <div class="tabs">
@@ -160,6 +161,19 @@ body{font-family:var(--ff);background:var(--g50);color:var(--g700);font-size:14p
       <div id="ext-err" style="display:none;margin-top:10px" class="al ae"></div>
     </div>
   </div>
+  <div class="card"><div class="card-hd" style="background:var(--nv);gap:10px">&#127970; Institution Details</div><div class="card-body">
+    <div class="al ai" style="margin-bottom:12px">Default is KIU. To generate for another university, enter its name and website — the app will fetch institutional info and adapt all generated content accordingly.</div>
+    <div class="r3">
+      <div class="fld full"><label>Institution Name</label><input type="text" id="p-institution" value="Kampala International University (KIU)" oninput="onInstitutionChange()"></div>
+      <div class="fld"><label>Institution Website</label><input type="text" id="p-inst-url" value="https://kiu.ac.ug" placeholder="e.g. https://mak.ac.ug"></div>
+      <div class="fld"><label>Country</label><input type="text" id="p-inst-country" value="Uganda" placeholder="e.g. Uganda"></div>
+    </div>
+    <div id="inst-fetch-bar" style="display:none;margin-top:8px">
+      <button class="btn bt sm" onclick="fetchInstitutionInfo()" id="inst-fetch-btn">&#127760; Fetch Institution Info from Website</button>
+      <span id="inst-fetch-stat" style="font-size:12px;color:var(--tl);margin-left:10px"></span>
+    </div>
+    <div id="inst-info-box" style="display:none;margin-top:10px;background:#f2f8f4;border:1.5px solid var(--tl);border-radius:6px;padding:12px;font-size:12px;color:var(--g700)"></div>
+  </div></div>
   <div class="card"><div class="card-hd tl">&#128218; Programme Metadata</div><div class="card-body">
     <div class="row"><div class="fld full"><label>Full Programme Name</label><input type="text" id="p-name" value="Bachelor of Science in Technology &mdash; Chemistry"></div></div>
     <div class="r3">
@@ -1302,8 +1316,8 @@ async function callAPI(prompt,sys,maxT){
   if(!r.ok){var e=await r.text();throw new Error('API '+r.status+': '+e.slice(0,200));}
   var d=await r.json();return d.content||d.text||'';
 }
-var SYS='You are a senior curriculum developer for Kampala International University (KIU), Uganda. '
-  +'Write formal, professional academic programme documents following KIU CBE framework and NCHE Uganda standards. '
+var SYS='You are a senior curriculum developer. '
+  +'Write formal, professional academic programme documents following CBE framework and national higher education standards. '
   +'Be specific, substantive and detailed. Write in well-structured paragraphs. Do NOT use markdown headers with #. '
   +'Use bold text with ** only for section labels. Produce complete content for every section requested. '
   +'CRITICAL LANGUAGE RULES — follow these absolutely without exception: '
@@ -1312,13 +1326,76 @@ var SYS='You are a senior curriculum developer for Kampala International Univers
   +'(3) NEVER mention any ratio of any kind (staff-to-learner ratio, contact ratio, etc.). '
   +'(4) When listing items, use numbered lists that restart at 1 for each new list — do NOT continue numbering across sections. '
   +'(5) Do NOT use bullet points (- or •) — use numbered lists only.';
+
+/* ── Institution helpers ── */
+var _instInfo=''; // cached fetched institution info
+
+function getInstitution(){
+  return ($('p-institution','')||'Kampala International University (KIU)').trim();
+}
+function getInstURL(){
+  return ($('p-inst-url','')||'https://kiu.ac.ug').trim();
+}
+function getInstCountry(){
+  return ($('p-inst-country','')||'Uganda').trim();
+}
+function isKIU(){
+  var inst=getInstitution().toLowerCase();
+  return inst.indexOf('kampala international')>=0||inst.indexOf('kiu')>=0;
+}
+function onInstitutionChange(){
+  var bar=document.getElementById('inst-fetch-bar');
+  var infoBox=document.getElementById('inst-info-box');
+  if(!isKIU()){
+    if(bar)bar.style.display='block';
+  }else{
+    if(bar)bar.style.display='none';
+    if(infoBox){infoBox.style.display='none';}
+    _instInfo='';
+  }
+}
+async function fetchInstitutionInfo(){
+  var url=getInstURL();
+  var btn=document.getElementById('inst-fetch-btn');
+  var stat=document.getElementById('inst-fetch-stat');
+  var box=document.getElementById('inst-info-box');
+  if(!url){toast('Enter the institution website URL first','e');return;}
+  if(btn)btn.disabled=true;
+  if(stat)stat.textContent='Fetching...';
+  try{
+    var r=await fetch(API+'/api/fetch-institution?url='+encodeURIComponent(url),
+      {signal:AbortSignal.timeout(15000)});
+    if(!r.ok)throw new Error('Server returned '+r.status);
+    var d=await r.json();
+    _instInfo=d.content||'';
+    if(stat)stat.textContent='\u2705 Fetched '+(_instInfo.length)+' chars of institutional info';
+    if(box){
+      box.style.display='block';
+      box.innerHTML='<strong>Fetched from '+esc(url)+':</strong><br>'
+        +esc(_instInfo.slice(0,500))+'...';
+    }
+    toast('\u2705 Institution info fetched — AI will use this to generate accurate content','s');
+  }catch(e){
+    if(stat)stat.textContent='\u26a0 Could not fetch — AI will use its training knowledge';
+    toast('\u26a0 Could not fetch institution website: '+e.message+'. AI will use its knowledge about this institution.','e');
+    _instInfo='';
+  }finally{
+    if(btn)btn.disabled=false;
+  }
+}
+
 function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
 
 function progCtx(){
   var p=getProg();assignCodes();var groups=groupBySem();
   var cl=groups.map(function(g){return getSL(g.year,g.sem)+':'+g.courses.map(function(c){
     return' - '+c.code+': '+c.name+' ('+getNH(c)+' NH, '+getCr(c)+' Cr'+(c.elective?' [E]':'')+')';}).join('');}).join('\n');
-  return'INSTITUTION: Kampala International University (KIU), Uganda\nPROGRAMME: '+p.name
+  var inst=getInstitution();
+  var instLine=isKIU()
+    ?'INSTITUTION: Kampala International University (KIU), Uganda (founded 2001, chartered by Government of Uganda, campuses in Kampala and Bushenyi, ranked top private university in East Africa)'
+    :'INSTITUTION: '+inst+', '+getInstCountry()+(_instInfo?'\nINSTITUTION WEBSITE CONTENT:\n'+_instInfo.slice(0,2000):'');
+  return instLine
+    +'\nPROGRAMME: '+p.name
     +'\nAWARD: '+p.award+'\nSCHOOL: '+p.school+'\nDEPT: '+p.dept
     +'\nUHEQF LEVEL: Level '+p.level+'\nDURATION: '+p.years+' years, '+p.mode
     +'\n\nCURRICULUM:\n'+cl;
@@ -1327,8 +1404,18 @@ function progCtx(){
 function secPrompt(key){
   var ctx=progCtx(),p=getProg();
   var m={
-    intro:'Write Section 1: Introduction for KIU '+p.name+'. Include: 1.1 Background of KIU (founded 2001, chartered by Government of Uganda, campuses in Kampala and Bushenyi) 1.2 Vision 1.3 Mission 1.4 Core Values (6-8 with descriptions) 1.5 Legal Status. Write in formal paragraphs, 400-500 words. Use "learners" throughout, never "students".\n\n'+ctx,
-    governance:'Write Section 2: Governance and Management for '+p.name+'. Describe KIU institutional governance: University Council, University Senate, School Board, Department Board, QA Directorate, Programme Coordinator. ~250 words in paragraphs. Use "learners" not "students".\n\n'+ctx,
+    intro:(function(){
+      var inst=getInstitution(),ctx2=ctx,isK=isKIU();
+      if(isK){
+        return'Write Section 1: Introduction for KIU '+p.name+'. Include: 1.1 Background of KIU (founded 2001, chartered by Government of Uganda, campuses in Kampala and Bushenyi) 1.2 Vision 1.3 Mission 1.4 Core Values (6-8 with descriptions) 1.5 Legal Status. Write in formal paragraphs, 400-500 words. Use "learners" throughout, never "students".\n\n'+ctx2;
+      }
+      return'Write Section 1: Introduction for '+inst+'. Based on all available information about this institution, include: 1.1 Background and History of '+inst+' (founding year, charter, campuses, notable achievements) 1.2 Vision 1.3 Mission 1.4 Core Values (6-8 with descriptions) 1.5 Legal Status and Accreditation. Write in formal paragraphs, 400-500 words. Use "learners" throughout, never "students". Generate accurate, specific content based on what is known about this institution.\n\n'+ctx2;
+    })(),
+    governance:(function(){
+      var inst=getInstitution(),isK=isKIU();
+      if(isK) return'Write Section 2: Governance and Management for '+p.name+'. Describe KIU institutional governance: University Council, University Senate, School Board, Department Board, QA Directorate, Programme Coordinator. ~250 words in paragraphs. Use "learners" not "students".\n\n'+ctx;
+      return'Write Section 2: Governance and Management for '+p.name+' at '+inst+'. Describe the institutional governance structure of '+inst+' including its governing council/board, senate/academic board, school/faculty boards, department boards, quality assurance structures, and programme coordinator roles. ~250 words in paragraphs. Use "learners" not "students".\n\n'+ctx;
+    })(),
     nameCode:'Write Section 3: Programme Name, Code and Duration. Programme: '+p.name+', Code: '+p.prefix+' [Level][Year][Sem][Serial], Duration: '+p.years+' years '+p.mode+'. Include code format explanation. ~200 words.\n\n'+ctx,
     description:'Write Section 4: Programme Description. Cover disciplinary scope, thematic areas, CBE philosophy, learner capabilities, industry links and research emphasis. 300-400 words. Use "learners" not "students" or "graduates".\n\n'+ctx,
     development:'Write Section 5: Programme Development/Review Process. Cover: needs assessment, stakeholder consultation, benchmarking with regional universities, institutional approval process (Dept->School Board->Senate->Council). 250 words.\n\n'+ctx,
@@ -1770,7 +1857,11 @@ function countCdDone(id,cs){
   return (cs||[]).filter(function(c){return savedCD[c.code]&&savedCD[c.code].done;}).length;
 }
 
-/* ═══ SAVE ═══════════════════════════════════════════════════ */
+/* ═══ SAVE ═══════════════════════════════════════════════════
+   Cloud-first architecture:
+   - localStorage  → lightweight header only (meta + courses + counts)
+   - Google Sheets → ALL content (SC + CD) — primary storage
+   ══════════════════════════════════════════════════════════ */
 function saveCurrentProgramme(){
   var p=getProg();
   if(!p.name||p.name.trim().length<3){
@@ -1779,18 +1870,15 @@ function saveCurrentProgramme(){
   }
   assignCodes();
 
-  /* Count what we actually have before saving */
   var secDone=SECTIONS.filter(function(s){return SC[s.key]&&SC[s.key].done;}).length;
   var cdDone=courses.filter(function(c){return CD[c.code]&&CD[c.code].done;}).length;
-
-  /* Build header (small — no SC/CD blobs) */
   var now=new Date();
   var id;
   var ps=getProgs();
   var idx=ps.findIndex(function(x){return x.meta&&x.meta.name===p.name;});
   if(idx>=0){
     if(!confirm('"'+p.name+'" already saved. Overwrite?'))return;
-    id=ps[idx].id;   // reuse same id so sub-keys stay consistent
+    id=ps[idx].id;
     ps[idx]={id:id,savedAt:now.toISOString(),version:3,meta:p,
               courses:JSON.parse(JSON.stringify(courses)),
               secCount:secDone,cdCount:cdDone};
@@ -1801,33 +1889,22 @@ function saveCurrentProgramme(){
               secCount:secDone,cdCount:cdDone});
   }
 
-  /* Save header list */
+  /* Save LIGHTWEIGHT header to localStorage (no SC/CD blobs) */
   saveProgs(ps);
 
-  /* Save SC in separate key */
-  var scOk=lsSet('kiu_sc_'+id,JSON.parse(JSON.stringify(SC)));
-
-  /* Save CD in separate key */
-  var cdOk=lsSet('kiu_cd_'+id,JSON.parse(JSON.stringify(CD)));
+  /* Clean up any old SC/CD keys to free localStorage space */
+  try{localStorage.removeItem('kiu_sc_'+id);}catch(e){}
+  try{localStorage.removeItem('kiu_cd_'+id);}catch(e){}
 
   renderProgList();
+  toast('\u23f3 Saving to Google Sheets (primary storage)...','i');
 
-  if(!scOk||!cdOk){
-    toast('\u26a0 Local storage full — saving to Google Sheets cloud instead...','e');
-  }else{
-    toast('\u2705 "'+p.name+'" saved locally \u2014 '
-      +courses.length+' courses, '
-      +secDone+'/'+SECTIONS.length+' sections, '
-      +cdDone+' course units','s');
-  }
-
-  /* ── Push to Google Sheets (server) — always, regardless of localStorage state ── */
+  /* ── Push FULL content to Google Sheets ── */
   var scSnap=JSON.parse(JSON.stringify(SC));
   var cdSnap=JSON.parse(JSON.stringify(CD));
   var _secDone=secDone,_cdDone=cdDone,_pname=p.name,_ccount=courses.length,_now=now;
   var payload={
-    id:id,
-    meta:p,
+    id:id, meta:p,
     courses:JSON.parse(JSON.stringify(courses)),
     sectionDone:scSnap,
     courseDone:cdSnap,
@@ -1835,7 +1912,6 @@ function saveCurrentProgramme(){
     sectionContent:scSnap,
     savedAt:now.toISOString()
   };
-  toast('\u23f3 Saving to Google Sheets...','i');
   fetch(API+'/api/programmes',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -1854,9 +1930,10 @@ function saveCurrentProgramme(){
     toast('\u26a0 Cloud save failed — check server connection','e');
   });
 
-  /* Also save to local folder if connected (non-blocking) */
+  /* Also save to local folder if connected */
   if(typeof fsSaveFile==='function'&&typeof _fsHandle!=='undefined'&&_fsHandle){
-    var snap={id:id,savedAt:now.toISOString(),version:3,meta:p,courses:JSON.parse(JSON.stringify(courses)),secCount:secDone,cdCount:cdDone};
+    var snap={id:id,savedAt:now.toISOString(),version:3,meta:p,
+              courses:JSON.parse(JSON.stringify(courses)),secCount:_secDone,cdCount:_cdDone};
     var fullSnap=Object.assign({},snap,{SC:scSnap,CD:cdSnap});
     fsSaveFile(fullSnap).then(function(nm){
       if(nm){var sub=document.getElementById('fs-sub');
@@ -1938,14 +2015,19 @@ function showCloudSaveNotification(progName,courseCount,secCount,cdCount,savedAt
   overlay.addEventListener('click',function(e){if(e.target===overlay)overlay.remove();});
 }
 
-/* ═══ LOAD ═══════════════════════════════════════════════════ */
+/* ═══ LOAD ═══════════════════════════════════════════════════
+   Cloud-first architecture:
+   1. Restore meta + courses from localStorage header (instant)
+   2. Always fetch SC + CD from Google Sheets (async)
+   3. Re-render preview + generator after fetch completes
+   ══════════════════════════════════════════════════════════ */
 function loadProgramme(id){
   var ps=getProgs(),prog=ps.find(function(x){return x.id===id;});
-  if(!prog){toast('Programme not found — try Import JSON or Sync from Cloud','e');return;}
+  if(!prog){toast('Programme not found — try Sync from Cloud','e');return;}
 
   var m=prog.meta||prog;
 
-  /* Restore Setup fields */
+  /* ── Step 1: Restore Setup fields instantly ── */
   sv('p-name',m.name);sv('p-award',m.award||'');sv('p-abbr',m.abbr||'');
   sv('p-prefix',m.prefix||'');sv('p-school',m.school||'');
   sv('p-dept',m.dept||'');sv('p-hod',m.hod||'');
@@ -1954,54 +2036,82 @@ function loadProgramme(id){
   sv('p-mode',m.mode||'Full-time');sv('p-date',m.date||'');
   if(m.admission)sv('p-admission',m.admission);
 
-  /* Restore courses */
+  /* ── Step 2: Restore courses instantly ── */
   courses=JSON.parse(JSON.stringify(prog.courses||[]));
   nextId=Math.max.apply(null,courses.map(function(c){return c.id||0;}).concat([0]))+1;
 
-  /* Restore SC from split key — fallback to inline for old v2 saves */
-  var savedSC=lsGet('kiu_sc_'+id)||prog.SC||prog.sectionContent||{};
-  SECTIONS.forEach(function(s){SC[s.key]=savedSC[s.key]||{text:'',done:false};});
-
-  /* Restore CD from split key — fallback to inline for old v2 saves */
-  CD=JSON.parse(JSON.stringify(lsGet('kiu_cd_'+id)||prog.CD||prog.courseDetails||{}));
+  /* ── Step 3: Clear SC and CD (will be filled from cloud) ── */
+  SECTIONS.forEach(function(s){SC[s.key]={text:'',done:false};});
+  CD={};
 
   assignCodes();renderUCCList();renderCurriculum();renderGenTab();renderProgList();
+  switchTab('preview');
 
-  var secDone=SECTIONS.filter(function(s){return SC[s.key]&&SC[s.key].done;}).length;
-  var cdDone=courses.filter(function(c){return CD[c.code]&&CD[c.code].done;}).length;
+  /* Show loading overlay on preview */
+  var pw=document.getElementById('pw');
+  if(pw)pw.innerHTML='<div style="text-align:center;padding:60px 20px">'
+    +'<div style="font-size:40px;margin-bottom:16px">☁️</div>'
+    +'<div style="font-size:18px;font-weight:700;color:var(--nv);margin-bottom:8px">Loading from Google Sheets...</div>'
+    +'<div style="font-size:13px;color:var(--g500);margin-bottom:24px">'
+      +'Fetching all '+courses.length+' course units and '
+      +SECTIONS.length+' programme sections</div>'
+    +'<div style="display:inline-block;width:32px;height:32px;border:4px solid var(--tl);'
+      +'border-top-color:transparent;border-radius:50%;animation:_sp .8s linear infinite"></div>'
+    +'</div>';
 
-  /* If SC/CD appear empty, try fetching from server (handles localStorage-full case) */
-  if(secDone===0&&cdDone===0){
-    toast('\u23f3 Local data empty — checking Google Sheets cloud...','i');
-    fetch(API+'/api/programmes/'+id,{signal:AbortSignal.timeout(8000)})
-      .then(function(r){return r.ok?r.json():null;})
-      .then(function(d){
-        if(!d){toast('Not found on server either','e');return;}
-        var cloudSC=d.sectionDone||d.sectionContent||{};
-        var cloudCD=d.courseDone||{};
-        var cSD=SECTIONS.filter(function(s){return cloudSC[s.key]&&cloudSC[s.key].done;}).length;
-        var cCD=(prog.courses||[]).filter(function(c){return cloudCD[c.code]&&cloudCD[c.code].done;}).length;
-        if(cSD>0||cCD>0){
-          SECTIONS.forEach(function(s){SC[s.key]=cloudSC[s.key]||{text:'',done:false};});
-          CD=JSON.parse(JSON.stringify(cloudCD));
-          lsSet('kiu_sc_'+id,cloudSC);
-          lsSet('kiu_cd_'+id,cloudCD);
-          renderGenTab();
-          toast('\u2601 Restored from Google Sheets: '+cSD+'/'+SECTIONS.length+' sections, '+cCD+' course units','s');
-        }else{
-          toast('\u2705 "'+((m&&m.name)||'Programme')+'" loaded (no generated content yet)','s');
-        }
-      })
-      .catch(function(e){
-        toast('\u2705 "'+((m&&m.name)||'Programme')+'" loaded \u2014 '+courses.length+' courses','s');
-        console.warn('Cloud fetch failed:',e.message);
+  /* ── Step 4: Fetch SC + CD from Google Sheets ── */
+  toast('\u23f3 Fetching content from Google Sheets...','i');
+  fetch(API+'/api/programmes/'+id,{signal:AbortSignal.timeout(30000)})
+    .then(function(r){
+      if(!r.ok)throw new Error('Server returned '+r.status);
+      return r.json();
+    })
+    .then(function(d){
+      if(!d){throw new Error('No data returned from server');}
+
+      /* Restore SC */
+      var cloudSC=d.sectionDone||d.sectionContent||{};
+      SECTIONS.forEach(function(s){
+        SC[s.key]=cloudSC[s.key]||{text:'',done:false};
       });
-  }else{
-    toast('\u2705 "'+((m&&m.name)||'Programme')+'" loaded \u2014 '
-      +courses.length+' courses, '+secDone+'/'+SECTIONS.length+' sections, '
-      +cdDone+' course unit(s) restored','s');
-  }
-  switchTab('curriculum');
+
+      /* Restore CD */
+      CD=JSON.parse(JSON.stringify(d.courseDone||{}));
+
+      /* Count what was restored */
+      var secDone=SECTIONS.filter(function(s){return SC[s.key]&&SC[s.key].done;}).length;
+      var cdDone=courses.filter(function(c){return CD[c.code]&&CD[c.code].done;}).length;
+
+      /* Re-render everything now that SC/CD are populated */
+      renderGenTab();
+      renderPreview();
+
+      /* Show success notification */
+      if(secDone===0&&cdDone===0){
+        toast('\u2705 "'+m.name+'" loaded — '+courses.length+' courses (no generated content yet — use Generator tab)','s');
+      }else{
+        var pctS=Math.round(secDone/SECTIONS.length*100);
+        var pctC=courses.length?Math.round(cdDone/courses.length*100):0;
+        toast('\u2705 Restored from Google Sheets: '
+          +secDone+'/'+SECTIONS.length+' sections ('+pctS+'%), '
+          +cdDone+'/'+courses.length+' course units ('+pctC+'%)','s');
+      }
+    })
+    .catch(function(e){
+      console.error('Cloud load error:',e);
+      /* Fallback: try localStorage sub-keys (old saves) */
+      var savedSC=lsGet('kiu_sc_'+id)||prog.SC||prog.sectionContent||{};
+      var savedCD=lsGet('kiu_cd_'+id)||prog.CD||prog.courseDetails||{};
+      SECTIONS.forEach(function(s){SC[s.key]=savedSC[s.key]||{text:'',done:false};});
+      CD=JSON.parse(JSON.stringify(savedCD));
+      renderGenTab();renderPreview();
+      var secDone=SECTIONS.filter(function(s){return SC[s.key]&&SC[s.key].done;}).length;
+      if(secDone>0){
+        toast('\u26a0 Cloud unavailable — restored '+secDone+' sections from local cache','e');
+      }else{
+        toast('\u26a0 Could not fetch from Google Sheets: '+e.message+'. Save the programme again to upload content.','e');
+      }
+    });
 }
 
 /* ═══ DELETE ═════════════════════════════════════════════════ */
