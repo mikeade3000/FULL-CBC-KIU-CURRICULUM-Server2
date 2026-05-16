@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: kiu-cbe-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false          # paste your key in the Render dashboard
+      - key: SPREADSHEET_ID
+        sync: false          # paste your Google Sheet ID
+      - key: GOOGLE_SERVICE_ACCOUNT_JSON
+        sync: false          # paste the entire service-account JSON (minified)
+
+# ─── No database block needed — storage is Google Sheets ─────────────────────
