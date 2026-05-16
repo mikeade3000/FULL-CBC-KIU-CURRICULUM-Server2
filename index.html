@@ -309,7 +309,7 @@ body{font-family:var(--ff);background:var(--g50);color:var(--g700);font-size:14p
 })();
 
 /* CONFIG */
-var API='https://kiu-cbe-backend.onrender.com';
+var API='https://full-cbc-kiu-curriculum.onrender.com';
 
 /* UTILS */
 function xe(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -1790,16 +1790,46 @@ function saveCurrentProgramme(){
   renderProgList();
 
   if(!scOk||!cdOk){
-    toast('\u26a0 Saved (partial — storage full). Export JSON now to back up!','e');
+    toast('\u26a0 Local storage full — saving to Google Sheets cloud instead...','e');
   }else{
-    toast('\u2705 "'+p.name+'" saved \u2014 '
+    toast('\u2705 "'+p.name+'" saved locally \u2014 '
       +courses.length+' courses, '
       +secDone+'/'+SECTIONS.length+' sections, '
       +cdDone+' course units','s');
   }
+
+  /* ── Push to Google Sheets (server) — always, regardless of localStorage state ── */
+  var scSnap=JSON.parse(JSON.stringify(SC));
+  var cdSnap=JSON.parse(JSON.stringify(CD));
+  var payload={
+    id:id,
+    meta:p,
+    courses:JSON.parse(JSON.stringify(courses)),
+    sectionDone:scSnap,
+    courseDone:cdSnap,
+    courseCount:courses.length,
+    sectionContent:scSnap,
+    savedAt:now.toISOString()
+  };
+  fetch(API+'/api/programmes',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  }).then(function(r){
+    if(r.ok){
+      toast('\u2601 "'+p.name+'" also saved to Google Sheets \u2713','s');
+    }else{
+      r.text().then(function(t){console.warn('Server save failed:',t);});
+    }
+  }).catch(function(e){
+    console.warn('Google Sheets save error:',e.message);
+    toast('\u26a0 Cloud save failed — check server connection','e');
+  });
+
   /* Also save to local folder if connected (non-blocking) */
   if(typeof fsSaveFile==='function'&&typeof _fsHandle!=='undefined'&&_fsHandle){
-    var fullSnap=Object.assign({},snap,{SC:JSON.parse(JSON.stringify(SC)),CD:JSON.parse(JSON.stringify(CD))});
+    var snap={id:id,savedAt:now.toISOString(),version:3,meta:p,courses:JSON.parse(JSON.stringify(courses)),secCount:secDone,cdCount:cdDone};
+    var fullSnap=Object.assign({},snap,{SC:scSnap,CD:cdSnap});
     fsSaveFile(fullSnap).then(function(nm){
       if(nm){var sub=document.getElementById('fs-sub');
         if(sub)sub.textContent='Last saved: "'+nm+'" — '+new Date().toLocaleTimeString('en-UG');}
@@ -1810,7 +1840,7 @@ function saveCurrentProgramme(){
 /* ═══ LOAD ═══════════════════════════════════════════════════ */
 function loadProgramme(id){
   var ps=getProgs(),prog=ps.find(function(x){return x.id===id;});
-  if(!prog){toast('Programme not found — try Import JSON','e');return;}
+  if(!prog){toast('Programme not found — try Import JSON or Sync from Cloud','e');return;}
 
   var m=prog.meta||prog;
 
@@ -1838,9 +1868,38 @@ function loadProgramme(id){
 
   var secDone=SECTIONS.filter(function(s){return SC[s.key]&&SC[s.key].done;}).length;
   var cdDone=courses.filter(function(c){return CD[c.code]&&CD[c.code].done;}).length;
-  toast('\u2705 "'+((m&&m.name)||'Programme')+'" loaded \u2014 '
-    +courses.length+' courses, '+secDone+'/'+SECTIONS.length+' sections, '
-    +cdDone+' course unit(s) restored','s');
+
+  /* If SC/CD appear empty, try fetching from server (handles localStorage-full case) */
+  if(secDone===0&&cdDone===0){
+    toast('\u23f3 Local data empty — checking Google Sheets cloud...','i');
+    fetch(API+'/api/programmes/'+id,{signal:AbortSignal.timeout(8000)})
+      .then(function(r){return r.ok?r.json():null;})
+      .then(function(d){
+        if(!d){toast('Not found on server either','e');return;}
+        var cloudSC=d.sectionDone||d.sectionContent||{};
+        var cloudCD=d.courseDone||{};
+        var cSD=SECTIONS.filter(function(s){return cloudSC[s.key]&&cloudSC[s.key].done;}).length;
+        var cCD=(prog.courses||[]).filter(function(c){return cloudCD[c.code]&&cloudCD[c.code].done;}).length;
+        if(cSD>0||cCD>0){
+          SECTIONS.forEach(function(s){SC[s.key]=cloudSC[s.key]||{text:'',done:false};});
+          CD=JSON.parse(JSON.stringify(cloudCD));
+          lsSet('kiu_sc_'+id,cloudSC);
+          lsSet('kiu_cd_'+id,cloudCD);
+          renderGenTab();
+          toast('\u2601 Restored from Google Sheets: '+cSD+'/'+SECTIONS.length+' sections, '+cCD+' course units','s');
+        }else{
+          toast('\u2705 "'+((m&&m.name)||'Programme')+'" loaded (no generated content yet)','s');
+        }
+      })
+      .catch(function(e){
+        toast('\u2705 "'+((m&&m.name)||'Programme')+'" loaded \u2014 '+courses.length+' courses','s');
+        console.warn('Cloud fetch failed:',e.message);
+      });
+  }else{
+    toast('\u2705 "'+((m&&m.name)||'Programme')+'" loaded \u2014 '
+      +courses.length+' courses, '+secDone+'/'+SECTIONS.length+' sections, '
+      +cdDone+' course unit(s) restored','s');
+  }
   switchTab('curriculum');
 }
 
@@ -1859,12 +1918,13 @@ function renderProgList(){
   var el=document.getElementById('prog-list');if(!el)return;
   var ps=getProgs().filter(function(p){return p.id;});
   if(!ps.length){
-    el.innerHTML='<div class="al ai">No programmes saved yet. '
-      +'Use <strong>Save Current Programme</strong> above.</div>';
+    el.innerHTML='<div class="al ai">No programmes saved locally yet. '
+      +'Use <strong>Save Current Programme</strong> above, or click <strong>☁ Sync from Cloud</strong> to restore from Google Sheets.</div>'
+      +'<div style="margin-top:8px"><button class="btn bt sm" onclick="syncFromCloud()">&#9729; Sync from Cloud</button></div>';
     return;
   }
   ps=ps.slice().sort(function(a,b){return new Date(b.savedAt)-new Date(a.savedAt);});
-  el.innerHTML=ps.map(function(p){
+  var listHtml=ps.map(function(p){
     var m=p.meta||p,nm=(m.name||p.name||'Unnamed').trim(),ab=m.abbr||p.abbr||'';
     var cs=p.courses||[];
     /* Read counts from split keys (fast — just checking keys) */
@@ -1900,6 +1960,51 @@ function renderProgList(){
       +'<button class="btn br sm" onclick="deleteProg('+p.id+')">\u2715 Delete</button>'
       +'</div></div></div>';
   }).join('');
+  el.innerHTML=listHtml
+    +'<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--g200)">'
+    +'<button class="btn bt sm" onclick="syncFromCloud()" style="gap:6px">&#9729; Sync from Cloud (Google Sheets)</button>'
+    +'<span style="font-size:11px;color:var(--g500);margin-left:10px">Restores any programme saved to the server</span>'
+    +'</div>';
+}
+
+/* ═══ SYNC FROM CLOUD ════════════════════════════════════════ */
+async function syncFromCloud(){
+  toast('\u23f3 Fetching programmes from Google Sheets...','i');
+  try{
+    var r=await fetch(API+'/api/programmes',{signal:AbortSignal.timeout(10000)});
+    if(!r.ok)throw new Error('Server returned '+r.status);
+    var serverProgs=await r.json();
+    if(!serverProgs||!serverProgs.length){toast('No programmes found on server yet','i');return;}
+    var ps=getProgs();
+    var added=0,updated=0;
+    serverProgs.forEach(function(sp){
+      if(!sp.id||!sp.meta||!sp.meta.name)return;
+      var localIdx=ps.findIndex(function(x){return String(x.id)===String(sp.id);});
+      var header={
+        id:sp.id,savedAt:sp.savedAt||new Date().toISOString(),version:3,
+        meta:sp.meta,courses:sp.courses||[],
+        secCount:sp.sectionDone?SECTIONS.filter(function(s){return sp.sectionDone[s.key]&&sp.sectionDone[s.key].done;}).length:0,
+        cdCount:sp.courseDone?Object.values(sp.courseDone).filter(function(v){return v&&v.done;}).length:0
+      };
+      if(localIdx>=0){
+        /* Only overwrite if server version is newer */
+        var localDate=new Date(ps[localIdx].savedAt||0);
+        var serverDate=new Date(sp.savedAt||0);
+        if(serverDate>localDate){ps[localIdx]=header;updated++;}
+      }else{
+        ps.push(header);added++;
+      }
+      /* Restore SC and CD into localStorage sub-keys */
+      if(sp.sectionDone&&Object.keys(sp.sectionDone).length)lsSet('kiu_sc_'+sp.id,sp.sectionDone);
+      if(sp.courseDone&&Object.keys(sp.courseDone).length)lsSet('kiu_cd_'+sp.id,sp.courseDone);
+    });
+    saveProgs(ps);
+    renderProgList();
+    toast('\u2705 Cloud sync done: '+added+' new, '+updated+' updated','s');
+  }catch(e){
+    toast('\u274c Cloud sync failed: '+e.message,'e');
+    console.error('syncFromCloud error:',e);
+  }
 }
 
 /* ═══ EXPORT / IMPORT ════════════════════════════════════════ */
