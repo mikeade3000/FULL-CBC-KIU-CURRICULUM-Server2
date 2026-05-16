@@ -1,0 +1,2398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KIU CBE Programme Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{--nv:#0f2d4a;--nv2:#1a3d60;--tl:#117a7a;--tl2:#1a9c9c;--gd:#c8942a;--gd2:#e8aa30;--g50:#f7f8fa;--g100:#ebedf2;--g200:#d8dce6;--g300:#b8bed0;--g500:#7a8099;--g700:#3d4257;--gn:#1a7a4a;--gnl:#d4f0e4;--rd:#c0392b;--rdl:#fde8e6;--ff:'Source Sans 3',sans-serif;--fm:'JetBrains Mono',monospace;--sh:0 2px 8px rgba(15,45,74,.12);--r:6px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--ff);background:var(--g50);color:var(--g700);font-size:14px;line-height:1.5}
+.hdr{background:linear-gradient(135deg,var(--nv),var(--nv2));color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 4px 16px rgba(15,45,74,.25)}
+.hdr-top{display:flex;align-items:center;gap:14px;padding:10px 20px;border-bottom:3px solid var(--gd)}
+.seal{width:52px;height:52px;flex-shrink:0;background:radial-gradient(circle,var(--gd2),var(--gd));border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:var(--nv);box-shadow:0 0 0 3px rgba(200,148,42,.3)}
+.hdr h1{font-size:16px;font-weight:700}.hdr p{font-size:11px;opacity:.75;margin-top:1px}
+.tabs{display:flex;overflow-x:auto;background:rgba(0,0,0,.25)}
+.tab{padding:10px 20px;cursor:pointer;color:rgba(255,255,255,.6);font-size:13px;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;user-select:none}
+.tab:hover{color:rgba(255,255,255,.9);background:rgba(255,255,255,.05)}.tab.active{color:var(--gd2);border-bottom-color:var(--gd2)}
+.main{max-width:1150px;margin:0 auto;padding:20px}.pane{display:none}.pane.active{display:block}
+.card{background:#fff;border-radius:var(--r);border:1px solid var(--g200);margin-bottom:16px;box-shadow:var(--sh);overflow:hidden}
+.card-hd{background:var(--nv);color:#fff;padding:10px 16px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px}
+.card-hd.tl{background:var(--tl)}.card-hd.gd{background:var(--gd);color:var(--nv)}.card-hd.nv2{background:var(--nv2)}.card-body{padding:16px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}.full{grid-column:1/-1}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:11px;font-weight:700;color:var(--nv);text-transform:uppercase;letter-spacing:.6px}
+.fld input,.fld select,.fld textarea{padding:8px 10px;border:1.5px solid var(--g200);border-radius:var(--r);font-size:13px;font-family:var(--ff);color:var(--g700);background:#fff;transition:border-color .15s}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--tl2);box-shadow:0 0 0 3px rgba(26,156,156,.12)}
+.fld textarea{resize:vertical;min-height:72px}
+.btn{padding:8px 16px;border:none;border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:700;font-family:var(--ff);transition:all .15s;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+.bn{background:var(--nv);color:#fff}.bn:hover{background:var(--nv2)}
+.bt{background:var(--tl);color:#fff}.bt:hover{background:var(--tl2)}
+.bg{background:var(--gd);color:#fff}.bg:hover{background:var(--gd2);color:var(--nv)}
+.br{background:var(--rd);color:#fff}.br:hover{opacity:.85}
+.bo{background:transparent;border:1.5px solid var(--g300);color:var(--g700)}.bo:hover{background:var(--g100)}
+.btn.sm{padding:4px 10px;font-size:12px}.btn.xs{padding:2px 8px;font-size:11px;border-radius:3px}.btn:disabled{opacity:.45;cursor:not-allowed}
+.tb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;background:#fff;border-radius:var(--r);border:1px solid var(--g200);box-shadow:var(--sh)}
+.sep{width:1px;height:20px;background:var(--g200)}
+.al{padding:10px 14px;border-radius:var(--r);font-size:13px;margin-bottom:12px;display:flex;align-items:flex-start;gap:8px}
+.ai{background:#dff4f4;color:var(--tl);border-left:4px solid var(--tl)}
+.aw{background:#fff8e6;color:#8a6300;border-left:4px solid var(--gd)}
+.as{background:var(--gnl);color:var(--gn);border-left:4px solid var(--gn)}
+.ae{background:var(--rdl);color:var(--rd);border-left:4px solid var(--rd)}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:_sp .7s linear infinite;vertical-align:middle}
+@keyframes _sp{to{transform:rotate(360deg)}}
+.pb{height:5px;background:var(--g100);border-radius:3px;overflow:hidden}
+.pf{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--tl),var(--nv));transition:width .4s}
+.sh{background:linear-gradient(135deg,var(--nv2),#2a5080);color:#fff;padding:8px 14px;border-radius:var(--r) var(--r) 0 0;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:13px}
+.si{font-size:12px;opacity:.85;display:flex;gap:12px;flex-wrap:wrap}
+.ct{width:100%;border-collapse:collapse;font-size:12px}
+.ct th{background:var(--nv);color:#fff;padding:7px 8px;text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.ct th.c{text-align:center}.ct td{padding:5px 7px;border-bottom:1px solid var(--g100);vertical-align:middle}
+.ct tr:hover td{background:#f0f8ff}.ct tr.el td{background:#fffbf0}
+.ct tr.wrc td{background:#fffbf0;border-left:3px solid var(--gd)}
+.ct tr.ucc td{background:#f0f8ff}
+.ct tr.cf td{background:#fff0f0}
+.ct input[type=text],.ct input[type=number]{padding:3px 6px;border:1px solid transparent;border-radius:3px;font-size:12px;background:transparent;font-family:var(--fm);width:100%}
+.ct input[type=number]{width:46px;text-align:center}.ct input:focus,.ct select:focus{border-color:var(--tl2);background:#fff;outline:none}
+.ct select{padding:2px 4px;font-size:11px;border:1px solid transparent;border-radius:3px;background:transparent}
+.cd{font-family:var(--fm);font-size:11px;background:var(--nv);color:var(--gd2);padding:2px 7px;border-radius:3px;white-space:nowrap}
+.nh{font-weight:700;color:var(--tl)}.tr td{background:var(--nv)!important;color:#fff!important;font-weight:700;padding:7px 8px}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.si2{border:1.5px solid var(--g200);border-radius:var(--r);padding:10px 12px;background:#fff;display:flex;align-items:center;gap:10px;transition:all .15s}
+.si2.done{border-color:var(--tl);background:#f0fafa}.si2.run{border-color:var(--gd);background:#fffbf0}
+.sd{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.sd.p{background:var(--g200);color:var(--g500)}.sd.d{background:var(--tl);color:#fff}.sd.r{background:var(--gd);color:#fff}
+.sn{flex:1;font-size:12.5px;font-weight:600;color:var(--g700)}
+#pw{background:#fff;padding:32px 40px;font-size:13px;line-height:1.8;border:1px solid var(--g200);border-radius:var(--r);max-height:75vh;overflow-y:auto}
+#pw .cov{text-align:center;margin-bottom:32px;padding-bottom:24px;border-bottom:3px double var(--nv)}
+#pw .cov h1{font-size:20px;color:var(--nv);margin-bottom:6px;font-weight:700}
+#pw .cov h2{font-size:14px;color:var(--tl);margin-bottom:4px}
+#pw .cov p{font-size:12px;color:var(--g500);margin:3px 0}
+#pw h3{font-size:15px;color:var(--nv);margin:28px 0 8px;border-left:4px solid var(--gd);padding-left:10px;font-weight:700}
+#pw h4{font-size:13px;color:var(--tl);margin:14px 0 6px;font-weight:700}
+#pw p{margin-bottom:8px;text-align:justify}
+#pw ul,#pw ol{margin:6px 0 8px 22px}#pw li{margin-bottom:3px}
+#pw table{width:100%;border-collapse:collapse;margin:12px 0;font-size:11.5px}
+#pw table th{background:var(--nv);color:#fff;padding:6px 8px;text-align:center;font-size:10.5px;text-transform:uppercase}
+#pw table td{padding:5px 8px;border:1px solid var(--g200)}
+#pw table tr.sr td{background:var(--tl);color:#fff;font-weight:700;font-size:11px}
+#pw table tr.tt td{background:var(--nv);color:#fff;font-weight:700}
+#pw .cb{border:1px solid var(--g200);border-radius:var(--r);margin:16px 0;overflow:hidden}
+#pw .cb-hd{background:var(--tl);color:#fff;padding:7px 14px;font-weight:700;font-size:13px}
+#pw .cb-bd{padding:12px 16px}
+#pw .nc{color:var(--g300);font-style:italic;font-size:12px;padding:6px 0}
+#pw .mt{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0}
+#pw .mt td{padding:3px 10px;border:1px solid var(--g100)}
+#pw .mt td:first-child{background:var(--g50);font-weight:700;color:var(--nv);width:150px}
+#toaster{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.tst{background:var(--nv);color:#fff;padding:10px 16px;border-radius:var(--r);font-size:13px;box-shadow:0 6px 24px rgba(15,45,74,.25);max-width:320px;border-left:4px solid var(--gd);animation:_si .3s ease}
+.tst.e{border-left-color:var(--rd)}.tst.s{border-left-color:var(--tl)}
+@keyframes _si{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+#hitl{position:fixed;bottom:0;left:0;right:0;background:#b00;color:#fff;text-align:center;padding:5px 12px;font-size:11px;font-weight:700;z-index:9997}
+@media(max-width:700px){.main{padding:12px}.sg{grid-template-columns:1fr}#pw{padding:16px}.r3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<!-- CONSENT -->
+<div id="co" style="position:fixed;inset:0;background:rgba(10,20,40,.93);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif">
+  <div style="background:#fff;border-radius:8px;max-width:680px;width:95%;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.5);border:3px solid #c00">
+    <div style="background:#0F2D4A;color:#fff;padding:18px 24px;border-radius:5px 5px 0 0">
+      <div style="font-size:16px;font-weight:700">KAMPALA INTERNATIONAL UNIVERSITY</div>
+      <div style="font-size:11px;opacity:.85;margin-top:3px">CBE Programme Generator &mdash; Developed by Dr. Michael Adelani Adewusi</div>
+    </div>
+    <div style="padding:20px 24px">
+      <div style="background:#fff0f0;border:2px solid #c00;border-radius:6px;padding:14px 16px;margin-bottom:16px">
+        <div style="color:#c00;font-weight:700;font-size:13px;margin-bottom:6px">&#9888; CRITICAL DISCLAIMER</div>
+        <p style="color:#c00;font-size:12px;margin:0;line-height:1.6"><strong>All generated contents MUST be reviewed, verified and approved by qualified academic staff before use in any official document, NCHE submission, or academic purpose.</strong> KIU accepts no responsibility for errors in generated content that has not been reviewed.</p>
+      </div>
+      <div style="font-size:12px;color:#333;margin-bottom:16px;line-height:1.7"><strong>By proceeding, you confirm that:</strong><ol style="margin:8px 0 0 16px;padding:0"><li>You are an authorised KIU staff member or approved user.</li><li>All generated content will be reviewed by qualified academic staff.</li><li>You accept responsibility for verifying the accuracy of all generated content.</li><li>This tool is for use at Kampala International University only.</li></ol></div>
+      <div style="background:#f0f8f0;border:1px solid #117A7A;border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#333">
+        <strong>Developer:</strong> Dr. Michael Adelani Adewusi &nbsp;|&nbsp; <strong>Institution:</strong> Kampala International University, Uganda
+      </div>
+      <button id="consent-btn" style="width:100%;padding:14px;background:#0F2D4A;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.3px">&#10003; I Understand and Agree to Proceed</button>
+      <p style="text-align:center;font-size:10px;color:#999;margin:10px 0 0">&#169; KIU 2025 &mdash; Dr. Michael Adelani Adewusi</p>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-top">
+    <div class="seal">KIU</div>
+    <div><h1>KIU CBE Programme Generator</h1><p>Competency-Based Education Programme Development Tool &middot; NCHE Compliant</p></div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('setup')" id="tab-setup">&#9881; Setup</div>
+    <div class="tab" onclick="switchTab('curriculum')" id="tab-curriculum">&#128203; Curriculum Builder</div>
+    <div class="tab" onclick="switchTab('generate')" id="tab-generate">&#128221; Generator</div>
+    <div class="tab" onclick="switchTab('preview')" id="tab-preview">&#128196; Full Preview</div>
+    <div class="tab" onclick="switchTab('programmes')" id="tab-programmes">&#128193; My Programmes</div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- SETUP -->
+<div class="pane active" id="pane-setup">
+  <div class="al ai">&#8505; This tool generates complete KIU CBE programme documents following the NCHE-approved template.</div>
+  <div class="card">
+    <div class="card-hd gd" style="cursor:pointer" onclick="toggleImport()">&#128194; Import Existing Programme Document &nbsp;<span id="itog">&#9660; Click to expand</span></div>
+    <div id="imp-body" class="card-body" style="display:none">
+      <div class="al ai">&#128204; Upload or paste your existing programme document. The AI extracts all metadata, restructures courses into CBE format, and auto-fills every field.</div>
+      <div id="dz" onclick="document.getElementById('fu').click()" style="border:2.5px dashed var(--tl2);border-radius:8px;padding:28px;text-align:center;cursor:pointer;background:var(--g50);margin-bottom:14px" ondragover="event.preventDefault();this.style.background='#e0f7f7'" ondragleave="this.style.background='var(--g50)'" ondrop="handleDrop(event)">
+        <div style="font-size:36px;margin-bottom:8px">&#128196;</div>
+        <div style="font-weight:700;color:var(--nv);font-size:14px">Drop your programme document here</div>
+        <div style="font-size:12px;color:var(--g500);margin-top:4px">Supports .docx, .doc, .txt &mdash; or click to browse</div>
+        <input type="file" id="fu" style="display:none" accept=".docx,.doc,.txt,.rtf" onchange="handleFileUpload(this)">
+      </div>
+      <div style="text-align:center;font-size:12px;color:var(--g500);margin:10px 0">&mdash; OR paste programme text below &mdash;</div>
+      <div class="fld"><label>Paste Programme Content</label><textarea id="imp-txt" rows="8" placeholder="Paste your full programme document here..." style="font-size:12px;font-family:var(--fm);line-height:1.6"></textarea></div>
+      <div id="imp-info" style="display:none" class="al as"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn bg" onclick="extractAndFill()" id="ext-btn" style="font-size:14px;padding:10px 22px"><span id="ext-sp" style="display:none" class="spin"></span> &#128269; Extract &amp; Auto-Fill All Fields</button>
+        <button class="btn bo sm" onclick="clearImport()">&#10005; Clear</button>
+      </div>
+      <div id="ext-stat" style="display:none;padding:10px 0;font-size:12px;color:var(--tl)"></div>
+      <div id="ext-err" style="display:none;margin-top:10px" class="al ae"></div>
+    </div>
+  </div>
+  <div class="card"><div class="card-hd tl">&#128218; Programme Metadata</div><div class="card-body">
+    <div class="row"><div class="fld full"><label>Full Programme Name</label><input type="text" id="p-name" value="Bachelor of Science in Technology &mdash; Chemistry"></div></div>
+    <div class="r3">
+      <div class="fld"><label>Award Title</label><input type="text" id="p-award" value="Bachelor of Science in Technology (Chemistry)"></div>
+      <div class="fld"><label>Abbreviation</label><input type="text" id="p-abbr" value="B.Sc.T.(Chem)"></div>
+      <div class="fld"><label>Course Code Prefix</label><input type="text" id="p-prefix" value="CHT" maxlength="5" oninput="this.value=this.value.toUpperCase();refreshCodes()"></div>
+    </div>
+    <div class="r3">
+      <div class="fld"><label>School / Faculty</label><input type="text" id="p-school" value="School of Natural and Applied Sciences (SONAS)"></div>
+      <div class="fld"><label>Department</label><input type="text" id="p-dept" value="Department of Physical Sciences"></div>
+      <div class="fld"><label>Head of Department</label><input type="text" id="p-hod" value="Assoc. Prof. Twinomuhwezi Hannington"></div>
+    </div>
+    <div class="row">
+      <div class="fld"><label>UHEQF Level</label><select id="p-level" onchange="refreshCodes()"><option value="4">Level 4</option><option value="5">Level 5</option><option value="6">Level 6</option><option value="7" selected>Level 7 &ndash; Bachelor's</option><option value="8">Level 8</option><option value="9">Level 9</option></select></div>
+      <div class="fld"><label>Duration</label><select id="p-years"><option value="2">2 Years</option><option value="3" selected>3 Years</option><option value="4">4 Years</option><option value="5">5 Years</option></select></div>
+      <div class="fld"><label>Mode</label><select id="p-mode"><option value="Full-time" selected>Full-time</option><option value="Part-time">Part-time</option><option value="Blended">Blended</option><option value="Distance">Distance</option></select></div>
+      <div class="fld"><label>Submission Date</label><input type="text" id="p-date" value="July, 2024"></div>
+    </div>
+    <div class="row"><div class="fld full"><label>Admission Requirements</label><textarea id="p-admission" rows="4">1. UACE Route: At least two principal passes including relevant science subjects. UCE with at least five passes including Mathematics and English.
+2. Diploma Route: Relevant Diploma (Lower Credit minimum) from NCHE/UBTEB accredited institution.
+3. Mature Age Entry: Age 25+ with relevant work experience, subject to KIU mature-age test.
+4. International Applicants: Equivalent qualifications recognised by NCHE Uganda.</textarea></div></div>
+  </div></div>
+  <div class="card"><div class="card-hd nv2">&#128274; Universal Course Registry (UCC &amp; WRC &mdash; Fixed Across All KIU Programmes)</div><div class="card-body">
+    <div class="al ai" style="margin-bottom:12px">These courses carry <strong>fixed codes, names and Notional Hours</strong> across every KIU programme. NH values <strong>cannot be changed</strong>.</div>
+    <div id="ucc-list"></div>
+  </div></div>
+  <div class="tb"><button class="btn bn" onclick="switchTab('curriculum')">Next: Build Curriculum &rarr;</button><span style="margin-left:auto;font-size:12px;color:var(--g500)">Changes saved locally</span></div>
+</div>
+
+<!-- CURRICULUM BUILDER -->
+<div class="pane" id="pane-curriculum">
+  <div id="nh-banner" style="display:none;margin-bottom:8px"></div>
+  <div class="tb">
+    <button class="btn bt sm" onclick="addCourse()">&#xFF0B; Add Course</button>
+    <div class="sep"></div>
+    <button class="btn bn" onclick="autoBalanceNH()">&#9878; Enforce 600 NH</button>
+    <button class="btn bo sm" onclick="showBalanceReport()">&#128202; NH Report</button>
+    <button class="btn bo sm" onclick="refreshCodes()">&#8634; Codes</button>
+    <div class="sep"></div>
+    <button class="btn sm" style="background:#6B21A8;color:#fff" onclick="checkAllCourseRegistry()"><span id="reg-sp" style="display:none" class="spin"></span> &#128269; Check Registry</button>
+    <button class="btn sm" style="background:#065f46;color:#fff" onclick="syncWithRegistry(false)"><span id="sync-sp" style="display:none" class="spin"></span> &#9654; Sync &amp; Fix Registry</button>
+    <div class="sep"></div>
+    <span id="tot-sum" style="font-size:12px;font-family:var(--fm);color:var(--g500)">Loading...</span>
+    <div style="margin-left:auto;font-size:12px;color:var(--g500)">Target: <strong>600 NH = 60 Credits</strong></div>
+  </div>
+  <div id="dup-banner" style="display:none"></div>
+  <div id="reg-results" style="display:none;margin-bottom:12px"></div>
+  <div id="cur-area">Loading...</div>
+  <div class="tb">
+    <button class="btn bn" onclick="switchTab('generate')">Next: Generate &rarr;</button>
+    <button class="btn bo sm" onclick="switchTab('setup')">&#8592; Back to Setup</button>
+  </div>
+</div>
+
+<!-- GENERATOR -->
+<div class="pane" id="pane-generate">
+  <div class="card"><div class="card-hd gd">CBE Programme Generator</div><div class="card-body">
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px"><div style="font-weight:700;margin-bottom:4px">Overall Progress</div><div class="pb"><div class="pf" id="oprog" style="width:0%"></div></div><div style="font-size:12px;color:var(--g500);margin-top:6px"><span id="ptxt">0 sections generated</span></div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn bg" id="gen-all-btn" onclick="generateAll()"><span id="gas" style="display:none" class="spin"></span> &#9889; Generate All Sections</button>
+        <button class="btn bt" onclick="generateAllCourses()"><span id="gcs" style="display:none" class="spin"></span> &#128218; Generate All Courses</button>
+        <button class="btn bo sm" onclick="clearAll()">&#128465; Clear All</button>
+      </div>
+    </div>
+    <div id="gen-cur" class="al aw" style="display:none;margin-top:12px"><span class="spin"></span>&nbsp;<span id="gen-cur-txt">Generating...</span></div>
+  </div></div>
+  <div class="card"><div class="card-hd">&#128203; Programme Sections (21 KIU Template Sections)</div><div class="card-body"><div class="sg" id="sec-list"></div></div></div>
+  <div class="card" style="border-color:var(--gd)"><div class="card-hd gd">&#128203; Work Readiness Course (WRC) &mdash; NCHE Mandatory</div><div class="card-body" style="font-size:12px">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+      <div style="background:var(--g50);border-radius:4px;padding:8px;text-align:center"><div style="font-size:20px;font-weight:700;color:var(--nv)">6</div><div style="color:var(--g500)">Units</div></div>
+      <div style="background:var(--g50);border-radius:4px;padding:8px;text-align:center"><div style="font-size:20px;font-weight:700;color:var(--nv)">75</div><div style="color:var(--g500)">Contact Hours</div></div>
+      <div style="background:var(--g50);border-radius:4px;padding:8px;text-align:center"><div style="font-size:20px;font-weight:700;color:var(--nv)">5</div><div style="color:var(--g500)">Credit Units (NCHE)</div></div>
+    </div>
+    <div id="wrc-badges" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+    <div style="margin-top:8px;color:var(--g500)">Assessment: Formative 50% &middot; Summative 50% &middot; Pass mark: 50%</div>
+  </div></div>
+  <div class="card"><div class="card-hd tl">&#128218; Detailed Course Content Generation</div><div class="card-body"><div class="sg" id="crs-list"></div></div></div>
+  <div class="tb"><button class="btn bn" onclick="switchTab('preview')">Next: Full Preview &rarr;</button><button class="btn bo sm" onclick="switchTab('curriculum')">&#8592; Back</button></div>
+</div>
+
+<!-- PREVIEW -->
+<div class="pane" id="pane-preview">
+  <div class="tb">
+    <button class="btn bg" onclick="downloadWordDoc()"><span id="ws2" style="display:none" class="spin"></span> &#128196; Download Word (.docx)</button>
+    <button class="btn bt sm" onclick="downloadAllCourseUnits()">&#128218; Course Units (.docx)</button>
+    <button class="btn bn sm" onclick="saveCurrentProgramme()">&#128190; Save Programme</button>
+    <div class="sep"></div>
+    <button class="btn bo sm" onclick="window.print()">&#128424; Print</button>
+    <button class="btn bo sm" onclick="renderPreview()">&#8634; Refresh Preview</button>
+    <div class="sep"></div>
+    <span id="pvstat" style="font-size:12px;color:var(--g500)">Click Refresh Preview</span>
+  </div>
+  <div id="pw"><div style="text-align:center;padding:60px;color:var(--g300)"><div style="font-size:48px;margin-bottom:12px">&#128196;</div><div style="font-size:15px">Click <strong>Refresh Preview</strong> to render the full document</div></div></div>
+</div>
+
+<!-- MY PROGRAMMES -->
+<div class="pane" id="pane-programmes">
+  <div class="tb">
+    <button class="btn bt" onclick="saveCurrentProgramme()">&#128190; Save Current Programme</button>
+    <button class="btn bo sm" onclick="fsScanFiles(true)" id="fs-scan-btn" style="display:none">&#8635; Scan Folder</button>
+    <div class="sep"></div>
+    <button class="btn bg" onclick="downloadWordDoc()"><span id="ws1" style="display:none" class="spin"></span> &#128196; Word (.docx)</button>
+    <button class="btn bn sm" onclick="downloadAllCourseUnits()"><span id="us1" style="display:none" class="spin"></span> &#128218; Course Units</button>
+    <div class="sep"></div>
+    <button class="btn bo sm" onclick="exportAllProgrammes()">&#8681; Export JSON</button>
+    <button class="btn bo sm" onclick="document.getElementById('imp-file').click()">&#8679; Import JSON</button>
+    <input type="file" id="imp-file" style="display:none" accept=".json" onchange="importProgrammes(this)">
+  </div>
+  <div class="al ai">&#128161; Programmes are saved locally. Use <strong>Export JSON</strong> to back up.</div>
+  <!-- FOLDER STATUS BAR -->
+  <div id="fs-bar" style="border:2px solid var(--g200);border-radius:8px;padding:12px 16px;margin-bottom:14px;background:#fff;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <div id="fs-icon" style="font-size:24px">&#128193;</div>
+    <div style="flex:1;min-width:180px">
+      <div id="fs-label" style="font-weight:700;font-size:13px;color:var(--nv)">Local Folder: Not Connected</div>
+      <div id="fs-sub" style="font-size:11px;color:var(--g500);margin-top:2px">Connect a folder so programmes are saved as JSON files on your computer and auto-loaded on every visit.</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap" id="fs-btns">
+      <button class="btn bt sm" onclick="fsConnect()" id="fs-connect-btn">&#128193; Connect Folder</button>
+    </div>
+    <div id="fs-indicator" style="display:none;width:10px;height:10px;border-radius:50%;flex-shrink:0"></div>
+  </div>
+  <!-- FOLDER FILE LIST -->
+  <div id="fs-files" style="display:none;margin-bottom:14px"></div>
+  <div class="card"><div class="card-hd">&#128193; Saved Programmes</div><div class="card-body"><div id="prog-list"></div></div></div>
+  <div class="card"><div class="card-hd gd">&#128229; Download Options</div><div class="card-body">
+    <div class="r3">
+      <div style="border:1.5px solid var(--g200);border-radius:6px;padding:14px;text-align:center"><div style="font-size:28px;margin-bottom:6px">&#128196;</div><div style="font-weight:700;color:var(--nv);margin-bottom:4px">Full Programme Document</div><div style="font-size:11px;color:var(--g500);margin-bottom:10px">All 22 sections + curriculum matrix + course content. NCHE-ready.</div><button class="btn bg sm" onclick="downloadWordDoc()" style="width:100%">Download .docx</button></div>
+      <div style="border:1.5px solid var(--g200);border-radius:6px;padding:14px;text-align:center"><div style="font-size:28px;margin-bottom:6px">&#128218;</div><div style="font-weight:700;color:var(--nv);margin-bottom:4px">All Course Units</div><div style="font-size:11px;color:var(--g500);margin-bottom:10px">Every course unit with full topic-level alignment, ILOs, content &amp; reading lists.</div><button class="btn bt sm" onclick="downloadAllCourseUnits()" style="width:100%">Download .docx</button></div>
+      <div style="border:1.5px solid var(--g200);border-radius:6px;padding:14px;text-align:center"><div style="font-size:28px;margin-bottom:6px">&#128203;</div><div style="font-weight:700;color:var(--nv);margin-bottom:4px">UCC Courses Only</div><div style="font-size:11px;color:var(--g500);margin-bottom:10px">All University Common Courses with locked content.</div><button class="btn bn sm" onclick="downloadUCCCourses()" style="width:100%">Download .docx</button></div>
+    </div>
+  </div></div>
+</div>
+
+
+</div><!-- /main -->
+<div id="toaster"></div>
+<div id="hitl">&#9888; HUMAN-IN-THE-LOOP REQUIRED: All generated content must be reviewed by qualified academic staff before any official use &mdash; Developer: Dr. Michael Adelani Adewusi, KIU</div>
+
+<script>
+/* CONSENT */
+(function(){
+  var btn=document.getElementById('consent-btn'),ov=document.getElementById('co');
+  if(btn&&ov){btn.addEventListener('click',function(){ov.style.display='none';try{sessionStorage.setItem('kc','1');}catch(e){}});}
+  try{if(sessionStorage.getItem('kc')==='1'&&ov)ov.style.display='none';}catch(e){}
+})();
+
+/* CONFIG */
+var API='https://full-cbc-kiu-curriculum.onrender.com';
+
+/* UTILS */
+function xe(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function xes(s){return xe(sm(s));}
+function esc(s){return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function sm(s){
+  var t=String(s||''),o='',i=0;
+  while(i<t.length){
+    if(t[i]==='*'&&t[i+1]==='*'){var e=t.indexOf('**',i+2);if(e>-1){o+=t.slice(i+2,e);i=e+2;}else i+=2;}
+    else if(t[i]==='*'){var e2=t.indexOf('*',i+1);if(e2>-1){o+=t.slice(i+1,e2);i=e2+1;}else i++;}
+    else if(t[i]==='#'&&(i===0||t[i-1]==='\n')){while(i<t.length&&t[i]==='#')i++;if(t[i]===' ')i++;}
+    else if(t[i]==='`'||t[i]==='\r')i++;
+    else if(t[i]==='\n'){o+=' ';i++;}
+    else{o+=t[i];i++;}
+  }
+  return o.replace(/\s+/g,' ').trim();
+}
+function ml(s){
+  var r='',i=0,t=String(s||'');
+  while(i<t.length){
+    if(t[i]==='*'&&t[i+1]==='*'){var e=t.indexOf('**',i+2);if(e>-1){r+='<strong>'+t.slice(i+2,e)+'</strong>';i=e+2;}else{r+=t[i];i++;}}
+    else if(t[i]==='*'){var e2=t.indexOf('*',i+1);if(e2>-1){r+='<em>'+t.slice(i+1,e2)+'</em>';i=e2+1;}else{r+=t[i];i++;}}
+    else{r+=t[i];i++;}
+  }
+  return r;
+}
+function toast(msg,type){type=type||'i';var el=document.createElement('div');el.className='tst '+(type==='s'?'s':type==='e'?'e':'');el.textContent=msg;document.getElementById('toaster').appendChild(el);setTimeout(function(){el.remove();},4500);}
+
+/* UNIVERSAL REGISTRY */
+var UCC={
+  ICF:{prefix:'UCC',name:'Introduction to Computer Fundamentals',type:'lab',DH:45,SH:35,AH:10,OH:10,year:1,sem:'1'},
+  ELS:{prefix:'UCC',name:'English Language Skills',type:'lec',DH:45,SH:35,AH:10,OH:10,year:1,sem:'1'},
+  CS: {prefix:'UCC',name:'Communication Skills',type:'lec',DH:45,SH:35,AH:10,OH:10,year:1,sem:'2'},
+  RM: {prefix:'UCC',name:'Research Methods',type:'lab',DH:45,SH:35,AH:10,OH:10,year:2,sem:'1'},
+  CE: {prefix:'UCC',name:'Community Engagement',type:'prac',DH:20,SH:30,AH:10,OH:40,year:2,sem:'1'},
+  IN1:{prefix:'UCC',name:'Internship I',type:'ind',DH:0,SH:30,AH:10,OH:160,year:2,sem:'2'},
+  WRC:{prefix:'WRC',name:'Work Readiness Course',type:'lec',DH:45,SH:20,AH:5,OH:5,year:3,sem:'1',wrc:true,
+    units:[{code:'WRC-01',name:'Personal Development',h:12.5},{code:'WRC-02',name:'Interpersonal Skills',h:12.5},{code:'WRC-03',name:'Professionalism',h:12.5},{code:'WRC-04',name:'Digital Ethos',h:12.5},{code:'WRC-05',name:'Entrepreneurship Mindset',h:12.5},{code:'WRC-06',name:'Basic Employment and Labour Laws',h:12.5}]},
+  IN2:{prefix:'UCC',name:'Internship II',type:'ind',DH:0,SH:30,AH:10,OH:160,year:3,sem:'1'},
+  RR: {prefix:'UCC',name:'Research Report',type:'proj',DH:10,SH:60,AH:20,OH:10,year:3,sem:'2'},
+  IN3:{prefix:'UCC',name:'Internship III',type:'ind',DH:0,SH:30,AH:10,OH:160,year:3,sem:'2'},
+  IN4:{prefix:'UCC',name:'Internship IV',type:'ind',DH:0,SH:30,AH:10,OH:160,year:4,sem:'1'},
+  IN5:{prefix:'UCC',name:'Internship V',type:'ind',DH:0,SH:30,AH:10,OH:160,year:4,sem:'2'}
+};
+var UCC_ORD=['ICF','ELS','CS','RM','CE','IN1','WRC','IN2','RR','IN3','IN4','IN5'];
+
+function getUK(c){
+  var n=(c.name||'').toLowerCase().trim(),p=(c.prefix||'').toUpperCase();
+  if(p==='WRC'||n.includes('work readiness'))return'WRC';
+  if(p!=='UCC'&&p!=='IDT')return null;
+  if(n.includes('computer fundamental'))return'ICF';
+  if(n.includes('english language skill'))return'ELS';
+  if(n==='communication skills')return'CS';
+  if(n==='research methods')return'RM';
+  if(n.includes('community engagement'))return'CE';
+  if(n.includes('research report'))return'RR';
+  if(n.includes('internship i')&&!n.includes('ii')&&!n.includes('iii'))return'IN1';
+  if(n.includes('internship ii')&&!n.includes('iii'))return'IN2';
+  if(n.includes('internship iii'))return'IN3';
+  if(n.includes('internship iv'))return'IN4';
+  if(n.includes('internship v')&&!n.includes('iv'))return'IN5';
+  if(n.includes('internship')||n.includes('industrial training')||n.includes('attachment')){
+    var yr=c.year||1,sm=String(c.sem||'1');
+    if(yr===2&&sm==='2')return'IN1';if(yr===3&&sm==='1')return'IN2';
+    if(yr===3&&sm==='2')return'IN3';if(yr===4&&sm==='1')return'IN4';if(yr===4&&sm==='2')return'IN5';
+  }
+  return null;
+}
+function isUCC(c){return!!getUK(c);}
+var TIERS={1:{l:'T1 UCC',c:'#117A7A'},2:{l:'T2 SCC',c:'#C85A00'},3:{l:'T3 DSC',c:'#6B21A8'},4:{l:'T4 PROG',c:'#374151'}};
+function getTier(c){if(isUCC(c))return 1;return c.tier||4;}
+function tierBadge(t){var td=TIERS[t]||TIERS[4];return'<span style="background:'+td.c+';color:#fff;padding:1px 6px;border-radius:10px;font-size:9px;font-weight:700">'+td.l+'</span>';}
+
+/* COURSE DATA */
+var courses=[
+  {id:1,year:1,sem:'1',prefix:'UCC',name:'Introduction to Computer Fundamentals',type:'lab',DH:45,SH:35,AH:10,OH:10,elective:false},
+  {id:2,year:1,sem:'1',prefix:'UCC',name:'English Language Skills',type:'lec',DH:45,SH:35,AH:10,OH:10,elective:false},
+  {id:3,year:1,sem:'1',prefix:'CHT',name:'Introduction to Modern Chemistry Technology',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:4,year:1,sem:'1',prefix:'CHT',name:'Physical Chemistry I',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:5,year:1,sem:'1',prefix:'CHT',name:'Organic Chemistry I',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:6,year:1,sem:'1',prefix:'CHT',name:'Mathematics for Chemists',type:'lec',DH:45,SH:35,AH:10,OH:10,elective:false},
+  {id:7,year:1,sem:'2',prefix:'UCC',name:'Communication Skills',type:'lec',DH:45,SH:35,AH:10,OH:10,elective:false},
+  {id:8,year:1,sem:'2',prefix:'CHT',name:'Inorganic Chemistry I',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:9,year:1,sem:'2',prefix:'CHT',name:'Organic Chemistry II',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:10,year:1,sem:'2',prefix:'CHT',name:'Analytical and Environmental Chemistry',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:11,year:1,sem:'2',prefix:'CHT',name:'Laboratory Methods and Safety',type:'prac',DH:20,SH:20,AH:10,OH:50,elective:false},
+  {id:12,year:1,sem:'2',prefix:'CHT',name:'Engineering Drawing for Chemists',type:'lab',DH:35,SH:30,AH:15,OH:20,elective:false},
+  {id:13,year:2,sem:'1',prefix:'UCC',name:'Research Methods',type:'lab',DH:45,SH:35,AH:10,OH:10,elective:false},
+  {id:14,year:2,sem:'1',prefix:'UCC',name:'Community Engagement',type:'prac',DH:20,SH:30,AH:10,OH:40,elective:false},
+  {id:15,year:2,sem:'1',prefix:'CHT',name:'Chemical Thermodynamics',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:16,year:2,sem:'1',prefix:'CHT',name:'Polyfunctional Aliphatics and Alicyclics',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:17,year:2,sem:'1',prefix:'CHT',name:'Aromatic Chemistry',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:18,year:2,sem:'1',prefix:'CHT',name:'Analysis of Scientific Data and Information',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:19,year:2,sem:'2',prefix:'UCC',name:'Internship I',type:'ind',DH:0,SH:30,AH:10,OH:160,elective:false},
+  {id:20,year:2,sem:'2',prefix:'CHT',name:'Food Chemistry and Analysis',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:21,year:2,sem:'2',prefix:'CHT',name:'Chemical Bonding, Molecular Structure and Spectroscopy',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:22,year:2,sem:'2',prefix:'CHT',name:'Stereochemistry and Heterocyclic Chemistry',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:23,year:2,sem:'2',prefix:'CHT',name:'Surface Chemistry and Colloids',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:24,year:2,sem:'2',prefix:'CHT',name:'Transition Metals and Coordination Chemistry',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:true},
+  {id:25,year:2,sem:'2',prefix:'CHT',name:'Environmental Chemistry',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:true},
+  {id:26,year:3,sem:'1',prefix:'WRC',name:'Work Readiness Course',type:'lec',DH:45,SH:20,AH:5,OH:5,elective:false},
+  {id:27,year:3,sem:'1',prefix:'CHT',name:'Natural Products Chemistry',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:28,year:3,sem:'1',prefix:'CHT',name:'Electrochemistry',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:29,year:3,sem:'1',prefix:'CHT',name:'Chemical Reaction Kinetics',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:30,year:3,sem:'1',prefix:'CHT',name:'Organic Synthesis',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:31,year:3,sem:'1',prefix:'CHT',name:'Chemical Laboratory Techniques',type:'prac',DH:0,SH:25,AH:10,OH:65,elective:false},
+  {id:32,year:3,sem:'1',prefix:'CHT',name:'Physical Organic Chemistry',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:true},
+  {id:33,year:3,sem:'2',prefix:'UCC',name:'Research Report',type:'proj',DH:10,SH:60,AH:20,OH:10,elective:false},
+  {id:34,year:3,sem:'2',prefix:'UCC',name:'Internship II',type:'ind',DH:0,SH:30,AH:10,OH:160,elective:false},
+  {id:35,year:3,sem:'2',prefix:'CHT',name:'Organic Spectroscopy and Structure Determination',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:36,year:3,sem:'2',prefix:'CHT',name:'Quantum Chemistry and Statistical Thermodynamics',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:37,year:3,sem:'2',prefix:'CHT',name:'Industrial Chemistry Processes',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false},
+  {id:38,year:3,sem:'2',prefix:'CHT',name:'Polymer Chemistry and Technology',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false}
+];
+var nextId=39;
+
+var SECTIONS=[
+  {key:'intro',num:'1.',title:'Introduction (Background, Vision, Mission)'},
+  {key:'governance',num:'2.',title:'Governance and Management'},
+  {key:'nameCode',num:'3.',title:'Programme Name, Code and Duration'},
+  {key:'description',num:'4.',title:'Programme Description'},
+  {key:'development',num:'5.',title:'Programme Development/Review Process'},
+  {key:'rationale',num:'6.',title:'Programme Rationale/Justification'},
+  {key:'competences',num:'7.',title:'Programme Competences'},
+  {key:'outcomes',num:'8.',title:'Programme Learning Outcomes'},
+  {key:'targetGroup',num:'9.',title:'Target Group'},
+  {key:'admission',num:'10.',title:'Entry/Admission Requirements'},
+  {key:'humanRes',num:'11.',title:'Human Resources (Academic Staff)'},
+  {key:'infrastructure',num:'12.',title:'Physical Infrastructure and Learning Resources'},
+  {key:'delivery',num:'13.',title:'Modes/Strategies of Delivery'},
+  {key:'assessment',num:'14.',title:'Modes/Strategies of Assessment'},
+  {key:'progression',num:'15.',title:'Progression'},
+  {key:'gradLoad',num:'16.',title:'Minimum Graduation Load'},
+  {key:'research',num:'18.',title:'Research and Innovation'},
+  {key:'community',num:'19.',title:'Community Engagement'},
+  {key:'policies',num:'20.',title:'Policies'},
+  {key:'financial',num:'21.',title:'Financial Resources and Sustainability'},
+  {key:'welfare',num:'22.',title:'Students Welfare'}
+];
+var SC={},CD={};
+SECTIONS.forEach(function(s){SC[s.key]={text:'',done:false};});
+var genAll=false;
+</script>
+
+
+<script>
+/* REGISTRY SYNC — strict level isolation + cross-level alerts */
+
+/* KIU code format: PREFIX LYSerial  e.g. ITE 72102 → L=7, Y=2, S=1, serial=02
+   getCodeLevel extracts the UHEQF level digit from the numeric part of the code */
+function getCodeLevel(code){
+  if(!code)return null;
+  var m=(code||'').replace(/\s+/g,' ').trim().match(/\s(\d)/);
+  return m?parseInt(m[1]):null;
+}
+function getCodeYear(code){
+  var m=(code||'').replace(/\s+/g,' ').trim().match(/\s\d(\d)/);
+  return m?parseInt(m[1]):null;
+}
+function getCodeSem(code){
+  var m=(code||'').replace(/\s+/g,' ').trim().match(/\s\d\d(\d)/);
+  return m?String(m[1]):null;
+}
+
+function nameSim(a,b){
+  a=(a||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();
+  b=(b||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();
+  if(!a||!b)return 0;if(a===b)return 1;
+  function bg(s){var r=new Set();for(var i=0;i<s.length-1;i++)r.add(s[i]+s[i+1]);return r;}
+  var ba=bg(a),bb=bg(b),n=0;ba.forEach(function(g){if(bb.has(g))n++;});
+  return(2*n)/(ba.size+bb.size);
+}
+function stripPfx(s){return(s||'').replace(/^(introduction to |fundamentals of |basic |applied |advanced |principles of )/i,'').trim();}
+function normKey(name){return(name||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();}
+function isUCCByName(name){
+  var n=(name||'').toLowerCase();
+  return n.includes('computer fundamental')||n.includes('english language skill')
+    ||n==='communication skills'||n==='research methods'||n.includes('community engagement')
+    ||n.includes('internship')||n.includes('research report')||n.includes('work readiness')
+    ||n.includes('industrial training')||n.includes('attachment');
+}
+
+var _regCache=null;
+var _syncChoices={};
+
+/* Build local registry from saved programmes AT EXACT SAME LEVEL */
+function buildLocalReg(exactLevel){
+  var seen=new Map();
+  try{
+    getProgs().forEach(function(prog){
+      var pm=prog.meta||prog;
+      if(parseInt(pm.level||7)!==exactLevel)return;  // strict: must match exactly
+      (prog.courses||[]).forEach(function(c){
+        if(isUCCByName(c.name))return;
+        var k=normKey(c.name);if(!k||k.length<4)return;
+        var codeLevel=getCodeLevel(c.code);
+        if(codeLevel&&codeLevel!==exactLevel)return;  // skip cross-level codes
+        if(!seen.has(k)){
+          seen.set(k,{
+            code:c.code||'',name:c.name||'',prefix:c.prefix||'',
+            DH:c.DH||0,SH:c.SH||0,AH:c.AH||0,OH:c.OH||0,
+            year:c.year||1,sem:c.sem||'1',tier:c.tier||4,
+            programme:pm.name||'',abbr:pm.abbr||'',_src:'local',
+            _allProg:[pm.abbr||pm.name||''],_level:exactLevel
+          });
+        }else{
+          var ex=seen.get(k),tag=pm.abbr||pm.name||'';
+          if((ex._allProg||[]).indexOf(tag)<0)(ex._allProg=ex._allProg||[]).push(tag);
+        }
+      });
+    });
+  }catch(e){}
+  var arr=[];seen.forEach(function(v){arr.push(v);});return arr;
+}
+
+async function buildRegistry(exactLevel){
+  var localEntries=buildLocalReg(exactLevel);
+  var serverEntries=[];
+  try{
+    var r=await fetch(API+'/api/registry?level='+exactLevel,{signal:AbortSignal.timeout(4000)});
+    if(r.ok){var d=await r.json();
+      // Filter server results: only keep entries whose code level matches exactLevel
+      (d.courses||d||[]).forEach(function(e){
+        if(!e.name)return;
+        var cl=getCodeLevel(e.code);
+        if(cl&&cl!==exactLevel)return;  // reject wrong-level entries from server too
+        serverEntries.push(Object.assign({_src:'server',_level:exactLevel},e));
+      });
+    }
+  }catch(e){}
+  // Build O(1) map — server wins over local
+  var map=new Map();
+  localEntries.forEach(function(e){var k=normKey(e.name);if(k&&!map.has(k))map.set(k,e);});
+  serverEntries.forEach(function(e){var k=normKey(e.name);if(k)map.set(k,e);});
+  _regCache={level:exactLevel,server:serverEntries,local:localEntries,map:map};
+  return _regCache;
+}
+
+function bestMatch(course){
+  if(!_regCache||!_regCache.map)return null;
+  var map=_regCache.map;
+  var k1=normKey(course.name),k2=normKey(stripPfx(course.name));
+  if(k1&&map.has(k1))return{entry:map.get(k1),score:1.0};
+  if(k2&&map.has(k2))return{entry:map.get(k2),score:0.98};
+  var best=null,bScore=0;
+  map.forEach(function(entry){
+    var s=Math.max(nameSim(course.name,entry.name),nameSim(stripPfx(course.name),stripPfx(entry.name)));
+    if(s>bScore){bScore=s;best=entry;}
+  });
+  return bScore>=0.72?{entry:best,score:bScore}:null;
+}
+
+/* Detect cross-level code usage — e.g. Level-7 code in a Level-5 programme */
+function crossLevelAlert(courseCode,progLevel){
+  var cl=getCodeLevel(courseCode);
+  if(!cl||cl===progLevel)return null;
+  return{courseLevel:cl,progLevel:progLevel,
+    msg:'Level-'+cl+' code in a Level-'+progLevel+' programme'};
+}
+function codeConflict(course,re){
+  var rc=(re.code||'').toUpperCase().replace(/\s/g,''),cc=(course.code||'').toUpperCase().replace(/\s/g,'');
+  return rc&&cc&&rc!==cc;
+}
+function semDiff(course,re){
+  if(!re.year&&!re.sem)return false;
+  return(parseInt(re.year)||1)!==parseInt(course.year)||String(re.sem||'1')!==String(course.sem||'1');
+}
+
+async function syncWithRegistry(autoMode){
+  var sp=document.getElementById('sync-sp'),rr=document.getElementById('reg-results');
+  if(sp)sp.style.display='inline-block';
+  if(rr){rr.style.display='block';
+    rr.innerHTML='<div class="card"><div class="card-hd" style="background:#065f46">Scanning registry...</div>'
+      +'<div class="card-body" style="padding:12px 18px;display:flex;align-items:center;gap:10px">'
+      +'<span class="spin" style="display:inline-block;width:16px;height:16px;border:2px solid #065f46;border-top-color:transparent;border-radius:50%;animation:_sp .7s linear infinite"></span>'
+      +'<span id="sync-msg" style="font-size:13px">Loading...</span></div></div>';}
+  var p=getProg(),lvl=parseInt(p.level||7);
+  var msg=document.getElementById('sync-msg');
+  if(msg)msg.textContent='Comparing Level-'+lvl+' courses only (strict)...';
+  await buildRegistry(lvl);
+  if(sp)sp.style.display='none';
+  _syncChoices={};
+  renderSyncPanel(lvl);
+}
+
+function renderSyncPanel(exactLevel){
+  var rr=document.getElementById('reg-results');if(!rr)return;
+  var reg=_regCache||{map:new Map(),server:[],local:[]};
+  var groups=groupBySem(),html='',matchCount=0,conflictCount=0,keepCount=0,semMoveCount=0,crossLevelCount=0;
+
+  // ── Cross-level alert banner: scan all courses for wrong-level codes ──
+  var crossLevelCourses=[];
+  courses.forEach(function(c){
+    var alert=crossLevelAlert(c.code,exactLevel);
+    if(alert)crossLevelCourses.push({course:c,alert:alert});
+  });
+
+  var crossBanner='';
+  if(crossLevelCourses.length>0){
+    crossLevelCount=crossLevelCourses.length;
+    crossBanner='<div style="background:#fff0f0;border:2px solid var(--rd);border-radius:6px;padding:10px 14px;margin-bottom:14px">'
+      +'<div style="font-weight:700;color:var(--rd);font-size:13px;margin-bottom:6px">&#9888; LEVEL MISMATCH DETECTED — '+crossLevelCount+' course(s) have wrong-level codes</div>'
+      +'<div style="font-size:12px;color:var(--g700);margin-bottom:8px">This is a <strong>Level-'+exactLevel+' programme</strong>, but the following courses carry Level-'+crossLevelCourses[0].alert.courseLevel+' codes. '
+      +'This may cause NCHE submission rejection. Tick these rows in the table below and click <strong>Apply Selected</strong> to fix.</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:5px">'
+      +crossLevelCourses.map(function(x){
+        return'<span style="background:var(--rdl);color:var(--rd);padding:2px 8px;border-radius:4px;font-size:11px;font-family:var(--fm)">'
+          +esc(x.course.code||'?')+' '+esc(x.course.name)+'</span>';
+      }).join('')
+      +'</div></div>';
+  }
+
+  groups.forEach(function(g){
+    html+='<div style="margin-bottom:18px">';
+    html+='<div style="background:var(--nv2);color:#fff;padding:7px 14px;border-radius:6px 6px 0 0;font-weight:700;font-size:13px">'+getSL(g.year,g.sem)+'</div>';
+    html+='<table style="width:100%;border-collapse:collapse;font-size:12px">';
+    html+='<thead><tr style="background:var(--g100)">'
+      +'<th style="padding:5px 7px;border:1px solid var(--g200);width:30px">Use</th>'
+      +'<th style="padding:5px 7px;border:1px solid var(--g200)">Current Course</th>'
+      +'<th style="padding:5px 7px;border:1px solid var(--g200);text-align:center;width:44px">NH</th>'
+      +'<th style="padding:5px 4px;border:1px solid var(--g200);width:18px"></th>'
+      +'<th style="padding:5px 7px;border:1px solid var(--g200)">Level-'+exactLevel+' Registry Match</th>'
+      +'<th style="padding:5px 7px;border:1px solid var(--g200);text-align:center;width:44px">NH</th>'
+      +'<th style="padding:5px 7px;border:1px solid var(--g200);text-align:center;width:76px">Placement</th>'
+      +'<th style="padding:5px 7px;border:1px solid var(--g200);text-align:center;width:60px">Source</th>'
+      +'<th style="padding:5px 7px;border:1px solid var(--g200);text-align:center;width:44px">Match</th>'
+      +'</tr></thead><tbody>';
+
+    g.courses.forEach(function(course){
+      var uk=getUK(course),curNH=getNH(course);
+      if(uk){
+        html+='<tr style="background:#f0fafa">'
+          +'<td style="padding:4px 7px;border:1px solid var(--g200);text-align:center;font-size:13px">&#128274;</td>'
+          +'<td style="padding:4px 7px;border:1px solid var(--g200);color:var(--tl);font-weight:600">'
+          +'<span style="font-family:var(--fm);font-size:10px;background:var(--nv);color:var(--gd2);padding:1px 5px;border-radius:3px;margin-right:4px">'+(course.code||'')+'</span>'+esc(course.name)+'</td>'
+          +'<td style="padding:4px 7px;border:1px solid var(--g200);text-align:center">'+curNH+'</td>'
+          +'<td colspan="6" style="padding:4px 7px;border:1px solid var(--g200);color:var(--g500);font-style:italic;font-size:11px">UCC / WRC — locked</td></tr>';
+        return;
+      }
+
+      // Cross-level check for this specific course
+      var clAlert=crossLevelAlert(course.code,exactLevel);
+      var m=bestMatch(course);
+
+      if(m){
+        matchCount++;
+        var re=m.entry,pct=Math.round(m.score*100);
+        var regNH=(re.DH||0)+(re.SH||0)+(re.AH||0)+(re.OH||0);
+        var codeCon=codeConflict(course,re);
+        var nhDiff=regNH>0&&regNH!==curNH;
+        var nameDiff=re.name&&re.name!==course.name;
+        var prefDiff=re.prefix&&re.prefix!==course.prefix;
+        var hasSemDiff=semDiff(course,re);
+        var anyDiff=codeCon||nhDiff||nameDiff||prefDiff||hasSemDiff||!!clAlert;
+        if(anyDiff)conflictCount++;
+        if(hasSemDiff)semMoveCount++;
+        if(_syncChoices[course.id]===undefined){
+          _syncChoices[course.id]=anyDiff?{entry:re,moveTo:hasSemDiff?{year:re.year,sem:re.sem}:null}:null;
+        }
+        var chkData=_syncChoices[course.id];
+        var chk=chkData?'checked':'';
+        var moveChecked=(chkData&&chkData.moveTo)?'checked':'';
+        var rowBg=clAlert?'#ffe4e4':codeCon?'#fff0f0':hasSemDiff?'#f5f0ff':anyDiff?'#fffbf0':'#f0fff8';
+        var leftBorder=clAlert?';border-left:4px solid #dc2626':codeCon?';border-left:3px solid var(--rd)':hasSemDiff?';border-left:3px solid #9333ea':anyDiff?';border-left:3px solid var(--gd)':'';
+        var placementHtml=hasSemDiff
+          ?'<span style="background:#f5f0ff;color:#6B21A8;padding:1px 5px;border-radius:10px;font-size:10px;font-weight:700">Yr'+course.year+'/S'+course.sem+'&#8594;Yr'+(re.year||'?')+'/S'+(re.sem||'?')+'</span>'
+            +'<div style="margin-top:3px;font-size:10px"><label style="display:flex;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:#6B21A8;font-weight:700">'
+            +'<input type="checkbox" id="mv_'+course.id+'" '+moveChecked
+            +' onchange="toggleMove('+course.id+',this.checked,'+(re.year||1)+',\''+String(re.sem||'1')+'\')"> Move &#8594; Yr'+(re.year||'?')+'/S'+(re.sem||'?')+'</label></div>'
+          :'<span style="color:var(--g500);font-size:11px">Yr'+course.year+'/S'+course.sem+'</span>';
+        var srcLbl=re._src==='server'
+          ?'<span style="background:#d4f0e4;color:var(--gn);padding:1px 5px;border-radius:10px;font-size:10px;font-weight:700">&#127963; Server</span>'
+          :'<span style="background:#e8f4ff;color:var(--nv2);padding:1px 5px;border-radius:10px;font-size:10px;font-weight:700" title="'+esc(re.programme||'')+'">&#128193; '+esc((re.abbr||re.programme||'Local').slice(0,10))+'</span>';
+        var entryJson=JSON.stringify(re).replace(/\\/g,'\\\\').replace(/'/g,'&#39;');
+
+        html+='<tr style="background:'+rowBg+'">'
+          +'<td style="padding:4px 7px;border:1px solid var(--g200);text-align:center">'
+          +'<input type="checkbox" id="chk_'+course.id+'" data-cid="'+course.id+'" '+chk
+          +' onchange="toggleChoice('+course.id+',this.checked,'+entryJson+')"></td>'
+          +'<td style="padding:4px 7px;border:1px solid var(--g200)'+leftBorder+'">'
+          +'<span style="font-family:var(--fm);font-size:10px;background:'+(clAlert||codeCon?'var(--rd)':'var(--nv)')+';color:#fff;padding:1px 5px;border-radius:3px;margin-right:3px">'+(course.code||'?')+'</span>'
+          +(clAlert?'<span style="background:#fee2e2;color:#dc2626;font-size:9px;font-weight:700;padding:0 5px;border-radius:3px;margin-right:3px">L'+clAlert.courseLevel+' IN L'+clAlert.progLevel+' &#9888;</span>':'')
+          +(codeCon&&!clAlert?'<span style="background:var(--rdl);color:var(--rd);font-size:9px;font-weight:700;padding:0 4px;border-radius:3px;margin-right:3px">CODE&#9888;</span>':'')
+          +esc(course.name)+'</td>'
+          +'<td style="padding:4px 7px;border:1px solid var(--g200);text-align:center;font-weight:700'+(nhDiff?';color:var(--rd)':'')+'">'+curNH+'</td>'
+          +'<td style="padding:4px 7px;border:1px solid var(--g200);text-align:center;color:var(--gd)">&#8680;</td>'
+          +'<td style="padding:4px 7px;border:1px solid var(--g200);font-weight:600;color:#065f46">'
+          +'<span style="font-family:var(--fm);font-size:10px;background:#065f46;color:#fff;padding:1px 5px;border-radius:3px;margin-right:3px">'+(re.code||re.prefix||'?')+'</span>'
+          +esc(re.name||'')
+          +(re._allProg&&re._allProg.length>1?'<span style="font-size:10px;color:var(--g500);margin-left:3px">also: '+re._allProg.slice(1,3).map(function(v){return esc(v);}).join(', ')+'</span>':'')
+          +'</td>'
+          +'<td style="padding:4px 7px;border:1px solid var(--g200);text-align:center;font-weight:700'+(nhDiff?';color:#065f46':'')+'">'+regNH+'</td>'
+          +'<td style="padding:4px 7px;border:1px solid var(--g200);text-align:center">'+placementHtml+'</td>'
+          +'<td style="padding:4px 7px;border:1px solid var(--g200);text-align:center">'+srcLbl+'</td>'
+          +'<td style="padding:4px 7px;border:1px solid var(--g200);text-align:center">'
+          +'<span style="background:'+(pct>=90?'#d4f0e4':pct>=80?'#fff8e6':'#ffe8e8')+';color:'+(pct>=90?'#1a7a4a':pct>=80?'#8a6300':'#c00')+';padding:1px 6px;border-radius:10px;font-weight:700;font-size:11px">'+pct+'%</span>'
+          +'</td></tr>';
+      }else{
+        // No same-level match — but check if a cross-level match exists and warn
+        var anyLevelMatch=null;
+        if(clAlert){
+          // Already has a wrong-level code — it IS the cross-level issue
+          conflictCount++;crossLevelCount++;
+          html+='<tr style="background:#ffe4e4">'
+            +'<td style="padding:4px 7px;border:1px solid var(--g200);text-align:center">&#9888;</td>'
+            +'<td style="padding:4px 7px;border:1px solid var(--g200);border-left:4px solid #dc2626">'
+            +'<span style="font-family:var(--fm);font-size:10px;background:#dc2626;color:#fff;padding:1px 5px;border-radius:3px;margin-right:3px">'+(course.code||'?')+'</span>'
+            +'<span style="background:#fee2e2;color:#dc2626;font-size:9px;font-weight:700;padding:0 5px;border-radius:3px;margin-right:3px">L'+clAlert.courseLevel+' IN L'+clAlert.progLevel+' &#9888;</span>'
+            +esc(course.name)+'</td>'
+            +'<td style="padding:4px 7px;border:1px solid var(--g200);text-align:center">'+curNH+'</td>'
+            +'<td style="padding:4px 7px;border:1px solid var(--g200);text-align:center;color:var(--rd)">!</td>'
+            +'<td style="padding:4px 7px;border:1px solid var(--g200);color:#dc2626;font-weight:700" colspan="5">'
+            +'Level-'+clAlert.courseLevel+' code used in a Level-'+clAlert.progLevel+' programme. '
+            +'No same-level registry entry found. Please rename the prefix and re-code this course to Level '+clAlert.progLevel+'.'
+            +'</td></tr>';
+        }else{
+          keepCount++;
+          html+='<tr style="background:#fafafa">'
+            +'<td style="padding:4px 7px;border:1px solid var(--g200);text-align:center;color:var(--g300)">&#9711;</td>'
+            +'<td style="padding:4px 7px;border:1px solid var(--g200)">'
+            +'<span style="font-family:var(--fm);font-size:10px;background:var(--nv);color:var(--gd2);padding:1px 5px;border-radius:3px;margin-right:3px">'+(course.code||'?')+'</span>'+esc(course.name)+'</td>'
+            +'<td style="padding:4px 7px;border:1px solid var(--g200);text-align:center">'+curNH+'</td>'
+            +'<td style="padding:4px 7px;border:1px solid var(--g200);text-align:center;color:var(--g300)">-</td>'
+            +'<td style="padding:4px 7px;border:1px solid var(--g200);color:var(--g500);font-style:italic" colspan="5">No Level-'+exactLevel+' match — new course, keep as-is</td></tr>';
+        }
+      }
+    });
+    html+='</tbody></table></div>';
+  });
+
+  var src=reg.server.length
+    ?reg.server.length+' server + '+reg.local.length+' local (Level-'+exactLevel+' only)'
+    :reg.local.length+' local Level-'+exactLevel+' programmes'+(reg.server.length===0?' (server offline)':'');
+
+  var legend='<div style="display:flex;gap:10px;flex-wrap:wrap;font-size:11px;margin-bottom:10px;align-items:center">'
+    +'<span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:14px;background:#ffe4e4;border-left:4px solid #dc2626;display:inline-block"></span>Level mismatch (critical)</span>'
+    +'<span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:14px;background:var(--rdl);border-left:3px solid var(--rd);display:inline-block"></span>Code conflict</span>'
+    +'<span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:14px;background:#f5f0ff;border-left:3px solid #9333ea;display:inline-block"></span>Wrong semester</span>'
+    +'<span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:14px;background:#fffbf0;border-left:3px solid var(--gd);display:inline-block"></span>NH/name diff</span>'
+    +'<span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:14px;background:#f0fff8;display:inline-block"></span>Correct</span>'
+    +'</div>';
+
+  var panel='<div class="card" id="sync-panel">'
+    +'<div class="card-hd" style="background:#065f46;display:flex;justify-content:space-between;align-items:center">'
+    +'<span>&#9654; Level-'+exactLevel+' Registry Comparison — Semester by Semester</span>'
+    +'<button class="btn xs" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3)" onclick="closeRegResults()">&#10005; Close</button>'
+    +'</div>'
+    +'<div class="card-body">'
+    +crossBanner
+    +'<div class="al ai" style="margin-bottom:10px;font-size:12px">&#8505; Source: <strong>'+src+'</strong>. '
+    +(semMoveCount?'<strong style="color:#6B21A8">'+semMoveCount+' placement issue(s)</strong>. ':'')
+    +'Tick rows then click <strong>Apply Selected</strong>.</div>'
+    +legend
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">'
+    +'<button class="btn sm" style="background:#065f46;color:#fff" onclick="applySync()">&#10003; Apply Selected</button>'
+    +'<button class="btn bo sm" onclick="selectAllSync(true)">&#9745; Select All</button>'
+    +'<button class="btn bo sm" onclick="selectAllSync(false)">&#9633; Deselect All</button>'
+    +'<span style="margin-left:auto;font-size:11px;color:var(--g500)">'
+    +(crossLevelCount?'<strong style="color:#dc2626">'+crossLevelCount+' level mismatch(es)</strong> | ':'')
+    +conflictCount+' conflicts | '+semMoveCount+' placement | '+matchCount+' matches | '+keepCount+' new'
+    +'</span>'
+    +'</div>'
+    +html
+    +'<div style="display:flex;gap:6px;margin-top:12px">'
+    +'<button class="btn sm" style="background:#065f46;color:#fff" onclick="applySync()">&#10003; Apply Selected</button>'
+    +'<button class="btn bo sm" onclick="closeRegResults()">Cancel</button>'
+    +'</div></div></div>';
+
+  rr.innerHTML=panel;rr.style.display='block';
+  rr.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function toggleChoice(courseId,checked,regEntry){
+  if(checked){
+    var existing=_syncChoices[courseId];
+    _syncChoices[courseId]={entry:regEntry,moveTo:existing&&existing.moveTo?existing.moveTo:null};
+  }else{
+    _syncChoices[courseId]=null;
+    var mv=document.getElementById('mv_'+courseId);if(mv)mv.checked=false;
+  }
+}
+function toggleMove(courseId,checked,year,sem){
+  if(!_syncChoices[courseId]){
+    var chk=document.getElementById('chk_'+courseId);if(chk)chk.checked=true;
+    var c=courses.find(function(x){return x.id===courseId;});
+    if(c){var m=bestMatch(c);if(m)_syncChoices[courseId]={entry:m.entry,moveTo:null};}
+  }
+  if(_syncChoices[courseId])_syncChoices[courseId].moveTo=checked?{year:parseInt(year),sem:String(sem)}:null;
+}
+/* ── Clear all registry data ── */
+function clearRegistryData(){
+  var msg='This will clear:\n\n'
+    +'• All audit conflict data displayed here\n'
+    +'• The local registry cache (re-built from saved programmes)\n'
+    +'• The shared UCC course content library\n'
+    +'• The registry sync comparison state\n\n'
+    +'IMPLICATIONS FOR YOUR PROGRAMMES:\n'
+    +'Your two saved programmes (DIT and DCS) are NOT deleted — they stay safe in local storage and your connected folder.\n'
+    +'However, the Sync & Fix Registry feature will have NO baseline to compare against until you re-run it after re-loading your saved programmes.\n'
+    +'The shared UCC content (Computer Fundamentals, English, Communication, Research Methods) will need to be re-generated or re-pulled once.\n\n'
+    +'Server-side registry data requires a database reset by your system administrator.\n\n'
+    +'Are you sure you want to clear local registry data?';
+  if(!confirm(msg))return;
+  /* Clear runtime state */
+  _regCache=null;
+  _regData=[];
+  if(typeof _localReg!=='undefined')_localReg=[];
+  _syncChoices={};
+  _auditConflicts=[];
+  /* Clear shared UCC content from localStorage */
+  try{localStorage.removeItem('kiu_ucc_content_v1');}catch(e){}
+  /* Clear UI */
+  var rr=document.getElementById('reg-results');if(rr)rr.style.display='none';
+  toast('Registry data cleared. Shared UCC content cleared. Your programmes are safe.','s');
+}
+
+function selectAllSync(on){
+  document.querySelectorAll('[data-cid]').forEach(function(chk){
+    var id=parseInt(chk.dataset.cid);chk.checked=on;
+    if(on){var c=courses.find(function(x){return x.id===id;});if(c){var m=bestMatch(c);if(m){_syncChoices[id]={entry:m.entry,moveTo:null};}}}
+    else _syncChoices[id]=null;
+  });
+}
+async function applySync(){
+  var applied=0,moved=0,contentLoaded=0;
+  courses.forEach(function(course){
+    var choice=_syncChoices[course.id];if(!choice||!choice.entry)return;
+    var reg=choice.entry;
+    if(reg.name)course.name=reg.name;
+    if(reg.prefix)course.prefix=reg.prefix;
+    if(reg.DH>0)course.DH=reg.DH;
+    if(reg.SH>0)course.SH=reg.SH;
+    if(reg.AH>0)course.AH=reg.AH;
+    if(reg.OH>0)course.OH=reg.OH;
+    if(reg.tier)course.tier=reg.tier;
+    /* Lock the canonical registry code — only if no other course in this programme already uses it */
+    if(reg.code&&reg.code.trim()){
+      var codeAlreadyUsed=courses.some(function(x){
+        return x.id!==course.id&&(x.lockedCode===reg.code.trim()||x.code===reg.code.trim());
+      });
+      if(!codeAlreadyUsed){course.lockedCode=reg.code.trim();}
+      else{toast('⚠ Code '+reg.code+' conflict — will auto-assign new code for "'+course.name.slice(0,25)+'"','e');}
+    }
+    if(choice.moveTo){course.year=parseInt(choice.moveTo.year)||course.year;course.sem=String(choice.moveTo.sem||'1');moved++;}
+    applied++;
+  });
+  if(!applied){toast('No courses selected','i');return;}
+  assignCodes();enforceSems();assignCodes();
+  var done=courses.filter(function(c){return _syncChoices[c.id]&&_syncChoices[c.id].entry;});
+  for(var i=0;i<done.length;i++){
+    var c=done[i],reg=_syncChoices[c.id].entry;if(!reg||!reg.code)continue;
+    try{var r=await fetch(API+'/api/course-detail/'+encodeURIComponent(reg.code),{signal:AbortSignal.timeout(6000)});
+      if(r.ok){var d=await r.json();if(d&&d.text&&d.text.length>80){CD[c.code]={text:d.text,done:true};contentLoaded++;}}}
+    catch(e){}
+  }
+  renderCurriculum();renderGenTab();
+  var rr=document.getElementById('reg-results');
+  if(rr)rr.innerHTML='<div class="al as"><strong>&#10004; Done!</strong> '+applied+' corrected.'
+    +(moved?' '+moved+' moved to correct semester.':'')+(contentLoaded?' '+contentLoaded+' content(s) loaded.':'')
+    +'&nbsp;<button class="btn bt xs" onclick="closeRegResults()">Close</button></div>';
+  toast(applied+' corrected'+(moved?', '+moved+' moved':'')+(contentLoaded?', '+contentLoaded+' loaded':''),'s');
+}
+</script>
+
+<script>
+/* CORE HELPERS */
+function getProg(){return{name:$('p-name','B.Sc.T. Chemistry'),award:$('p-award',''),abbr:$('p-abbr',''),prefix:$('p-prefix','CHT'),school:$('p-school',''),dept:$('p-dept',''),hod:$('p-hod',''),level:$('p-level','7'),years:parseInt($('p-years','3')),mode:$('p-mode','Full-time'),date:$('p-date','2024'),admission:$('p-admission','')};}
+function $(id,def){var el=document.getElementById(id);return el?el.value:(def||'');}
+function sv(id,v){var el=document.getElementById(id);if(el&&v!=null&&String(v).trim())el.value=String(v);}
+function getNH(c){return(parseInt(c.DH)||0)+(parseInt(c.SH)||0)+(parseInt(c.AH)||0)+(parseInt(c.OH)||0);}
+function getCr(c){return Math.round(getNH(c)/10);}
+function getSL(y,s){if(s==='R')return'Year '+y+' — Recess';return'Year '+y+', Semester '+s;}
+function groupBySem(){var g={};courses.forEach(function(c){var k=c.year+'_'+c.sem;if(!g[k])g[k]={year:c.year,sem:c.sem,courses:[]};g[k].courses.push(c);});return Object.values(g).sort(function(a,b){if(a.year!==b.year)return a.year-b.year;var o={'1':1,'2':2,'R':3};return(o[a.sem]||9)-(o[b.sem]||9);});}
+function semNH(cs){return cs.filter(function(c){return!c.elective;}).reduce(function(s,c){return s+getNH(c);},0);}
+function semCr(cs){return cs.filter(function(c){return!c.elective;}).reduce(function(s,c){return s+getCr(c);},0);}
+
+function toggleImport(){var b=document.getElementById('imp-body'),ic=document.getElementById('itog');if(!b)return;var h=b.style.display==='none'||b.style.display==='';b.style.display=h?'block':'none';if(ic)ic.textContent=h?'▲ Collapse':'▼ Click to expand';}
+
+function switchTab(name){
+  document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  var pane=document.getElementById('pane-'+name),tab=document.getElementById('tab-'+name);
+  if(pane)pane.classList.add('active');if(tab)tab.classList.add('active');
+  if(name==='setup')setTimeout(renderUCCList,50);
+  if(name==='curriculum'){assignCodes();enforceSems();assignCodes();renderCurriculum();renderUCCList();}
+  if(name==='generate')renderGenTab();
+  if(name==='preview')renderPreview();
+  if(name==='programmes')renderProgList();
+}
+
+function assignCodes(){
+  var p=getProg(),lv=p.level,ss={};
+  /* Pass 1: assign all codes (UCC fixed, lockedCode preserved, others sequential) */
+  courses.forEach(function(c){
+    var sn=c.sem==='R'?'3':c.sem,uk=getUK(c);
+    if(uk){
+      var ui=UCC_ORD.indexOf(uk),sr=String(ui>=0?ui+1:99).padStart(2,'0');
+      c.code=c.prefix+' '+lv+c.year+sn+sr;
+      var uD=UCC[uk];if(uD){c.DH=uD.DH;c.SH=uD.SH;c.AH=uD.AH;c.OH=uD.OH;c.type=uD.type||c.type;c.prefix=uD.prefix||c.prefix;c.locked=true;}
+    }else if(c.lockedCode){
+      c.code=c.lockedCode;
+      var k2l=c.prefix+'_'+c.year+'_'+sn;
+      if(!ss[k2l])ss[k2l]=courses.filter(function(x){return isUCC(x)&&x.year===c.year&&x.sem===c.sem;}).length+1;
+      ss[k2l]++;
+    }else{
+      var k2=c.prefix+'_'+c.year+'_'+sn;
+      var uccN=courses.filter(function(x){return isUCC(x)&&x.year===c.year&&x.sem===c.sem;}).length;
+      if(!ss[k2])ss[k2]=uccN+1;
+      c.code=c.prefix+' '+lv+c.year+sn+String(ss[k2]++).padStart(2,'0');
+    }
+  });
+  /* Pass 2: detect and resolve duplicate codes within this programme */
+  var usedCodes={};
+  courses.forEach(function(c){
+    var ck=(c.code||'').trim().toUpperCase();
+    if(!ck)return;
+    if(usedCodes[ck]){
+      /* Duplicate found — release the lockedCode on the LATER course and regenerate */
+      if(c.lockedCode){
+        c.lockedCode=null;
+        toast('⚠ Code conflict: '+c.code+' already used. Re-assigning "'+c.name.slice(0,30)+'"','e');
+      }
+      /* Regenerate with next available serial */
+      var sn=c.sem==='R'?'3':c.sem;
+      var k3=c.prefix+'_'+c.year+'_'+sn;
+      if(!ss[k3])ss[k3]=courses.filter(function(x){return isUCC(x)&&x.year===c.year&&x.sem===c.sem;}).length+1;
+      var newCode;
+      do{newCode=c.prefix+' '+lv+c.year+sn+String(ss[k3]++).padStart(2,'0');}
+      while(usedCodes[newCode.toUpperCase()]);
+      c.code=newCode;
+      usedCodes[newCode.toUpperCase()]=true;
+    }else{
+      usedCodes[ck]=true;
+    }
+  });
+}
+
+var T=600;
+function enforceSems(){
+  var groups=groupBySem();
+  groups.forEach(function(g){
+    if(g.sem==='R')return;
+    var core=g.courses.filter(function(c){return!c.elective;}),locNH=core.filter(function(c){return isUCC(c);}).reduce(function(s,c){return s+getNH(c);},0),adj=core.filter(function(c){return!isUCC(c);});
+    if(!adj.length&&T-locNH>0){var p=getProg();courses.push({id:nextId++,year:g.year,sem:g.sem,prefix:p.prefix||'PRG',name:'[Programme Course - Edit Name]',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false});}
+    var fresh=courses.filter(function(c){return c.year===g.year&&c.sem===g.sem&&!c.elective&&!isUCC(c);});
+    if(!fresh.length)return;
+    var fLNH=courses.filter(function(c){return c.year===g.year&&c.sem===g.sem&&!c.elective&&isUCC(c);}).reduce(function(s,c){return s+getNH(c);},0);
+    var fN=T-fLNH,pC=Math.round(fN/fresh.length),rem=fN-pC*fresh.length;
+    fresh.forEach(function(c,i){var tNH=pC+(i===fresh.length-1?rem:0),fx=(parseInt(c.DH)||0)+(parseInt(c.AH)||0)+(parseInt(c.OH)||0);c.SH=Math.max(0,tNH-fx);});
+  });
+  courses.sort(function(a,b){if(a.year!==b.year)return a.year-b.year;var o={'1':1,'2':2,'R':3};if((o[a.sem]||9)!==(o[b.sem]||9))return(o[a.sem]||9)-(o[b.sem]||9);return(isUCC(a)?0:1)-(isUCC(b)?0:1);});
+  assignCodes();
+}
+function autoBalanceNH(){enforceSems();renderCurriculum();renderUCCList();toast('Semesters enforced to 600 NH / 60 Credits','s');}
+function balanceSem(yr,sm){
+  var core=courses.filter(function(c){return c.year===yr&&c.sem===sm&&!c.elective;}),adj=core.filter(function(c){return!isUCC(c);}),locNH=core.filter(function(c){return isUCC(c);}).reduce(function(s,c){return s+getNH(c);},0),nNH=T-locNH;
+  if(!adj.length){var p=getProg();courses.push({id:nextId++,year:yr,sem:sm,prefix:p.prefix||'PRG',name:'[Programme Course]',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false});assignCodes();renderCurriculum();toast('Added placeholder','s');return;}
+  var pC=Math.round(nNH/adj.length),rem=nNH-pC*adj.length;
+  adj.forEach(function(c,i){var tNH=pC+(i===adj.length-1?rem:0),fx=(parseInt(c.DH)||0)+(parseInt(c.AH)||0)+(parseInt(c.OH)||0);c.SH=Math.max(0,tNH-fx);});
+  assignCodes();renderCurriculum();
+  var fn=courses.filter(function(c){return c.year===yr&&c.sem===sm&&!c.elective;}).reduce(function(s,c){return s+getNH(c);},0);
+  toast(getSL(yr,sm)+': '+fn+' NH / '+Math.round(fn/10)+' Cr','s');
+}
+function showBalanceReport(){var ln=['SEMESTER NH REPORT (Target: 600 NH / 60 Credits)',''];groupBySem().forEach(function(g){if(g.sem==='R')return;var nh=semNH(g.courses);ln.push((Math.abs(nh-600)<=2?'OK  ':'!!  ')+getSL(g.year,g.sem)+': '+nh+' NH / '+semCr(g.courses)+' Cr');});alert(ln.join('\n'));}
+
+function updateCourse(id,field,value){var c=courses.find(function(x){return x.id===id;});if(!c)return;if(c.locked&&['DH','SH','AH','OH'].indexOf(field)>=0){toast('\ud83d\udd12 UCC — NH values are fixed institution-wide','e');return;}if(['DH','SH','AH','OH'].indexOf(field)>=0)value=parseInt(value)||0;if(field==='elective')value=!!value;/* Release locked code if user manually changes position/prefix */if(['prefix','year','sem'].indexOf(field)>=0&&c.lockedCode){c.lockedCode=null;toast('Registry code lock released — code will auto-generate','i');}c[field]=value;if(field!=='name'){assignCodes();renderCurriculum();}}
+function deleteCourse(id){if(!confirm('Delete this course?'))return;courses=courses.filter(function(c){return c.id!==id;});assignCodes();renderCurriculum();}
+function refreshCodes(){assignCodes();renderCurriculum();}
+function addCourse(){courses.push({id:nextId++,year:1,sem:'1',prefix:getProg().prefix||'PRG',name:'New Course',type:'lec',DH:45,SH:35,AH:10,OH:10,elective:false});assignCodes();renderCurriculum();}
+function addCourseTo(yr,sm){var p=getProg();courses.push({id:nextId++,year:yr,sem:sm,prefix:p.prefix||'PRG',name:'New Course',type:'lab',DH:40,SH:30,AH:20,OH:10,elective:false,tier:4});assignCodes();renderCurriculum();}
+function fixDups(){var sc={},sn={},tr=[];courses.forEach(function(c){if(isUCC(c))return;var ck=(c.code||'').toUpperCase().trim(),nk=(c.name||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();if(ck&&sc[ck]){if(!tr.includes(c.id))tr.push(c.id);}else if(ck)sc[ck]=true;if(nk.length>3&&sn[nk]){if(!tr.includes(c.id))tr.push(c.id);}else if(nk.length>3)sn[nk]=true;});if(!tr.length){toast('No duplicates found','i');return;}if(!confirm('Remove '+tr.length+' duplicate(s)?'))return;courses=courses.filter(function(c){return!tr.includes(c.id);});assignCodes();renderCurriculum();toast('Removed '+tr.length+' duplicate(s)','s');}
+function setTier(id){var c=courses.find(function(x){return x.id===id;});if(!c)return;var p=getProg(),tc=prompt('Set tier for "'+c.name+'":\n2=School Shared (T2)\n3=Dept Shared (T3)\n4=Programme-Specific (T4)\n\nEnter 2, 3 or 4:',String(c.tier||4));var t=parseInt(tc);if(t<2||t>4||isNaN(t))return;c.tier=t;if(t===2)c.ownerSchool=p.school;if(t===3){c.ownerSchool=p.school;c.ownerDept=p.dept;}renderCurriculum();toast('Tier set to '+t,'s');}
+function insertUCC(key){var def=UCC[key];if(!def){toast('UCC not found','e');return;}if(courses.some(function(c){return getUK(c)===key;})){toast('Already in programme','i');return;}courses.push({id:nextId++,year:def.year||1,sem:def.sem||'1',prefix:def.prefix,name:def.name,type:def.type||'lec',DH:def.DH||0,SH:def.SH||0,AH:def.AH||0,OH:def.OH||0,elective:false});courses.sort(function(a,b){if(a.year!==b.year)return a.year-b.year;var o={'1':1,'2':2,'R':3};return(o[a.sem]||9)-(o[b.sem]||9);});assignCodes();renderUCCList();toast(def.name+' added!','s');}
+
+
+/* CURRICULUM REGISTRY CHECK (FIX #2) */
+async function checkAllCourseRegistry(){
+  var sp=document.getElementById('reg-sp'),res=document.getElementById('reg-results');
+  if(sp)sp.style.display='inline-block';
+  var p=getProg();
+  var progCourses=courses.filter(function(c){return!isUCC(c);});
+  if(!progCourses.length){if(sp)sp.style.display='none';toast('No programme-specific courses to check','i');return;}
+  try{
+    var resp=await fetch(API+'/api/registry/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({programme:p.name,school:p.school,dept:p.dept,courses:progCourses.map(function(c){return{code:c.code,name:c.name,prefix:c.prefix,DH:c.DH,SH:c.SH,AH:c.AH,OH:c.OH,tier:getTier(c)};})})});
+    if(!resp.ok)throw new Error('Server '+resp.status);
+    var data=await resp.json();
+    var conflicts=(data.conflicts||[]),matches=(data.matches||[]),news=(data.new||[]);
+    window._latestRegConflicts=conflicts;
+    var html='<div class="card"><div class="card-hd tl">&#128269; Registry Check Results &mdash; '+progCourses.length+' courses checked</div><div class="card-body">';
+    html+='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">';
+    html+='<div style="background:#d4f0e4;color:#1a7a4a;padding:8px 16px;border-radius:6px;font-weight:700;font-size:13px">&#10003; '+matches.length+' Matched in Registry</div>';
+    html+='<div style="background:#fff0f0;color:#c00;padding:8px 16px;border-radius:6px;font-weight:700;font-size:13px">&#9888; '+conflicts.length+' Conflicts Found</div>';
+    html+='<div style="background:#e8f4ff;color:#1a3d60;padding:8px 16px;border-radius:6px;font-weight:700;font-size:13px">&#10011; '+news.length+' New (not in registry)</div>';
+    html+='</div>';
+    if(conflicts.length>0){
+      html+='<div style="font-weight:700;color:var(--rd);margin-bottom:8px;font-size:13px">Conflicts (same name, different code/NH in registry):</div>';
+      conflicts.forEach(function(cf,ci){
+        html+='<div style="border:1.5px solid var(--rd);border-radius:6px;margin-bottom:8px;overflow:hidden">';
+        html+='<div style="background:var(--rdl);padding:7px 12px;font-weight:700;font-size:12px;color:var(--rd)">'+esc(cf.name)+'</div>';
+        html+='<div style="padding:8px 12px;font-size:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+        html+='<div><strong>This Programme:</strong><br>Code: <code>'+esc(cf.code||'')+'</code><br>NH: '+cf.nh+'<br>Tier: '+getTier({tier:cf.tier,prefix:cf.prefix,name:cf.name})+'</div>';
+        html+='<div style="background:var(--g50);border-radius:4px;padding:6px"><strong>In Registry ('+esc(cf.registryProgramme||'other')+')</strong>:<br>Code: <code>'+esc(cf.registryCode||'')+'</code><br>NH: '+(cf.registryNH||'?')+'</div>';
+        html+='</div>';
+        html+='<div style="padding:6px 12px;display:flex;gap:6px">';
+        html+='<button class="btn bt xs" onclick="borrowReg('+ci+')">Borrow Registry Version</button>';
+        html+='<button class="btn bg xs" onclick="keepReg('+ci+')">Keep Own Version</button>';
+        html+='</div></div>';
+      });
+    }
+    if(matches.length>0&&conflicts.length===0){html+='<div class="al as">All '+matches.length+' programme-specific courses match the registry. No conflicts found.</div>';}
+    html+='<button class="btn bo sm" onclick="closeRegResults()" style="margin-top:8px">&#10005; Close</button>';
+    html+='</div></div>';
+    if(res){res.innerHTML=html;res.style.display='block';}
+    toast('Registry check complete: '+conflicts.length+' conflicts','s');
+  }catch(e){
+    // Offline mode: show local duplicate check
+    showLocalRegistryCheck();
+  }
+  if(sp)sp.style.display='none';
+}
+
+function showLocalRegistryCheck(){
+  var res=document.getElementById('reg-results');
+  var progCourses=courses.filter(function(c){return!isUCC(c);});
+  var sc={},sn={},dups=[];
+  progCourses.forEach(function(c){
+    var ck=(c.code||'').toUpperCase().trim(),nk=(c.name||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+    if(ck&&sc[ck])dups.push({type:'code',val:ck,course:c.name});else if(ck)sc[ck]=true;
+    if(nk.length>3&&sn[nk])dups.push({type:'name',val:c.name,course:c.name});else if(nk.length>3)sn[nk]=true;
+  });
+  var html='<div class="card"><div class="card-hd nv2">&#128269; Local Curriculum Check (Backend offline)</div><div class="card-body">';
+  if(!dups.length){html+='<div class="al as">&#10003; No duplicate codes or names found in this programme ('+progCourses.length+' courses checked).</div>';}
+  else{html+='<div class="al ae">'+dups.length+' internal duplicate(s) found: '+dups.map(function(d){return esc(d.val);}).join(', ')+'</div>';html+='<button class="btn br sm" onclick="fixDups()" style="margin-top:6px">Remove Duplicates</button>';}
+  html+='<button class="btn bo sm" onclick="document.getElementById(&quot;reg-results&quot;).style.display=&quot;none&quot;" style="margin-top:8px">Close</button>';
+  html+='</div></div>';
+  if(res){res.innerHTML=html;res.style.display='block';}
+  toast('Backend offline — ran local check','i');
+}
+function closeRegResults(){var el=document.getElementById('reg-results');if(el)el.style.display='none';}
+function borrowReg(ci){var rc=window._latestRegConflicts||[];if(rc[ci])toast('Will use registry code for '+rc[ci].name,'s');}
+function keepReg(ci){var rc=window._latestRegConflicts||[];if(rc[ci])toast('Keeping own version of '+rc[ci].name,'i');}
+</script>
+
+<script>
+/* RENDER CURRICULUM */
+function renderCurriculum(){
+  assignCodes();
+  var area=document.getElementById('cur-area');if(!area)return;
+  var sc2={},sn2={},dc=new Set(),dn=new Set();
+  courses.forEach(function(c){var ck=(c.code||'').toUpperCase().trim(),nk=(c.name||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();if(ck&&sc2[ck])dc.add(ck);else if(ck)sc2[ck]=true;if(nk.length>3&&sn2[nk])dn.add(nk);else if(nk.length>3)sn2[nk]=true;});
+  var db=document.getElementById('dup-banner');
+  if(db){if(dc.size>0||dn.size>0){var msgs=[];if(dc.size>0)msgs.push(dc.size+' duplicate code(s): '+[...dc].join(', '));if(dn.size>0)msgs.push(dn.size+' duplicate name(s)');db.style.display='block';db.innerHTML='<div class="al ae" style="margin-bottom:8px"><strong>\u26a0 DUPLICATE COURSES:</strong> '+msgs.join(' | ')+' &nbsp;<button onclick="fixDups()" class="btn br xs">Remove</button></div>';}else db.style.display='none';}
+  var groups=groupBySem(),html='',totNH=0,totCr=0;
+  groups.forEach(function(g){
+    var gNH=semNH(g.courses),gCr=semCr(g.courses),isR=g.sem==='R',nhOk=isR||Math.abs(gNH-600)<=2,nhW=!isR&&gNH<600;
+    totNH+=gNH;totCr+=gCr;
+    var nhCol=isR?'color:#888':nhOk?'color:var(--gn)':nhW?'color:var(--rd)':'color:var(--gd)';
+    var nhLbl=isR?gNH+' NH':gNH+' NH '+(nhOk?'\u2713':(gNH<600?'('+(600-gNH)+' short)':'('+(gNH-600)+' over)'));
+    html+='<div style="margin-bottom:22px">';
+    html+='<div class="sh"><span>'+getSL(g.year,g.sem)+'</span><span class="si">';
+    html+='<span style="'+nhCol+'">'+nhLbl+'</span>';
+    html+='<span style="'+(Math.abs(gCr-60)<=1?'color:var(--tl2)':'color:var(--rd)')+'">'+gCr+' Cr</span>';
+    html+='<span>'+g.courses.filter(function(c){return!c.elective;}).length+' core'+(g.courses.filter(function(c){return c.elective;}).length?' + '+g.courses.filter(function(c){return c.elective;}).length+' E':'')+'</span>';
+    if(!isR&&!nhOk)html+='<button class="btn xs" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:10px;padding:1px 7px;cursor:pointer;border-radius:3px" onclick="balanceSem('+g.year+',\''+g.sem+'\')">Fix &rarr;</button>';
+    html+='</span></div>';
+    html+='<table class="ct"><thead><tr><th style="width:120px">Code</th><th>Course Name</th><th class="c" style="width:55px">Prefix</th><th class="c" style="width:38px">DH</th><th class="c" style="width:38px">SH</th><th class="c" style="width:38px">AH</th><th class="c" style="width:38px">OH</th><th class="c" style="width:48px">NH</th><th class="c" style="width:38px">Cr</th><th class="c" style="width:70px">Type</th><th class="c" style="width:55px">Elec</th><th class="c" style="width:50px">Tier</th><th class="c" style="width:38px">Del</th></tr></thead><tbody>';
+    g.courses.forEach(function(c){
+      var nh=getNH(c),cr=getCr(c),uk=getUK(c),isW=uk==='WRC';
+      var rc=isW?'wrc':uk?'ucc':c.elective?'el':'';
+      html+='<tr class="'+rc+'"><td><span class="cd" style="'+(c.lockedCode?'background:#065f46;color:#fff':'')+'" title="'+(c.lockedCode?'Registry-locked code':'Auto-generated')+'">'
+        +(c.lockedCode?'\ud83d\udd12 ':'')+esc(c.code||'')+'</span></td>';
+      html+='<td>'+(uk?'<span style="font-size:12px;font-weight:600;color:var(--nv)">'+(isW?'\ud83d\udccb ':isUCC(c)?'\ud83d\udd12 ':'')+esc(c.name)+'</span>':'<input type="text" value="'+esc(c.name)+'" onchange="updateCourse('+c.id+',\'name\',this.value)" style="min-width:180px">')+'</td>';
+      html+='<td class="c">'+(uk?'<span style="font-size:11px;font-family:var(--fm)">'+c.prefix+'</span>':'<input type="text" value="'+c.prefix+'" onchange="updateCourse('+c.id+',\'prefix\',this.value.toUpperCase())" style="width:50px;text-align:center">')+'</td>';
+      html+='<td class="c"><input type="number" value="'+c.DH+'" min="0" onchange="updateCourse('+c.id+',\'DH\',this.value)"></td>';
+      html+='<td class="c"><input type="number" value="'+c.SH+'" min="0" onchange="updateCourse('+c.id+',\'SH\',this.value)"></td>';
+      html+='<td class="c"><input type="number" value="'+c.AH+'" min="0" onchange="updateCourse('+c.id+',\'AH\',this.value)"></td>';
+      html+='<td class="c"><input type="number" value="'+c.OH+'" min="0" onchange="updateCourse('+c.id+',\'OH\',this.value)"></td>';
+      html+='<td class="c"><strong class="nh">'+nh+'</strong></td><td class="c"><strong>'+cr+'</strong></td>';
+      html+='<td class="c"><select onchange="updateCourse('+c.id+',\'type\',this.value)"><option value="lec"'+(c.type==='lec'?' selected':'')+'>Lecture</option><option value="lab"'+(c.type==='lab'?' selected':'')+'>Lec+Lab</option><option value="prac"'+(c.type==='prac'?' selected':'')+'>Practical</option><option value="ind"'+(c.type==='ind'?' selected':'')+'>Industrial</option><option value="proj"'+(c.type==='proj'?' selected':'')+'>Project</option></select></td>';
+      html+='<td class="c"><input type="checkbox" '+(c.elective?'checked':'')+' onchange="updateCourse('+c.id+',\'elective\',this.checked)">'+(c.elective?'<span class="badge-gold" style="font-size:9px;margin-left:2px">E</span>':'')+'</td>';
+      html+='<td class="c" style="cursor:pointer" onclick="setTier('+c.id+')" title="Click to change tier">'+tierBadge(getTier(c))+'</td>';
+      html+='<td class="c"><button class="btn br xs" onclick="deleteCourse('+c.id+')">\u2715</button></td></tr>';
+    });
+    html+='<tr class="tr"><td colspan="7">SEMESTER TOTAL (Core)</td><td class="c">'+gNH+'</td><td class="c">'+gCr+'</td><td colspan="4"></td></tr>';
+    html+='</tbody></table>';
+    html+='<div style="padding:6px 12px;text-align:right"><button class="btn bt xs" onclick="addCourseTo('+g.year+',\''+g.sem+'\')">&#xFF0B; Add to semester</button></div></div>';
+  });
+  area.innerHTML=html;
+  var g2=groupBySem(),regS=g2.filter(function(g){return g.sem!=='R';}),okS=regS.filter(function(g){return Math.abs(semNH(g.courses)-600)<=2;});
+  var sumEl=document.getElementById('tot-sum');if(sumEl)sumEl.innerHTML='Total: <strong>'+totNH+' NH | '+totCr+' Cr</strong> &nbsp;|&nbsp; Semesters OK: <span style="color:'+(okS.length===regS.length?'var(--gn)':'var(--rd)')+';font-weight:700">'+okS.length+'/'+regS.length+'</span>';
+  var banner=document.getElementById('nh-banner');
+  if(banner){if(okS.length<regS.length){banner.style.display='block';banner.innerHTML='<div class="al aw" style="margin-bottom:0">\u26a0 <strong>'+(regS.length-okS.length)+' semester(s)</strong> not at 600 NH &nbsp;<button class="btn bn sm" onclick="autoBalanceNH()" style="white-space:nowrap">Auto-Fix All</button></div>';}else banner.style.display='none';}
+}
+
+/* RENDER UCC LIST */
+function renderUCCList(){
+  var el=document.getElementById('ucc-list');if(!el)return;
+  var p=getProg(),lv=p.level||'7',pk=new Set(courses.map(function(c){return getUK(c);}).filter(Boolean));
+  var html='<table class="ct" style="font-size:11.5px"><thead><tr><th style="width:130px">Code</th><th>Course Name</th><th class="c">Yr</th><th class="c">Sem</th><th class="c">DH</th><th class="c">SH</th><th class="c">AH</th><th class="c">OH</th><th class="c" style="color:var(--gd2)">NH</th><th class="c">Cr</th><th class="c" style="width:100px">Status</th></tr></thead><tbody>';
+  UCC_ORD.forEach(function(key,idx){var def=UCC[key];if(!def)return;var yr=def.year||1,sm=def.sem||'1',sn=sm==='R'?'3':sm,code=def.prefix+' '+lv+yr+sn+String(idx+1).padStart(2,'0'),nh=(def.DH||0)+(def.SH||0)+(def.AH||0)+(def.OH||0),cr=key==='WRC'?'5 (NCHE)':Math.round(nh/10),inP=pk.has(key);
+    html+='<tr style="background:'+(key==='WRC'?'#fffbf0':'#f0fafa')+'"><td><span class="cd" style="font-size:10px">'+code+'</span></td><td style="font-weight:600;color:var(--nv)">'+esc(def.name)+'</td><td class="c">'+yr+'</td><td class="c">'+sm+'</td><td class="c">'+def.DH+'</td><td class="c">'+def.SH+'</td><td class="c">'+def.AH+'</td><td class="c">'+def.OH+'</td><td class="c" style="font-weight:700;color:var(--tl)">'+nh+'</td><td class="c" style="font-weight:700">'+cr+'</td><td class="c">'+(inP?'<span style="background:var(--gn);color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">\u2713 Present</span>':'<button class="btn bt xs" onclick="insertUCC(\''+key+'\')">+ Add</button>')+'</td></tr>';
+  });
+  html+='</tbody></table>';el.innerHTML=html;
+}
+</script>
+
+<script>
+/* TEXT TO HTML - FIXED (flushL properly closed) */
+function textToHtml(text){
+  if(!text)return'';
+  var lines=text.split('\n'),html='',inUL=false,inOL=false,inTbl=false,tblRows=[];
+
+  /* flushL is properly closed before flushT is defined */
+  function flushL(){
+    if(inUL){html+='</ul>';inUL=false;}
+    if(inOL){html+='</ol>';inOL=false;}
+  }
+  function flushT(){
+    if(!inTbl||!tblRows.length){inTbl=false;tblRows=[];return;}
+    var dR=tblRows.filter(function(r){return!/^[\s|:\-]+$/.test(r.replace(/\|/g,''));});
+    if(!dR.length){inTbl=false;tblRows=[];return;}
+    var hCells=dR[0].split('|').map(function(c){return c.trim();}).filter(function(c){return c!=='';});
+    if(!hCells.length){inTbl=false;tblRows=[];return;}
+    var t='<div style="overflow-x:auto;margin:10px 0"><table style="width:100%;border-collapse:collapse;font-size:11.5px">';
+    dR.forEach(function(row,i){
+      var cells=row.split('|').map(function(c){return c.trim();}).filter(function(c){return c!=='';});
+      if(!cells.length)return;
+      t+='<tr>';
+      cells.forEach(function(cell){
+        var tag=i===0?'th':'td';
+        var style=i===0?'background:#0F2D4A;color:#fff;padding:6px 8px;font-weight:700;font-size:11px;text-align:left':'padding:5px 8px;border:1px solid #ddd;line-height:1.4';
+        t+='<'+tag+' style="'+style+'">'+ml(cell)+'</'+tag+'>';
+      });
+      t+='</tr>';
+    });
+    t+='</table></div>';
+    html+=t;inTbl=false;tblRows=[];
+  }
+
+  lines.forEach(function(line){
+    var t=line.trim();
+    if(t.charAt(0)==='|'){flushL();inTbl=true;tblRows.push(t);return;}
+    if(inTbl&&t.charAt(0)!=='|')flushT();
+    if(!t){flushL();return;}
+    if(t.slice(0,4)==='### '){flushL();html+='<h4>'+ml(t.slice(4))+'</h4>';return;}
+    if(t.slice(0,3)==='## '){flushL();html+='<h4>'+ml(t.slice(3))+'</h4>';return;}
+    if(t.slice(0,2)==='# '){flushL();html+='<h4 style="font-size:15px">'+ml(t.slice(2))+'</h4>';return;}
+    if(t==='---'||t==='***'){flushL();html+='<hr style="border:none;border-top:1px solid #eee;margin:8px 0">';return;}
+    var j=0;while(j<t.length&&t[j]>='0'&&t[j]<='9')j++;
+    if(j>0&&j<t.length&&t[j]==='.'&&t.length>j+1&&t[j+1]===' '){
+      if(inUL){html+='</ul>';inUL=false;}
+      if(!inOL){html+='<ol style="margin:4px 0 8px 22px">';inOL=true;}
+      html+='<li style="margin-bottom:3px">'+ml(t.slice(j+2))+'</li>';return;
+    }
+    if((t[0]==='-'||t[0]==='\u2022'||t[0]==='*')&&t.length>1&&t[1]===' '){
+      if(inOL){html+='</ol>';inOL=false;}
+      if(!inUL){html+='<ul style="margin:4px 0 8px 22px">';inUL=true;}
+      html+='<li style="margin-bottom:3px">'+ml(t.slice(2))+'</li>';return;
+    }
+    flushL();
+    html+='<p style="margin:4px 0;text-align:justify;line-height:1.6">'+ml(t)+'</p>';
+  });
+  flushL();flushT();
+  return html;
+}
+
+/* RENDER PREVIEW - with full error handling */
+function renderPreview(){
+  var pw=document.getElementById('pw');
+  if(!pw)return;
+  pw.innerHTML='<div style="text-align:center;padding:30px;color:var(--g500)"><span class="spin" style="display:inline-block;width:24px;height:24px;border:3px solid var(--tl);border-top-color:transparent;border-radius:50%;animation:_sp .8s linear infinite"></span><div style="margin-top:10px">Building preview...</div></div>';
+  setTimeout(function(){
+    try{
+      assignCodes();
+      var p=getProg(),groups=groupBySem();
+      /* Build curriculum matrix */
+      var mxR='';
+      groups.forEach(function(g){
+        mxR+='<tr class="sr"><td colspan="8">'+getSL(g.year,g.sem).toUpperCase()+'</td></tr>';
+        g.courses.forEach(function(c){
+          var nh=getNH(c),cr=getCr(c);
+          mxR+='<tr'+(c.elective?' style="background:#fffbf0"':'')+'>';
+          mxR+='<td><code style="font-size:10.5px;background:var(--nv);color:var(--gd2);padding:1px 6px;border-radius:3px">'+(c.code||'')+'</code></td>';
+          mxR+='<td>'+esc(c.name)+(c.elective?' <em style="color:var(--g500)">(E)</em>':'')+'</td>';
+          mxR+='<td style="text-align:center">'+c.DH+'</td><td style="text-align:center">'+c.SH+'</td>';
+          mxR+='<td style="text-align:center">'+c.AH+'</td><td style="text-align:center">'+c.OH+'</td>';
+          mxR+='<td style="text-align:center"><strong>'+nh+'</strong></td>';
+          mxR+='<td style="text-align:center"><strong>'+cr+'</strong></td></tr>';
+        });
+        var gNH=semNH(g.courses),gCr=semCr(g.courses);
+        mxR+='<tr style="background:var(--g100)"><td colspan="6" style="font-weight:700;text-align:right;padding-right:12px">Semester Total (Core)</td><td style="text-align:center;font-weight:700">'+gNH+'</td><td style="text-align:center;font-weight:700">'+gCr+'</td></tr>';
+      });
+      var tNH=courses.filter(function(c){return!c.elective;}).reduce(function(s,c){return s+getNH(c);},0);
+      var tCr=courses.filter(function(c){return!c.elective;}).reduce(function(s,c){return s+getCr(c);},0);
+      mxR+='<tr class="tt"><td colspan="6" style="text-align:right;padding-right:12px">PROGRAMME GRAND TOTAL</td><td style="text-align:center">'+tNH+' NH</td><td style="text-align:center">'+tCr+' Cr</td></tr>';
+
+      function sH(key,num,title){
+        var d=SC[key];
+        var body=(d&&d.done&&d.text)?textToHtml(d.text):'<p class="nc">Not yet generated. Use the <strong>Generator</strong> tab to generate this section.</p>';
+        return '<h3 style="font-size:15px;color:var(--nv);margin:28px 0 8px;border-left:4px solid var(--gd);padding-left:10px;font-weight:700">'+num+' '+title+'</h3>\n'+body;
+      }
+
+      /* Build course detail sections */
+      var cdH='';
+      groups.forEach(function(g){
+        g.courses.filter(function(c){return!c.elective;}).forEach(function(c){
+          var det=CD[c.code],body=(det&&det.done&&det.text)?textToHtml(det.text):'<p class="nc">Not yet generated. Use the Generator tab.</p>';
+          cdH+='<div class="cb"><div class="cb-hd">'+(c.code||'')+' &nbsp;|&nbsp; '+esc(c.name)+'</div>';
+          cdH+='<div class="cb-bd">';
+          cdH+='<table class="mt"><tr><td>Semester</td><td>'+getSL(c.year,c.sem)+'</td><td style="width:150px;font-weight:700;color:var(--nv)">Notional Hours</td><td>'+getNH(c)+' NH</td></tr>';
+          cdH+='<tr><td>Credits</td><td>'+(getUK(c)==='WRC'?'5 (NCHE)':getCr(c))+'</td><td style="font-weight:700;color:var(--nv)">NH Breakdown</td><td>DH:'+c.DH+' SH:'+c.SH+' AH:'+c.AH+' OH:'+c.OH+'</td></tr></table>';
+          cdH+=body+'</div></div>';
+        });
+      });
+
+      /* Assemble full document */
+      var html='<div class="cov">';
+      html+='<p style="font-size:11px;color:var(--g500);margin-bottom:8px">KAMPALA INTERNATIONAL UNIVERSITY</p>';
+      html+='<h1>'+esc(p.name)+'</h1>';
+      html+='<h2>'+esc(p.school)+'</h2><h2>'+esc(p.dept)+'</h2>';
+      html+='<p style="margin-top:10px"><strong>Award:</strong> '+esc(p.award)+' ('+esc(p.abbr)+')</p>';
+      html+='<p><strong>UHEQF Level:</strong> Level '+p.level+' &mdash; Bachelor&#39;s Degree</p>';
+      html+='<p><strong>Duration:</strong> '+p.years+' Years | '+esc(p.mode)+'</p>';
+      html+='<p><strong>Submitted to:</strong> National Council for Higher Education (NCHE), Uganda</p>';
+      html+='<p style="margin-top:8px;font-weight:700;color:var(--nv)">'+esc(p.date)+'</p></div>';
+
+      var S1=[['intro','1.','Introduction'],['governance','2.','Governance and Management'],['nameCode','3.','Programme Name, Code and Duration'],['description','4.','Programme Description'],['development','5.','Programme Development/Review Process'],['rationale','6.','Programme Rationale/Justification'],['competences','7.','Programme Competences'],['outcomes','8.','Programme Learning Outcomes'],['targetGroup','9.','Target Group'],['admission','10.','Entry/Admission Requirements'],['humanRes','11.','Human Resources'],['infrastructure','12.','Physical Infrastructure'],['delivery','13.','Modes of Delivery'],['assessment','14.','Modes of Assessment'],['progression','15.','Progression'],['gradLoad','16.','Minimum Graduation Load']];
+      S1.forEach(function(s){html+=sH(s[0],s[1],s[2]);});
+
+      html+='<h3 style="font-size:15px;color:var(--nv);margin:28px 0 8px;border-left:4px solid var(--gd);padding-left:10px;font-weight:700">17. Curriculum Structure</h3>';
+      html+='<table><thead><tr><th style="width:110px">Code</th><th>Course Name</th><th>DH</th><th>SH</th><th>AH</th><th>OH</th><th>NH</th><th>Cr</th></tr></thead><tbody>'+mxR+'</tbody></table>';
+
+      var S2=[['research','18.','Research and Innovation'],['community','19.','Community Engagement'],['policies','20.','Policies'],['financial','21.','Financial Resources'],['welfare','22.','Students Welfare']];
+      S2.forEach(function(s){html+=sH(s[0],s[1],s[2]);});
+
+      html+='<h3 style="font-size:15px;color:var(--nv);margin:28px 0 8px;border-left:4px solid var(--gd);padding-left:10px;font-weight:700">DETAILED COURSE CONTENT</h3>';
+      html+=cdH;
+
+      pw.innerHTML=html;
+      var dn=SECTIONS.filter(function(s){return SC[s.key]&&SC[s.key].done;}).length;
+      var cdn=courses.filter(function(c){return CD[c.code]&&CD[c.code].done;}).length;
+      var stat=document.getElementById('pvstat');
+      if(stat)stat.textContent=dn+'/'+SECTIONS.length+' sections + '+cdn+'/'+courses.length+' courses generated';
+    }catch(err){
+      pw.innerHTML='<div class="al ae"><strong>Preview error:</strong> '+esc(err.message)+'<br><small>Try clicking Refresh Preview again.</small></div>';
+      console.error('renderPreview error:',err);
+    }
+  },50);
+}
+</script>
+
+<script>
+/* AI GENERATION */
+
+/* ── UCC SHARED STORAGE (cross-programme fixed course content) ── */
+var UCC_SK='kiu_ucc_content_v1';
+var UCC_SHARED_KEYS=['ICF','ELS','CS','RM']; // the 4 fixed UCCs to share
+
+/* Cross-programme content sharing — finds generated content from any saved programme */
+async function findCrossProgContent(courseName,courseCode){
+  var normName=(courseName||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();
+  var ps=[];try{ps=getProgs();}catch(e){}
+  for(var i=0;i<ps.length;i++){
+    var prog=ps[i];
+    var savedCD=lsGet('kiu_cd_'+prog.id)||{};
+    /* 1. Exact code match */
+    if(courseCode&&savedCD[courseCode]&&savedCD[courseCode].done&&savedCD[courseCode].text&&savedCD[courseCode].text.length>100){
+      return{text:savedCD[courseCode].text,from:(prog.meta&&prog.meta.abbr)||'saved programme'};
+    }
+    /* 2. Name match across courses in that programme */
+    var progCourses=prog.courses||[];
+    for(var j=0;j<progCourses.length;j++){
+      var pc=progCourses[j];
+      var pcNorm=(pc.name||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();
+      if(pcNorm===normName&&pc.code&&savedCD[pc.code]&&savedCD[pc.code].done&&savedCD[pc.code].text&&savedCD[pc.code].text.length>100){
+        return{text:savedCD[pc.code].text,from:(prog.meta&&prog.meta.abbr)||'saved programme'};
+      }
+    }
+  }
+  return null;
+}
+function getUCCShared(){try{return JSON.parse(localStorage.getItem(UCC_SK)||'{}');}catch(e){return{};}}
+function setUCCShared(key,data){try{var s=getUCCShared();s[key]=data;localStorage.setItem(UCC_SK,JSON.stringify(s));}catch(e){}}
+
+async function callAPI(prompt,sys,maxT){
+  maxT=maxT||2000;
+  var r=await fetch(API+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({prompt:prompt,system:sys,maxTokens:maxT})});
+  if(!r.ok){var e=await r.text();throw new Error('API '+r.status+': '+e.slice(0,200));}
+  var d=await r.json();return d.content||d.text||'';
+}
+var SYS='You are a senior curriculum developer for Kampala International University (KIU), Uganda. '
+  +'Write formal, professional academic programme documents following KIU CBE framework and NCHE Uganda standards. '
+  +'Be specific, substantive and detailed. Write in well-structured paragraphs. Do NOT use markdown headers with #. '
+  +'Use bold text with ** only for section labels. Produce complete content for every section requested.';
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+
+function progCtx(){
+  var p=getProg();assignCodes();var groups=groupBySem();
+  var cl=groups.map(function(g){return getSL(g.year,g.sem)+':'+g.courses.map(function(c){
+    return' - '+c.code+': '+c.name+' ('+getNH(c)+' NH, '+getCr(c)+' Cr'+(c.elective?' [E]':'')+')';}).join('');}).join('\n');
+  return'INSTITUTION: Kampala International University (KIU), Uganda\nPROGRAMME: '+p.name
+    +'\nAWARD: '+p.award+'\nSCHOOL: '+p.school+'\nDEPT: '+p.dept
+    +'\nUHEQF LEVEL: Level '+p.level+'\nDURATION: '+p.years+' years, '+p.mode
+    +'\n\nCURRICULUM:\n'+cl;
+}
+
+function secPrompt(key){
+  var ctx=progCtx(),p=getProg();
+  var m={
+    intro:'Write Section 1: Introduction for KIU '+p.name+'. Include: 1.1 Background of KIU (founded 2001, chartered by Government of Uganda, campuses in Kampala and Bushenyi) 1.2 Vision 1.3 Mission 1.4 Core Values (6-8 with descriptions) 1.5 Legal Status. Write in formal paragraphs, 400-500 words.\n\n'+ctx,
+    governance:'Write Section 2: Governance and Management for '+p.name+'. Describe KIU institutional governance: University Council, University Senate, School Board, Department Board, QA Directorate, Programme Coordinator. ~250 words in paragraphs.\n\n'+ctx,
+    nameCode:'Write Section 3: Programme Name, Code and Duration. Programme: '+p.name+', Code: '+p.prefix+' [Level][Year][Sem][Serial], Duration: '+p.years+' years '+p.mode+'. Include code format explanation. ~200 words.\n\n'+ctx,
+    description:'Write Section 4: Programme Description. Cover disciplinary scope, thematic areas, CBE philosophy, graduate capabilities, industry links and research emphasis. 300-400 words.\n\n'+ctx,
+    development:'Write Section 5: Programme Development/Review Process. Cover: needs assessment, stakeholder consultation, benchmarking with regional universities, institutional approval process (Dept->School Board->Senate->Council). 250 words.\n\n'+ctx,
+    rationale:'Write Section 6: Programme Rationale and Justification. Justify the need: Uganda Vision 2040, National Development Plan III alignment, industry skills gap, regional demand, NCHE mandate. 350 words.\n\n'+ctx,
+    competences:'Write Section 7: Programme Competences. List 4 competence categories with 5-6 competences each: Knowledge Competences, Practical/Technical Competences, Cognitive/Analytical Competences, Affective/Professional Competences. One clear sentence per competence.\n\n'+ctx,
+    outcomes:'Write Section 8: Programme Learning Outcomes. List 10-12 specific measurable PLOs using Bloom\'s verbs. Format: "Upon successful completion, the graduate will be able to:" then numbered list.\n\n'+ctx,
+    targetGroup:'Write Section 9: Target Group. Describe intended learners, geographic scope Uganda and East Africa, career aspirations, professional background. 200 words.\n\n'+ctx,
+    admission:'Write Section 10: Entry/Admission Requirements based on: '+($('p-admission',''))+'. Format clearly with route labels.\n\n'+ctx,
+    humanRes:'Write Section 11: Human Resources. Staff qualifications (PhD requirement), student-staff ratios, CPD policy, laboratory technicians, visiting faculty, administrative support. 300 words.\n\n'+ctx,
+    infrastructure:'Write Section 12: Physical Infrastructure and Learning Resources. Teaching spaces, laboratories and equipment, library resources, ICT infrastructure, safety equipment, e-learning platforms. 250 words.\n\n'+ctx,
+    delivery:'Write Section 13: Modes/Strategies of Delivery. CBE delivery methods: lectures, laboratory practicals, problem-based learning, industrial training, tutorials, field trips, blended learning, self-directed learning. 250 words.\n\n'+ctx,
+    assessment:'Write Section 14: Modes/Strategies of Assessment. CBE assessment: Formative 50% (CATs, practicals, assignments, presentations) and Summative 50% (written exams). Grading: A=80-100 (Distinction), B=70-79 (Merit), C=60-69 (Credit), D=50-59 (Pass), F<50 (Fail). Pass mark 50%. 300 words.\n\n'+ctx,
+    progression:'Write Section 15: Progression Rules. Normal progression criteria, minimum GPA for progression, supplementary exams, repeat policy, probationary status, discontinuation, credit transfer. 200 words.\n\n'+ctx,
+    gradLoad:'Write Section 16: Minimum Graduation Load. State: minimum 360 Credit Units (3,600 NH), 600 NH per regular semester, 60 Credits per semester. Include a graduation load summary table. ~200 words.\n\n'+ctx,
+    research:'Write Section 18: Research and Innovation. Research Methods course, final year Research Report (10 SH, 60 SH, 20 AH, 10 OH = 100 NH), departmental research clusters, undergraduate research conference participation. 200 words.\n\n'+ctx,
+    community:'Write Section 19: Community Engagement. Industrial attachments (Internships I-III), community outreach, industry partnerships, community-based projects, professional associations. 200 words.\n\n'+ctx,
+    policies:'Write Section 20: Policies. List and describe: Academic Regulations, Admissions Policy, Quality Assurance Policy, Laboratory Safety, Gender and Equity, Disability Inclusion, ICT and Data Policy, Anti-Plagiarism. 250 words.\n\n'+ctx,
+    financial:'Write Section 21: Financial Resources and Sustainability. Tuition fees (primary revenue), institutional capital investment, research grants, equipment maintenance fund, sustainability strategy. 200 words.\n\n'+ctx,
+    welfare:'Write Section 22: Students Welfare. Sports and recreation facilities, health centre, counselling services, accommodation, student union, financial aid/bursaries, career guidance centre. 200 words.\n\n'+ctx
+  };
+  return m[key]||('Write the section "'+key+'" for KIU programme: '+p.name+'.\n\n'+ctx);
+}
+
+/* COMPLETE 15-ACTION COURSE UNIT PROMPT */
+function coursePrompt(c){
+  var p=getProg(),uk=getUK(c),nh=getNH(c),cr=getCr(c);
+  var dh=c.DH||0,sh=c.SH||0,ah=c.AH||0,oh=c.OH||0;
+  var wks=Math.max(8,Math.min(15,Math.round(dh/3)||12));
+  var totalH=nh;
+  var semLabel=getSL(c.year,c.sem);
+  var crLabel=uk==='WRC'?'5 (NCHE)':String(cr);
+
+  return 'Generate a COMPLETE and DETAILED CBE Course Unit document for Kampala International University (KIU) Uganda. '
+    +'Follow ALL 15 Actions EXACTLY as specified below. Every Action must be fully written out — do not abbreviate, skip or summarise any Action.\n\n'
+    +'COURSE DETAILS:\n'
+    +'Course Name: '+c.name+'\n'
+    +'Course Code: '+(c.code||'')+'\n'
+    +'Year / Semester: '+semLabel+'\n'
+    +'Notional Hours: '+nh+' NH | DH:'+dh+' SH:'+sh+' AH:'+ah+' OH:'+oh+'\n'
+    +'Credits: '+crLabel+'\n'
+    +'Programme: '+p.name+' (UHEQF Level '+p.level+')\n'
+    +'School: '+p.school+'\n'
+    +'Department: '+p.dept+'\n'
+    +'Weeks: '+wks+'\n\n'
+    +'---\n\n'
+
+    +'Action 1: Course Justification and Aims\n'
+    +'Write 2 detailed paragraphs justifying this course in the context of Uganda, East Africa, and KIU\'s CBE framework. '
+    +'Then write Course Aims as 4 bullet points starting "Upon completing this course, students will be able to:". '
+    +'Then write a Course Description paragraph of 150 words covering scope, CBE alignment and industry relevance.\n\n'
+
+    +'Action 2: Cognitive Domain Outcomes\n'
+    +'List 6 specific cognitive outcomes using Bloom\'s verbs (Apply, Analyse, Evaluate, Create, etc.). '
+    +'Then write: **Bloom Verbs Used**: [list]. **Bloom Levels Addressed**: [list all 6 levels]. '
+    +'**Assessment Linkage**: one sentence.\n\n'
+
+    +'Action 3: Affective Domain Outcomes\n'
+    +'List 4 affective outcomes. Then write: **Values and Dispositions**: [list]. '
+    +'**Strategies**: [list]. **Evidence and Measurement**: one sentence.\n\n'
+
+    +'Action 4: Psychomotor Domain Outcomes\n'
+    +'List 4 psychomotor/practical outcomes. Then write: **Practical Activities**: [list]. '
+    +'**Practical Assessment**: [list]. **Equipment and Materials**: [list].\n\n'
+
+    +'Action 5: Competency Gap Analysis\n'
+    +'Write: **Current State**: [what students lack]. **Desired State**: [what they will achieve]. '
+    +'**Identified Gaps**: [specific gaps, 3-4 items]. **Priority Level**: High.\n\n'
+
+    +'Action 6: Knowledge, Skills and Competency Mapping\n'
+    +'List 5-6 **Core Competencies**. Then: **Knowledge Areas**: [list]. **Skills**: [list]. '
+    +'**Mapping Notes**: one sentence linking competencies to outcomes.\n\n'
+
+    +'Action 7: SMART Learning Objectives\n'
+    +'Write "Learners will be able to:" then list 6 SMART objectives, each ending with "by the end of Week [N]" '
+    +'distributed across the '+wks+'-week course.\n\n'
+
+    +'Action 8: Course Content, Notional Hours and Engagement Activities\n'
+    +'Write a **Course Content Overview** paragraph. Then produce a **Topic-by-Topic Content Plan** as a markdown table '
+    +'with these exact columns: Week | Topic/Subtopic | Key Content | Bloom Level | A hrs Directed | B hrs Self-dir | C hrs Applied | D hrs Assessed | Total h | Teaching Method | Learner Activity | Assessment Type | Resources Required | Performance Indicator | Competency Link\n'
+    +'Generate '+wks+' data rows (one per week), then a TOTALS row summing DH='+dh+', SH='+sh+', AH='+ah+', OH='+oh+', Total='+nh+'. '
+    +'After the table write: **Rationale for Sequencing**: [paragraph]. **CBE Blend Verification**: [calculate C+D hours / total NH as percentage].\n\n'
+
+    +'Action 9: Evidence-based Assessments\n'
+    +'Write **Formative Assessments (50%)** with 4 specific assessment tasks, each with week, weight and description. '
+    +'**Summative Assessments (50%)**: mid-semester test (20%) and end-of-semester examination (30%). '
+    +'Then: **Rubric**: [paragraph]. **Evidence Types**: [list]. **Mastery Criteria**: 50% pass mark. '
+    +'**Competency-Assessment Matrix**: one sentence.\n\n'
+
+    +'Action 10: Delivery Methods\n'
+    +'Write: **Modality**: [face-to-face/blended/online]. **Tools**: [list KIU tools e.g. Moodle, Zoom]. '
+    +'**Formats**: [list]. **Accessibility**: one sentence on inclusive design.\n\n'
+
+    +'Action 11: Engaging Learning Activities\n'
+    +'List 5 **Core Activities** with descriptions. Then: **Collaborative Elements**: [list]. '
+    +'**Gamification**: [sentence]. **Real-world Scenarios**: [sentence].\n\n'
+
+    +'Action 12: Flexible Learning Paths\n'
+    +'Write: **Prerequisites**: [list or None]. **Within-Course Progression**: [sentence]. '
+    +'**Self-paced Mechanism**: [sentence]. **Adaptations**: [sentence for students with disabilities]. '
+    +'**RPL Provision**: one sentence.\n\n'
+
+    +'Action 13: Instructional Strategies and Resource Materials\n'
+    +'Produce a **Strategy-Purpose-Resource Matrix** markdown table with columns: Strategy | Purpose | Resource. '
+    +'Include 5 rows. Then: **Resource Materials**: [list]. **Design Notes**: [sentence]. '
+    +'**Localised References (APA 7th, 2018-2025)**: list 6 references.\n\n'
+
+    +'Action 14: Continuous Feedback and Improvement\n'
+    +'Write: **Mechanisms**: list 4 feedback mechanisms. **Schedule**: [sentence]. '
+    +'**Improvement Process**: [sentence]. **Success Metrics**: [3 items].\n\n'
+
+    +'Action 15: Assessment Weights and Credit Structure\n'
+    +'Write **Assessment Weight Distribution**: Formative 50% (detail sub-items) and Summative 50% (detail sub-items). '
+    +'**Competence-Assessment Matrix**: sentence. '
+    +'**KIU Grading Scale**: A=80-100, B+=75-79, B=70-74, C+=65-69, C=60-64, D+=55-59, F<55. '
+    +'**Authentic Assessments** (3 real-world tasks): list. '
+    +'**Reading List (APA 7th, 8-10 refs, 2018-2025)**: list 8-10 real academic references '
+    +'including at least 2 East African or Uganda-specific sources.\n\n'
+    +'---\nEND. Ensure every Action above is fully written. Total length should be comprehensive and detailed.';
+}
+
+function updateProgress(){
+  var tot=SECTIONS.length+courses.length;
+  var dn=SECTIONS.filter(function(s){return SC[s.key]&&SC[s.key].done;}).length
+    +courses.filter(function(c){return CD[c.code]&&CD[c.code].done;}).length;
+  var pct=Math.round(dn/tot*100);
+  var pg=document.getElementById('oprog');if(pg)pg.style.width=pct+'%';
+  var pt=document.getElementById('ptxt');if(pt)pt.textContent=dn+' of '+tot+' items generated ('+pct+'%)';
+}
+
+function renderGenTab(){
+  var wb=document.getElementById('wrc-badges');
+  if(wb&&UCC.WRC&&UCC.WRC.units)wb.innerHTML=UCC.WRC.units.map(function(u){
+    return'<span class="badge-teal" style="font-size:10px">'+esc(u.code)+': '+esc(u.name)+' ('+u.h+'h)</span>';}).join(' ');
+  assignCodes();
+  var sh='';
+  SECTIONS.forEach(function(s){
+    var st=SC[s.key]||{done:false};
+    sh+='<div class="si2 '+(st.done?'done':'')+'" id="si-'+s.key+'">'
+      +'<div class="sd '+(st.done?'d':'p')+'" id="sd-'+s.key+'">'+(st.done?'\u2713':'\u25cb')+'</div>'
+      +'<div class="sn">'+s.num+' '+s.title+'</div>'
+      +'<button class="btn sm '+(st.done?'bo':'bt')+'" onclick="genSection(\''+s.key+'\',false)" id="sb-'+s.key+'">'
+      +(st.done?'\u21ba Redo':'Generate')+'</button></div>';
+  });
+  document.getElementById('sec-list').innerHTML=sh;
+
+  /* Course list — show Pull/Done status */
+  var uccShared=getUCCShared();
+  var ch='';
+  courses.forEach(function(c){
+    var det=CD[c.code]||{};
+    var uk=getUK(c);
+    var sharedKey=uk&&UCC_SHARED_KEYS.indexOf(uk)>=0?uk:null;
+    var hasShared=sharedKey&&uccShared[sharedKey]&&uccShared[sharedKey].done;
+    var isDone=!!det.done||hasShared;
+    var isPulled=!det.done&&hasShared;
+    var isCrossPulled=!det.done&&!hasShared&&det.pulledFrom==='cross-programme';
+    var statusLabel=isPulled?'\u2193 Pull UCC':isCrossPulled?'\u21ba Redo':isDone?'\u21ba Redo':'Gen';
+    var statusClass=isDone?'bo':'bt';
+    ch+='<div class="si2 '+(isDone?'done':'')+'" id="ci-'+c.id+'">'
+      +'<div class="sd '+(isDone?'d':'p')+'" id="cd-'+c.id+'">'+(isDone?'\u2713':'\u25cb')+'</div>'
+      +'<div class="sn" style="font-size:12px"><span class="cd" style="font-size:10px">'+esc(c.code)+'</span> '+esc(c.name)
+      +(isUCC(c)?'<span style="font-size:9px;color:var(--tl);margin-left:4px">[UCC]</span>':'')
+      +(isPulled?'<span style="font-size:9px;color:#065f46;margin-left:4px;font-weight:700">UCC SHARED \u2713</span>'
+        :det.pulledFrom==='cross-programme'?'<span style="font-size:9px;color:var(--nv2);margin-left:4px;font-weight:700">PULLED \u2193</span>':'')
+      +'</div>'
+      +'<button class="btn sm '+statusClass+'" onclick="genCourse('+c.id+')" id="cb-'+c.id+'">'+statusLabel+'</button>'
+      +'</div>';
+  });
+  document.getElementById('crs-list').innerHTML=ch;
+  updateProgress();
+}
+
+async function genSection(key,silent){
+  var btn=document.getElementById('sb-'+key),dot=document.getElementById('sd-'+key),item=document.getElementById('si-'+key);
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span>';}
+  if(dot){dot.className='sd r';dot.textContent='\u27f3';}if(item)item.className='si2 run';
+  var sec=SECTIONS.find(function(s){return s.key===key;}),cur=document.getElementById('gen-cur'),curT=document.getElementById('gen-cur-txt');
+  if(cur)cur.style.display='flex';if(curT&&sec)curT.textContent='Generating: '+sec.title+'...';
+  try{
+    var text=await callAPI(secPrompt(key),SYS,2000);
+    SC[key]={text:text,done:true};
+    if(btn){btn.disabled=false;btn.innerHTML='\u21ba Redo';}
+    if(dot){dot.className='sd d';dot.textContent='\u2713';}if(item)item.className='si2 done';
+    if(!genAll&&!silent){if(cur)cur.style.display='none';toast((sec?sec.title:key)+' generated!','s');}
+  }catch(e){
+    if(btn){btn.disabled=false;btn.innerHTML='Generate';}
+    if(dot){dot.className='sd p';dot.textContent='\u25cb';}if(item)item.className='si2';
+    if(!genAll&&!silent){if(cur)cur.style.display='none';toast('Error: '+e.message,'e');}
+  }
+  updateProgress();
+}
+
+async function genCourse(courseId){
+  var c=courses.find(function(x){return x.id===courseId;});if(!c)return;
+  var btn=document.getElementById('cb-'+courseId),dot=document.getElementById('cd-'+courseId),item=document.getElementById('ci-'+courseId);
+  var uk=getUK(c);
+  var sharedKey=uk&&UCC_SHARED_KEYS.indexOf(uk)>=0?uk:null;
+  var uccShared=getUCCShared();
+
+  /* 1. If already generated for THIS programme — just confirm, don't regenerate */
+  if(CD[c.code]&&CD[c.code].done&&btn&&btn.textContent.trim()!=='\u21ba Redo'){
+    toast(c.code+' already generated \u2713','s');
+    return;
+  }
+
+  /* 2. Pull from shared UCC store if available */
+  if(sharedKey&&uccShared[sharedKey]&&uccShared[sharedKey].done){
+    CD[c.code]={text:uccShared[sharedKey].text,done:true,pulledFrom:'shared'};
+    if(btn){btn.innerHTML='\u21ba Redo';}
+    if(dot){dot.className='sd d';dot.textContent='\u2713';}if(item)item.className='si2 done';
+    updateProgress();
+    if(!genAll)toast(c.name+' — pulled from shared UCC library \u2193','s');
+    return;
+  }
+
+  /* 3. Pull from server registry if available */
+  if(c.code){
+    try{
+      var sr=await fetch(API+'/api/course-detail/'+encodeURIComponent(c.code),{signal:AbortSignal.timeout(5000)});
+      if(sr.ok){var sd=await sr.json();
+        if(sd&&sd.text&&sd.text.length>200){
+          CD[c.code]={text:sd.text,done:true,pulledFrom:'registry'};
+          if(sharedKey)setUCCShared(sharedKey,{text:sd.text,done:true});
+          if(btn)btn.innerHTML='\u21ba Redo';
+          if(dot){dot.className='sd d';dot.textContent='\u2713';}if(item)item.className='si2 done';
+          updateProgress();
+          if(!genAll)toast(c.code+' — pulled from registry \u2193','s');
+          return;
+        }
+      }
+    }catch(e){}
+  }
+
+  /* 3b. Pull from any saved programme that already has this course generated */
+  try{
+    var crossResult=await findCrossProgContent(c.name,c.code);
+    if(crossResult&&crossResult.text){
+      CD[c.code]={text:crossResult.text,done:true,pulledFrom:'cross-programme'};
+      if(sharedKey)setUCCShared(sharedKey,{text:crossResult.text,done:true});
+      if(btn)btn.innerHTML='\u21ba Redo';
+      if(dot){dot.className='sd d';dot.textContent='\u2713';}if(item)item.className='si2 done';
+      updateProgress();
+      if(!genAll)toast(c.name.slice(0,30)+' \u2014 pulled from '+crossResult.from+' \u2193','s');
+      return;
+    }
+  }catch(e){}
+
+  /* 4. Generate fresh using 15-Action prompt */
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span>';}
+  if(dot){dot.className='sd r';dot.textContent='\u27f3';}if(item)item.className='si2 run';
+  var cur=document.getElementById('gen-cur'),curT=document.getElementById('gen-cur-txt');
+  if(cur)cur.style.display='flex';if(curT)curT.textContent='Generating (15 Actions): '+c.name+'...';
+  try{
+    var text=await callAPI(coursePrompt(c),SYS,8000);
+    CD[c.code]={text:text,done:true};
+    /* Save to shared store for UCC courses */
+    if(sharedKey)setUCCShared(sharedKey,{text:text,done:true});
+    /* Push to server */
+    fetch(API+'/api/course-detail',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({code:c.code,name:c.name,programme:getProg().name,text:text})}).catch(function(){});
+    if(btn){btn.disabled=false;btn.innerHTML='\u21ba Redo';}
+    if(dot){dot.className='sd d';dot.textContent='\u2713';}if(item)item.className='si2 done';
+    if(!genAll){if(cur)cur.style.display='none';toast(c.code+' generated!','s');}
+  }catch(e){
+    if(btn){btn.disabled=false;btn.innerHTML='Gen';}
+    if(dot){dot.className='sd p';dot.textContent='\u25cb';}if(item)item.className='si2';
+    if(!genAll){if(cur)cur.style.display='none';toast('Error: '+e.message,'e');}
+  }
+  updateProgress();
+}
+
+async function generateAll(){
+  genAll=true;
+  var btn=document.getElementById('gen-all-btn'),sp=document.getElementById('gas');
+  btn.disabled=true;sp.style.display='inline-block';
+  var cur=document.getElementById('gen-cur');cur.style.display='flex';
+  for(var i=0;i<SECTIONS.length;i++){
+    if(!SC[SECTIONS[i].key]||!SC[SECTIONS[i].key].done){await genSection(SECTIONS[i].key,true);await sleep(400);}
+  }
+  genAll=false;btn.disabled=false;sp.style.display='none';cur.style.display='none';
+  toast('All programme sections generated!','s');
+}
+async function generateAllCourses(){
+  genAll=true;
+  var sp=document.getElementById('gcs');sp.style.display='inline-block';
+  var cur=document.getElementById('gen-cur');cur.style.display='flex';
+  for(var i=0;i<courses.length;i++){
+    /* Skip if already done */
+    var co=courses[i];
+    var uk2=getUK(co),sk2=uk2&&UCC_SHARED_KEYS.indexOf(uk2)>=0?uk2:null;
+    var alreadyDone=(CD[co.code]&&CD[co.code].done)||(sk2&&getUCCShared()[sk2]&&getUCCShared()[sk2].done);
+    if(!alreadyDone){await genCourse(co.id);await sleep(500);}
+    else{
+      /* Mark done in UI */
+      if(sk2&&getUCCShared()[sk2]){CD[co.code]={text:getUCCShared()[sk2].text,done:true,pulledFrom:'shared'};}
+      var dot=document.getElementById('cd-'+co.id),item=document.getElementById('ci-'+co.id);
+      if(dot){dot.className='sd d';dot.textContent='\u2713';}if(item)item.className='si2 done';
+    }
+  }
+  genAll=false;sp.style.display='none';cur.style.display='none';
+  updateProgress();toast('All course units complete!','s');
+}
+function clearAll(){
+  if(!confirm('Clear all generated content?'))return;
+  SECTIONS.forEach(function(s){SC[s.key]={text:'',done:false};});CD={};
+  renderGenTab();toast('All content cleared','i');
+}
+</script>
+
+
+<script>
+/* AUTO-POPULATE FIX (#1) - Robust extraction with clear step-by-step feedback */
+var importedText='';
+function toggleImport(){var b=document.getElementById('imp-body'),ic=document.getElementById('itog');if(!b)return;var h=b.style.display==='none'||b.style.display==='';b.style.display=h?'block':'none';if(ic)ic.textContent=h?'\u25b2 Collapse':'\u25bc Click to expand';}
+function handleFileUpload(inp){var file=inp.files[0];if(file)processFile(file);}
+function handleDrop(ev){ev.preventDefault();var dz=document.getElementById('dz');if(dz)dz.style.background='var(--g50)';var file=ev.dataTransfer&&ev.dataTransfer.files[0];if(file)processFile(file);}
+async function processFile(file){
+  var ie=document.getElementById('imp-info'),er=document.getElementById('ext-err'),it=document.getElementById('imp-txt');
+  if(er){er.style.display='none';}
+  var ext=file.name.split('.').pop().toLowerCase();
+  try{
+    if(ext==='docx'||ext==='doc'){if(typeof mammoth==='undefined')throw new Error('Mammoth.js not loaded. Refresh page or paste text manually.');var buf=await file.arrayBuffer();var res=await mammoth.extractRawText({arrayBuffer:buf});importedText=res.value;if(it)it.value=importedText;if(ie){ie.textContent='\ud83d\udcc4 Loaded: '+file.name+' ('+importedText.split(/\s+/).filter(Boolean).length+' words)';ie.style.display='flex';}toast('Word document loaded!','s');}
+    else if(ext==='txt'||ext==='rtf'){importedText=await file.text();if(it)it.value=importedText;if(ie){ie.textContent='\ud83d\udcc4 Loaded: '+file.name;ie.style.display='flex';}toast('File loaded!','s');}
+    else throw new Error('Unsupported: .'+ext+'. Use .docx, .doc, or .txt');
+  }catch(e){if(er){er.textContent='\u274c '+e.message;er.style.display='flex';}toast(e.message,'e');}
+}
+function clearImport(){importedText='';var it=document.getElementById('imp-txt');if(it)it.value='';var ie=document.getElementById('imp-info');if(ie)ie.style.display='none';var er=document.getElementById('ext-err');if(er)er.style.display='none';var fu=document.getElementById('fu');if(fu)fu.value='';toast('Cleared','i');}
+function normSem(s){var v=String(s||'1').toLowerCase().trim();if(v==='1'||v==='i'||v==='one'||v==='first')return'1';if(v==='2'||v==='ii'||v==='two'||v==='second')return'2';if(v==='r'||v==='recess'||v==='summer'||v==='vacation')return'R';return'1';}
+function smartChunk(text){var lo=text.toLowerCase(),marks=['year 1','semester 1','curriculum structure','course unit','credit unit','notional hours'],best=-1;for(var i=0;i<marks.length;i++){var idx=lo.indexOf(marks[i]);if(idx>0&&(best<0||idx<best))best=idx;}return text.slice(Math.max(0,best>0?best-300:0),30000);}
+
+async function extractAndFill(){
+  var rawText=importedText||($('imp-txt','')).trim();
+  if(!rawText){toast('Please upload a file or paste programme text first','e');return;}
+  var btn=document.getElementById('ext-btn'),stat=document.getElementById('ext-stat'),er=document.getElementById('ext-err');
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span> Extracting...';}
+  if(stat){stat.style.display='block';stat.innerHTML='<strong>Step 1/3</strong> \u2014 Reading programme metadata...';}
+  if(er)er.style.display='none';
+  try{
+    /* Step 1: Extract metadata */
+    var metaP='Extract programme metadata from this document. Return ONLY valid JSON, no other text, no markdown:\n{"name":"","award":"","abbr":"","prefix":"","school":"","dept":"","hod":"","level":7,"years":3,"mode":"Full-time","date":"","admission":""}\n\nDOCUMENT (first 5000 chars):\n'+rawText.slice(0,5000);
+    var metaResp=await callAPI(metaP,'Return only valid JSON. No markdown backticks, no explanation, no preamble. Just the JSON object.',600);
+    var meta={};
+    try{
+      var cleaned=metaResp.replace(/```[\s\S]*?```/g,'').replace(/`/g,'').trim();
+      var ms=cleaned.indexOf('{'),me=cleaned.lastIndexOf('}');
+      if(ms>=0&&me>ms)meta=JSON.parse(cleaned.slice(ms,me+1));
+    }catch(pe){console.warn('meta parse failed',pe);}
+    if(meta.name)sv('p-name',meta.name);if(meta.award)sv('p-award',meta.award);if(meta.abbr)sv('p-abbr',meta.abbr);if(meta.prefix){sv('p-prefix',meta.prefix.toUpperCase());if(document.getElementById('p-prefix'))document.getElementById('p-prefix').value=meta.prefix.toUpperCase();}if(meta.school)sv('p-school',meta.school);if(meta.dept)sv('p-dept',meta.dept);if(meta.hod)sv('p-hod',meta.hod);if(meta.level){var le=document.getElementById('p-level');if(le)le.value=String(meta.level);}if(meta.years){var ye=document.getElementById('p-years');if(ye)ye.value=String(meta.years);}if(meta.mode)sv('p-mode',meta.mode);if(meta.date)sv('p-date',meta.date);if(meta.admission)sv('p-admission',meta.admission);
+    stat.innerHTML='<strong>Step 2/3</strong> \u2014 Extracting course units (this may take 30-60 seconds)...';
+    /* Step 2: Extract courses */
+    var pfx=(meta.prefix||getProg().prefix||'PRG').toUpperCase().trim();
+    var cP='Extract ALL programme-specific course units from this programme document. Exclude University Common Courses (UCC) like Computer Fundamentals, English Language Skills, Communication Skills, Research Methods, Community Engagement, Internship, Research Report, Work Readiness Course.\nReturn ONLY a JSON array, no other text:\n[{"name":"","prefix":"'+pfx+'","type":"lab","DH":40,"SH":30,"AH":20,"OH":10,"year":1,"sem":"1","elective":false}]\nRules: sem must be "1","2" or "R" only. Include ALL courses. Return ONLY the array.\n\nDOCUMENT:\n'+smartChunk(rawText);
+    var cResp=await callAPI(cP,'Return only a valid JSON array of course objects. No markdown, no explanation, no preamble.',4000);
+    stat.innerHTML='<strong>Step 3/3</strong> \u2014 Building curriculum structure...';
+    var cj=cResp.replace(/```json\s?/g,'').replace(/```\s?/g,'').trim();
+    var cs=cj.indexOf('['),ce=cj.lastIndexOf(']');
+    if(cs<0||ce<=cs)throw new Error('No course array returned by AI. Try again or paste more complete programme text.');
+    var rawC=JSON.parse(cj.slice(cs,ce+1));
+    if(!rawC||rawC.length<2)throw new Error('Only '+((rawC||[]).length)+' courses extracted. The document may be missing a curriculum structure section.');
+    var pfxUC=pfx.toUpperCase();
+    courses=rawC.map(function(c,i){return{id:i+1,year:parseInt(c.year)||1,sem:normSem(c.sem),prefix:String(c.prefix||pfxUC).toUpperCase().slice(0,5)||pfxUC,name:String(c.name||'Course '+(i+1)).trim(),type:['lec','lab','prac','ind','proj'].indexOf(c.type)>=0?c.type:'lec',DH:parseInt(c.DH)||40,SH:parseInt(c.SH)||30,AH:parseInt(c.AH)||20,OH:parseInt(c.OH)||10,elective:!!c.elective};}).filter(function(c){return c.name.length>2;});
+    nextId=courses.length+1;
+    /* Add back standard UCCs if not already present */
+    var uccToAdd=['ICF','ELS','CS','RM','CE','IN1','WRC','IN2','RR'];
+    uccToAdd.forEach(function(key){if(!courses.some(function(c){return getUK(c)===key;})){var def=UCC[key];if(def)courses.push({id:nextId++,year:def.year,sem:def.sem,prefix:def.prefix,name:def.name,type:def.type,DH:def.DH,SH:def.SH,AH:def.AH,OH:def.OH,elective:false});}});
+    courses.forEach(function(c){var uk=getUK(c);if(uk&&UCC[uk]){var def=UCC[uk];c.DH=def.DH;c.SH=def.SH;c.AH=def.AH;c.OH=def.OH;c.type=def.type||c.type;c.prefix=def.prefix||c.prefix;c.name=def.name||c.name;c.locked=true;}});
+    enforceSems();assignCodes();
+    SECTIONS.forEach(function(s){SC[s.key]={text:'',done:false};});CD={};
+    stat.innerHTML='<span style="color:var(--gn);font-weight:700">\u2705 Complete! '+courses.length+' courses loaded from "'+esc(meta.name||'your document')+'".</span>';
+    renderUCCList();toast(courses.length+' courses extracted and loaded!','s');switchTab('curriculum');
+    setTimeout(function(){syncWithRegistry(true);},800);
+  }catch(e){
+    if(stat)stat.innerHTML='<span style="color:var(--rd)">\u274c Error: '+esc(e.message)+'</span>';
+    if(er){er.textContent='\u274c '+e.message+' \u2014 Tip: Make sure the backend is running and your document contains a curriculum/course list.';er.style.display='flex';}
+    toast('Extraction failed: '+e.message,'e');
+  }
+  if(btn){btn.disabled=false;btn.innerHTML='\ud83d\udd0d Extract &amp; Auto-Fill All Fields';}
+}
+
+</script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   PROGRAMME STORAGE  —  Split-key design to beat 5 MB limit
+   ───────────────────────────────────────────────────────────────
+   kiu_cbe_v2          → array of prog headers (meta + courses only, NO SC/CD)
+   kiu_sc_{id}         → section content  (SC) for that programme
+   kiu_cd_{id}         → course details   (CD) for that programme
+   kiu_ucc_content_v1  → shared UCC course content (already in block 5)
+   ═══════════════════════════════════════════════════════════════ */
+var SK='kiu_cbe_v2';
+
+function getProgs(){
+  try{return JSON.parse(localStorage.getItem(SK)||'[]');}catch(e){return[];}
+}
+function saveProgs(ps){
+  try{localStorage.setItem(SK,JSON.stringify(ps));}
+  catch(e){console.error('saveProgs failed',e);}
+}
+
+/* — sub-store helpers — */
+function lsSet(key,data){
+  try{localStorage.setItem(key,JSON.stringify(data));return true;}
+  catch(e){
+    /* quota exceeded — try to free space by removing old content for same prog */
+    try{localStorage.removeItem(key);}catch(e2){}
+    try{localStorage.setItem(key,JSON.stringify(data));return true;}
+    catch(e3){return false;}
+  }
+}
+function lsGet(key){
+  try{var v=localStorage.getItem(key);return v?JSON.parse(v):null;}catch(e){return null;}
+}
+function lsDel(key){try{localStorage.removeItem(key);}catch(e){}}
+
+/* — count helpers used in renderProgList — */
+function countSecDone(id){
+  var savedSC=lsGet('kiu_sc_'+id)||{};
+  return SECTIONS.filter(function(s){return savedSC[s.key]&&savedSC[s.key].done;}).length;
+}
+function countCdDone(id,cs){
+  var savedCD=lsGet('kiu_cd_'+id)||{};
+  return (cs||[]).filter(function(c){return savedCD[c.code]&&savedCD[c.code].done;}).length;
+}
+
+/* ═══ SAVE ═══════════════════════════════════════════════════ */
+function saveCurrentProgramme(){
+  var p=getProg();
+  if(!p.name||p.name.trim().length<3){
+    toast('Enter a Programme Name in Setup tab first','e');
+    switchTab('setup');return;
+  }
+  assignCodes();
+
+  /* Count what we actually have before saving */
+  var secDone=SECTIONS.filter(function(s){return SC[s.key]&&SC[s.key].done;}).length;
+  var cdDone=courses.filter(function(c){return CD[c.code]&&CD[c.code].done;}).length;
+
+  /* Build header (small — no SC/CD blobs) */
+  var now=new Date();
+  var id;
+  var ps=getProgs();
+  var idx=ps.findIndex(function(x){return x.meta&&x.meta.name===p.name;});
+  if(idx>=0){
+    if(!confirm('"'+p.name+'" already saved. Overwrite?'))return;
+    id=ps[idx].id;   // reuse same id so sub-keys stay consistent
+    ps[idx]={id:id,savedAt:now.toISOString(),version:3,meta:p,
+              courses:JSON.parse(JSON.stringify(courses)),
+              secCount:secDone,cdCount:cdDone};
+  }else{
+    id=now.getTime();
+    ps.push({id:id,savedAt:now.toISOString(),version:3,meta:p,
+              courses:JSON.parse(JSON.stringify(courses)),
+              secCount:secDone,cdCount:cdDone});
+  }
+
+  /* Save header list */
+  saveProgs(ps);
+
+  /* Save SC in separate key */
+  var scOk=lsSet('kiu_sc_'+id,JSON.parse(JSON.stringify(SC)));
+
+  /* Save CD in separate key */
+  var cdOk=lsSet('kiu_cd_'+id,JSON.parse(JSON.stringify(CD)));
+
+  renderProgList();
+
+  if(!scOk||!cdOk){
+    toast('\u26a0 Saved (partial — storage full). Export JSON now to back up!','e');
+  }else{
+    toast('\u2705 "'+p.name+'" saved \u2014 '
+      +courses.length+' courses, '
+      +secDone+'/'+SECTIONS.length+' sections, '
+      +cdDone+' course units','s');
+  }
+  /* Also save to local folder if connected (non-blocking) */
+  if(typeof fsSaveFile==='function'&&typeof _fsHandle!=='undefined'&&_fsHandle){
+    var fullSnap=Object.assign({},snap,{SC:JSON.parse(JSON.stringify(SC)),CD:JSON.parse(JSON.stringify(CD))});
+    fsSaveFile(fullSnap).then(function(nm){
+      if(nm){var sub=document.getElementById('fs-sub');
+        if(sub)sub.textContent='Last saved: "'+nm+'" — '+new Date().toLocaleTimeString('en-UG');}
+    }).catch(function(){});
+  }
+}
+
+/* ═══ LOAD ═══════════════════════════════════════════════════ */
+function loadProgramme(id){
+  var ps=getProgs(),prog=ps.find(function(x){return x.id===id;});
+  if(!prog){toast('Programme not found — try Import JSON','e');return;}
+
+  var m=prog.meta||prog;
+
+  /* Restore Setup fields */
+  sv('p-name',m.name);sv('p-award',m.award||'');sv('p-abbr',m.abbr||'');
+  sv('p-prefix',m.prefix||'');sv('p-school',m.school||'');
+  sv('p-dept',m.dept||'');sv('p-hod',m.hod||'');
+  var le=document.getElementById('p-level');if(le&&m.level)le.value=String(m.level);
+  var ye=document.getElementById('p-years');if(ye&&m.years)ye.value=String(m.years);
+  sv('p-mode',m.mode||'Full-time');sv('p-date',m.date||'');
+  if(m.admission)sv('p-admission',m.admission);
+
+  /* Restore courses */
+  courses=JSON.parse(JSON.stringify(prog.courses||[]));
+  nextId=Math.max.apply(null,courses.map(function(c){return c.id||0;}).concat([0]))+1;
+
+  /* Restore SC from split key — fallback to inline for old v2 saves */
+  var savedSC=lsGet('kiu_sc_'+id)||prog.SC||prog.sectionContent||{};
+  SECTIONS.forEach(function(s){SC[s.key]=savedSC[s.key]||{text:'',done:false};});
+
+  /* Restore CD from split key — fallback to inline for old v2 saves */
+  CD=JSON.parse(JSON.stringify(lsGet('kiu_cd_'+id)||prog.CD||prog.courseDetails||{}));
+
+  assignCodes();renderUCCList();renderCurriculum();renderGenTab();renderProgList();
+
+  var secDone=SECTIONS.filter(function(s){return SC[s.key]&&SC[s.key].done;}).length;
+  var cdDone=courses.filter(function(c){return CD[c.code]&&CD[c.code].done;}).length;
+  toast('\u2705 "'+((m&&m.name)||'Programme')+'" loaded \u2014 '
+    +courses.length+' courses, '+secDone+'/'+SECTIONS.length+' sections, '
+    +cdDone+' course unit(s) restored','s');
+  switchTab('curriculum');
+}
+
+/* ═══ DELETE ═════════════════════════════════════════════════ */
+function deleteProg(id){
+  var ps=getProgs(),p=ps.find(function(x){return x.id===id;});if(!p)return;
+  if(!confirm('Delete "'+(p.meta&&p.meta.name||'this programme')+'"?\nThis also removes all saved sections and course units.'))return;
+  saveProgs(ps.filter(function(x){return x.id!==id;}));
+  lsDel('kiu_sc_'+id);
+  lsDel('kiu_cd_'+id);
+  renderProgList();toast('Programme deleted','i');
+}
+
+/* ═══ RENDER LIST ════════════════════════════════════════════ */
+function renderProgList(){
+  var el=document.getElementById('prog-list');if(!el)return;
+  var ps=getProgs().filter(function(p){return p.id;});
+  if(!ps.length){
+    el.innerHTML='<div class="al ai">No programmes saved yet. '
+      +'Use <strong>Save Current Programme</strong> above.</div>';
+    return;
+  }
+  ps=ps.slice().sort(function(a,b){return new Date(b.savedAt)-new Date(a.savedAt);});
+  el.innerHTML=ps.map(function(p){
+    var m=p.meta||p,nm=(m.name||p.name||'Unnamed').trim(),ab=m.abbr||p.abbr||'';
+    var cs=p.courses||[];
+    /* Read counts from split keys (fast — just checking keys) */
+    var secDone=countSecDone(p.id);
+    var cdDone=countCdDone(p.id,cs);
+    /* Fallback to cached header counts for speed if sub-keys missing */
+    if(secDone===0&&p.secCount>0)secDone=p.secCount;
+    if(cdDone===0&&p.cdCount>0)cdDone=p.cdCount;
+    var pctSec=Math.round(secDone/SECTIONS.length*100);
+    var pctCd=cs.length?Math.round(cdDone/cs.length*100):0;
+    var dt=p.savedAt?new Date(p.savedAt).toLocaleString('en-UG',
+      {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+    var colSec=pctSec===100?'var(--gn)':pctSec>0?'var(--gd)':'var(--g500)';
+    var colCd=pctCd===100?'var(--gn)':pctCd>0?'var(--gd)':'var(--g500)';
+    return '<div style="border:1.5px solid var(--g200);border-radius:6px;padding:12px 14px;margin-bottom:8px;background:#fff">'
+      +'<div style="display:flex;align-items:flex-start;gap:12px">'
+      +'<div style="flex:1">'
+      +'<div style="font-weight:700;color:var(--nv);font-size:13px">'+esc(nm)+'</div>'
+      +'<div style="font-size:11px;color:var(--g500);margin-top:2px">'+esc(ab)
+        +' &middot; Level '+(m.level||7)
+        +' &middot; '+cs.length+' courses'
+        +' &middot; Saved: '+dt+'</div>'
+      +'<div style="display:flex;gap:16px;margin-top:6px">'
+      +'<span style="font-size:12px"><strong style="color:var(--nv)">Sections:</strong> '
+        +'<span style="color:'+colSec+';font-weight:700">'+secDone+'/'+SECTIONS.length+' ('+pctSec+'%)</span></span>'
+      +'<span style="font-size:12px"><strong style="color:var(--nv)">Course Units:</strong> '
+        +'<span style="color:'+colCd+';font-weight:700">'+cdDone+'/'+cs.length+' ('+pctCd+'%)</span></span>'
+      +'</div></div>'
+      +'<div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0">'
+      +'<button class="btn bt sm" onclick="loadProgramme('+p.id+')" style="white-space:nowrap">\u21a9 Load</button>'
+      +'<button class="btn bg sm" onclick="dlDocFor('+p.id+')">\ud83d\udcc4 Word</button>'
+      +'<button class="btn bo sm" onclick="exportSingle('+p.id+')">\u21e9 JSON</button>'
+      +'<button class="btn br sm" onclick="deleteProg('+p.id+')">\u2715 Delete</button>'
+      +'</div></div></div>';
+  }).join('');
+}
+
+/* ═══ EXPORT / IMPORT ════════════════════════════════════════ */
+function exportAllProgrammes(){
+  var ps=getProgs();
+  if(!ps.length){toast('No programmes to export','e');return;}
+  /* Include SC and CD in export */
+  var full=ps.map(function(p){
+    return Object.assign({},p,{
+      SC:lsGet('kiu_sc_'+p.id)||p.SC||{},
+      CD:lsGet('kiu_cd_'+p.id)||p.CD||{}
+    });
+  });
+  var blob=new Blob([JSON.stringify(full,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='KIU_All_Programmes_'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(a.href);},5000);
+  toast('Exported '+ps.length+' programme(s) with all content','s');
+}
+
+function exportSingle(id){
+  var ps=getProgs(),p=ps.find(function(x){return x.id===id;});if(!p)return;
+  var full=Object.assign({},p,{
+    SC:lsGet('kiu_sc_'+id)||p.SC||{},
+    CD:lsGet('kiu_cd_'+id)||p.CD||{}
+  });
+  var blob=new Blob([JSON.stringify([full],null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  var nm=(p.meta&&p.meta.abbr||p.meta&&p.meta.name||'Programme').replace(/[^a-zA-Z0-9]/g,'_');
+  a.download='KIU_'+nm+'_'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(a.href);},5000);
+  toast('Exported "'+((p.meta&&p.meta.name)||'Programme')+'" with all content','s');
+}
+
+function importProgrammes(inp){
+  var file=inp.files[0];if(!file)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    try{
+      var ps=JSON.parse(e.target.result);
+      if(!Array.isArray(ps))ps=[ps];
+      if(!ps.length)throw new Error('No programmes found in file');
+      var ex=getProgs(),added=0,updated=0;
+      ps.forEach(function(p){
+        if(!p.id)p.id=Date.now()+Math.floor(Math.random()*1000);
+        /* Save SC and CD to split keys */
+        if(p.SC&&Object.keys(p.SC).length)lsSet('kiu_sc_'+p.id,p.SC);
+        if(p.CD&&Object.keys(p.CD).length)lsSet('kiu_cd_'+p.id,p.CD);
+        /* Count and update header */
+        var secDone=SECTIONS.filter(function(s){return p.SC&&p.SC[s.key]&&p.SC[s.key].done;}).length;
+        var cdDone=(p.courses||[]).filter(function(c){return p.CD&&p.CD[c.code]&&p.CD[c.code].done;}).length;
+        /* Store header without SC/CD blobs */
+        var header=Object.assign({},p,{SC:undefined,CD:undefined,secCount:secDone,cdCount:cdDone,version:3});
+        delete header.SC;delete header.CD;
+        var i=ex.findIndex(function(x){return x.id===p.id;});
+        if(i>=0){ex[i]=header;updated++;}else{ex.push(header);added++;}
+      });
+      saveProgs(ex);renderProgList();
+      toast(added+' added, '+updated+' updated from import','s');
+    }catch(err){toast('Import failed: '+err.message,'e');}
+  };
+  r.readAsText(file);inp.value='';
+}
+</script>
+
+
+
+<script>
+/* WORD DOC GENERATION (simplified but functional) */
+var TF='<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>';
+var _nR=[],_nC=10;
+function rN(){_nR=[];_nC=10;}
+function nId(abs){var id=_nC++;_nR.push({id:id,abs:abs});return String(id);}
+function mkP(text,opts){opts=opts||{};var TFF='<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>';var sz=opts.sz||22;var col=opts.color?'<w:color w:val="'+xe(opts.color)+'"/>':'';var b=opts.bold?'<w:b/><w:bCs/>':'';var it=opts.italic?'<w:i/><w:iCs/>':'';var jc=opts.align?'<w:jc w:val="'+opts.align+'"/>':'<w:jc w:val="both"/>';var sp='<w:spacing w:before="'+(opts.before||0)+'" w:after="'+(opts.after!==undefined?opts.after:120)+'"/>';var num=opts.numId?'<w:numPr><w:ilvl w:val="0"/><w:numId w:val="'+opts.numId+'"/></w:numPr>':'';var body=typeof text==='string'?'<w:r><w:rPr>'+TFF+'<w:sz w:val="'+sz+'"/><w:szCs w:val="'+sz+'"/>'+col+b+it+'</w:rPr><w:t xml:space="preserve">'+xe(String(text))+'</w:t></w:r>':(text||'');return'<w:p><w:pPr>'+num+jc+sp+'</w:pPr>'+body+'</w:p>';}
+function H1(t){return mkP(t,{sz:28,bold:true,color:'0F2D4A',before:280,after:100,align:'left'});}
+function H2(t){return mkP(t,{sz:24,bold:true,color:'117A7A',before:200,after:80,align:'left'});}
+function mkC(con,opts){opts=opts||{};var w=opts.w||1800,bc=opts.bc||'CCCCCC',fill=opts.fill?'<w:shd w:val="clear" w:color="auto" w:fill="'+opts.fill+'"/>':'',span=opts.span?'<w:gridSpan w:val="'+opts.span+'"/>':'',bdr='<w:tcBorders><w:top w:val="single" w:sz="4" w:color="'+bc+'"/><w:bottom w:val="single" w:sz="4" w:color="'+bc+'"/><w:left w:val="single" w:sz="4" w:color="'+bc+'"/><w:right w:val="single" w:sz="4" w:color="'+bc+'"/></w:tcBorders>',mar='<w:tcMar><w:top w:w="80" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/><w:left w:w="120" w:type="dxa"/><w:right w:w="120" w:type="dxa"/></w:tcMar>';var body=typeof con==='string'?mkP(sm(con),Object.assign({},opts,{before:0,after:0})):con;return'<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+span+bdr+fill+mar+'</w:tcPr>'+body+'</w:tc>';}
+function mkR(cells,hdr){return'<w:tr><w:trPr>'+(hdr?'<w:tblHeader/>':'')+'</w:trPr>'+cells+'</w:tr>';}
+function mkTbl(rows,W,cws){var gc=(cws||[]).map(function(w){return'<w:gridCol w:w="'+w+'"/>';}).join('');return'<w:tbl><w:tblPr><w:tblW w:w="'+(W||9000)+'" w:type="dxa"/><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+gc+'</w:tblGrid>'+rows+'</w:tbl>';}
+function sp2(n){n=n||1;return Array(n).fill('<w:p><w:pPr><w:spacing w:after="80"/></w:pPr></w:p>').join('');}
+
+function t2w(rawText){
+  if(!rawText)return mkP('[Content not yet generated]',{italic:true,color:'888888'});
+  var lines=rawText.split('\n'),parts=[],inB=false,inN=false,bId=null,nId2=null;
+  var inTbl=false,tblRows=[];
+
+  function flushTbl(){
+    if(!tblRows.length){inTbl=false;tblRows=[];return;}
+    // Remove pure separator rows like |---|---|
+    var dataRows=tblRows.filter(function(r){
+      var stripped=r.replace(/\|/g,'').replace(/[-:\s]/g,'');
+      return stripped.length>0;
+    });
+    if(dataRows.length<1){inTbl=false;tblRows=[];return;}
+    var parsed=dataRows.map(function(row){
+      return row.split('|').map(function(c){return c.trim();}).filter(function(c){return c!=='';});
+    }).filter(function(r){return r.length>0;});
+    if(!parsed.length)return;
+    var numCols=parsed.reduce(function(mx,r){return Math.max(mx,r.length);},0);
+    if(!numCols){inTbl=false;tblRows=[];return;}
+    var TW=14400;
+    // Distribute column widths — first col narrow if looks like Week/number
+    var cws=[];
+    var firstIsNum=parsed[0]&&/^(week|wk|no|#|\d)/i.test(parsed[0][0]||'');
+    for(var ci=0;ci<numCols;ci++){
+      if(ci===0&&firstIsNum)cws.push(Math.floor(TW*0.045));
+      else cws.push(Math.floor((TW-(firstIsNum?Math.floor(TW*0.045):0))/(numCols-(firstIsNum?1:0))));
+    }
+    // Ensure sum matches TW
+    var diff=TW-cws.reduce(function(a,b){return a+b;},0);
+    cws[cws.length-1]+=diff;
+    var rows='';
+    parsed.forEach(function(row,ri){
+      var isHdr=ri===0;
+      var cells='';
+      for(var ci=0;ci<numCols;ci++){
+        var cell=row[ci]||'';
+        cells+=mkC(sm(cell),{w:cws[ci],
+          fill:isHdr?'0F2D4A':'FFFFFF',
+          bc:isHdr?'0F2D4A':'AAAAAA',
+          bold:isHdr,color:isHdr?'FFFFFF':'000000',
+          sz:isHdr?16:18,align:isHdr?'center':'left'});
+      }
+      rows+=mkR(cells,isHdr);
+    });
+    parts.push(mkTbl(rows,TW,cws));
+    parts.push(sp2(1));
+    inTbl=false;tblRows=[];
+  }
+
+  lines.forEach(function(line){
+    var t=line.trim();
+    // Detect table row (starts with | or has multiple |)
+    if(t.charAt(0)==='|'){
+      inTbl=true;tblRows.push(t);return;
+    }
+    if(inTbl)flushTbl();
+    // SKIP all horizontal rule lines --- *** ___ entirely — no lines in Word doc
+    if(/^[-*_=]{2,}$/.test(t))return;
+    if(!t){inB=false;inN=false;bId=null;nId2=null;parts.push(sp2(1));return;}
+    if(t.slice(0,4)==='### '||t.slice(0,3)==='## '||t.slice(0,2)==='# '){
+      inB=false;inN=false;
+      parts.push(H2(t.replace(/^#+\s/,'')));return;
+    }
+    var j=0;while(j<t.length&&t[j]>='0'&&t[j]<='9')j++;
+    if(j>0&&j<t.length-1&&t[j]==='.'&&t[j+1]===' '){
+      if(!inN){nId2=nId('1');inN=true;inB=false;}
+      parts.push(mkP(sm(t.slice(j+2)),{numId:nId2,before:0,after:60}));return;
+    }
+    if((t[0]==='-'||t[0]==='*')&&t.length>1&&t[1]===' '){
+      if(!inB){bId=nId('0');inB=true;inN=false;}
+      parts.push(mkP(sm(t.slice(2)),{numId:bId,before:0,after:60}));return;
+    }
+    inB=false;inN=false;
+    parts.push(mkP(sm(t),{align:'both',before:0,after:80}));
+  });
+  if(inTbl)flushTbl();
+  return parts.join('');
+}
+
+function buildCover(p){var NV='0F2D4A',GR='1A7A4A';var pgB='<w:pgBorders w:offsetFrom="page"><w:top w:val="single" w:sz="24" w:space="24" w:color="'+GR+'"/><w:left w:val="single" w:sz="24" w:space="24" w:color="'+GR+'"/><w:bottom w:val="single" w:sz="24" w:space="24" w:color="'+GR+'"/><w:right w:val="single" w:sz="24" w:space="24" w:color="'+GR+'"/></w:pgBorders>';var sP='<w:sectPr>'+pgB+'<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720"/></w:sectPr>';var out=[];out.push(mkP('',{before:700,after:0,align:'center'}));out.push(mkP('KAMPALA INTERNATIONAL UNIVERSITY',{sz:26,bold:true,color:NV,before:0,after:80,align:'center'}));out.push(mkP('Kampala | Bushenyi | Uganda',{sz:20,color:'555555',italic:true,before:0,after:240,align:'center'}));out.push(mkP(xes(p.school||''),{sz:22,bold:true,color:NV,before:0,after:60,align:'center'}));out.push(mkP(xes(p.dept||''),{sz:22,color:'333333',before:0,after:200,align:'center'}));out.push(mkP(xes(p.name||''),{sz:32,bold:true,color:NV,before:0,after:60,align:'center'}));out.push(mkP('('+xes(p.award||'')+')  ('+xes(p.abbr||'')+')',{sz:24,color:'117A7A',before:0,after:200,align:'center'}));out.push(mkP('Submitted to the National Council for Higher Education (NCHE), Uganda',{sz:22,bold:true,color:NV,before:0,after:200,align:'center'}));out.push(mkP(String(p.date||'').toUpperCase(),{sz:24,bold:true,color:NV,before:0,after:0,align:'center'}));out.push('<w:p><w:pPr><w:jc w:val="center"/>'+sP+'</w:pPr></w:p>');return out.join('');}
+
+function buildMatrix(){var NV='0F2D4A',WH='FFFFFF',CW=14400,COLS=[2000,4800,800,800,800,800,900,800],HDRS=['Code','Course Name','DH','SH','AH','OH','NH','Cr'],out='',groups=groupBySem();groups.forEach(function(g){out+=H2(getSL(g.year,g.sem));var rows='';rows+=mkR(HDRS.map(function(h,i){return mkC(h,{w:COLS[i],fill:NV,bc:NV,bold:true,color:WH,sz:18,align:'center'});}).join(''),true);g.courses.forEach(function(c){var nh=getNH(c),cr=getCr(c),uk=getUK(c);var fill=uk==='WRC'?'FFFBF0':uk?'EEF8F8':c.elective?'FFFDF0':'FFFFFF',bc=uk?'117A7A':'DDDDDD';rows+=mkR([mkC(c.code||'',{w:COLS[0],fill:fill,bc:bc,sz:17,bold:!!uk}),mkC(sm(c.name)+(c.elective?' (E)':''),{w:COLS[1],fill:fill,bc:bc,sz:20,italic:!!c.elective}),mkC(String(c.DH),{w:COLS[2],fill:fill,bc:bc,sz:20,align:'center'}),mkC(String(c.SH),{w:COLS[3],fill:fill,bc:bc,sz:20,align:'center'}),mkC(String(c.AH),{w:COLS[4],fill:fill,bc:bc,sz:20,align:'center'}),mkC(String(c.OH),{w:COLS[5],fill:fill,bc:bc,sz:20,align:'center'}),mkC(String(nh),{w:COLS[6],fill:fill,bc:bc,sz:20,bold:true,align:'center'}),mkC(String(cr),{w:COLS[7],fill:fill,bc:bc,sz:20,bold:true,align:'center'})].join(''));});var gNH=semNH(g.courses),gCr=semCr(g.courses);rows+=mkR([mkC('Semester Total (Core)',{w:COLS.slice(0,6).reduce(function(a,b){return a+b;},0),fill:NV,bc:NV,bold:true,color:WH,sz:20,span:6,align:'right'}),mkC(String(gNH),{w:COLS[6],fill:NV,bc:NV,bold:true,color:WH,sz:20,align:'center'}),mkC(String(gCr),{w:COLS[7],fill:NV,bc:NV,bold:true,color:WH,sz:20,align:'center'})].join(''));out+=mkTbl(rows,CW,COLS);out+=sp2(1);});return out;}
+
+function buildDocxParts(p,body){var now=new Date().toISOString();var numInst='';if(_nR&&_nR.length)_nR.forEach(function(e){numInst+='<w:num w:numId="'+e.id+'"><w:abstractNumId w:val="'+e.abs+'"/><w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride></w:num>';});
+  var CT='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/><Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>';
+  var RELS='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>';
+  var DRELS='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/></Relationships>';
+  var DOC='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+body+'<w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720"/></w:sectPr></w:body></w:document>';
+  var NUM='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:abstractNum w:abstractNumId="0"><w:multiLevelType w:val="hybridMultilevel"/><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="bullet"/><w:lvlText w:val="&#x2022;"/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="720" w:hanging="360"/></w:pPr></w:lvl></w:abstractNum><w:abstractNum w:abstractNumId="1"><w:multiLevelType w:val="hybridMultilevel"/><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="720" w:hanging="360"/></w:pPr></w:lvl></w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num><w:num w:numId="2"><w:abstractNumId w:val="1"/></w:num>'+numInst+'</w:numbering>';
+  var STY='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr>'+TF+'<w:sz w:val="24"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120"/><w:jc w:val="both"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/></w:style></w:styles>';
+  var SET='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>';
+  var CORE='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>'+xe(sm(p.name||''))+'</dc:title><dc:creator>KIU CBE Generator</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">'+now+'</dcterms:created></cp:coreProperties>';
+  return{CT:CT,RELS:RELS,DRELS:DRELS,DOC:DOC,NUM:NUM,STY:STY,SET:SET,CORE:CORE};
+}
+
+async function saveDocx(parts,fname,msg){if(typeof JSZip==='undefined'){toast('JSZip not loaded — refresh page','e');return;}try{var zip=new JSZip();zip.file('[Content_Types].xml',parts.CT);zip.folder('_rels').file('.rels',parts.RELS);var w=zip.folder('word');w.file('document.xml',parts.DOC);w.file('styles.xml',parts.STY);w.file('numbering.xml',parts.NUM);w.file('settings.xml',parts.SET);w.folder('_rels').file('document.xml.rels',parts.DRELS);zip.folder('docProps').file('core.xml',parts.CORE);var blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',compression:'DEFLATE',compressionOptions:{level:6}});var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=fname||'KIU.docx';document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(url);},5000);toast(msg||'\u2705 Downloaded!','s');}catch(e){toast('\u274c '+e.message,'e');}}
+
+async function buildDoc(p,cs,sc,cd){rN();var _oc=courses,_od=CD;if(cs&&cs.length){courses=cs;CD=cd||{};}assignCodes();var groups=groupBySem(),body=buildCover(p);var S1=[['intro','1.','Introduction'],['governance','2.','Governance and Management'],['nameCode','3.','Programme Name, Code and Duration'],['description','4.','Programme Description'],['development','5.','Programme Development/Review Process'],['rationale','6.','Programme Rationale/Justification'],['competences','7.','Programme Competences'],['outcomes','8.','Programme Learning Outcomes'],['targetGroup','9.','Target Group'],['admission','10.','Admission Requirements'],['humanRes','11.','Human Resources'],['infrastructure','12.','Physical Infrastructure'],['delivery','13.','Modes of Delivery'],['assessment','14.','Modes of Assessment'],['progression','15.','Progression'],['gradLoad','16.','Minimum Graduation Load']];S1.forEach(function(s){rN();body+=H1(s[1]+' '+s[2]);body+=t2w(sc&&sc[s[0]]&&sc[s[0]].text||'');body+=sp2(1);});body+='<w:p><w:pPr/><w:r><w:rPr/><w:br w:type="page"/></w:r></w:p>';body+=H1('17. Curriculum Structure');body+=buildMatrix();var S2=[['research','18.','Research and Innovation'],['community','19.','Community Engagement'],['policies','20.','Policies'],['financial','21.','Financial Resources'],['welfare','22.','Students Welfare']];S2.forEach(function(s){rN();body+=H1(s[1]+' '+s[2]);body+=t2w(sc&&sc[s[0]]&&sc[s[0]].text||'');body+=sp2(1);});body+='<w:p><w:pPr/><w:r><w:rPr/><w:br w:type="page"/></w:r></w:p>';body+=H1('DETAILED COURSE CONTENT');groups.forEach(function(g){body+=H2(getSL(g.year,g.sem));g.courses.forEach(function(c){var nh=getNH(c),cr=getCr(c),uk=getUK(c);rN();body+=H2(esc(c.code||'')+' | '+xes(c.name));var CW=14400,mC=[2000,5000,2000,5000],mData=[['Course Code:',c.code||'','Year/Semester:',getSL(c.year,c.sem)],['Notional Hours:',String(nh)+' NH','Credits:',String(uk==='WRC'?'5 (NCHE)':cr)],['NH Breakdown:','DH:'+c.DH+' SH:'+c.SH+' AH:'+c.AH+' OH:'+c.OH,'Type:',c.type]],mRows='';mData.forEach(function(row){mRows+=mkR(row.map(function(cell,i){return mkC(String(cell||''),{w:mC[i<2?i:i-2],fill:i%2===0?'EEF4F8':'FFFFFF',bc:'DDDDDD',sz:20,bold:i%2===0});}).join(''));});body+=mkTbl(mRows,CW,mC);body+=sp2(1);body+=t2w(cd&&cd[c.code]&&cd[c.code].text||'');body+=sp2(2);});});var result=buildDocxParts(p,body);courses=_oc;CD=_od;assignCodes();return result;}
+
+async function downloadWordDoc(){if(typeof JSZip==='undefined'){toast('JSZip not loaded — refresh page','e');return;}['ws1','ws2'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='inline-block';});try{assignCodes();var doc=await buildDoc(getProg(),courses,SC,CD);var p=getProg();saveDocx(doc,((p.abbr||p.name||'Programme').replace(/[^a-zA-Z0-9]/g,'_'))+'_CBE_Programme.docx','\u2705 Word document downloaded!');}catch(e){toast('\u274c '+e.message,'e');console.error(e);}finally{['ws1','ws2'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});}}
+
+async function downloadAllCourseUnits(){if(typeof JSZip==='undefined'){toast('JSZip not loaded','e');return;}var s=document.getElementById('us1');if(s)s.style.display='inline-block';try{rN();assignCodes();var groups=groupBySem(),body=buildCover(Object.assign({},getProg(),{award:sm(getProg().name)+' — Course Units',abbr:''})),p=getProg();body+=H1('ALL COURSE UNITS — '+xes(p.name||''));groups.forEach(function(g){body+=H2(getSL(g.year,g.sem));g.courses.forEach(function(c){rN();body+=H2(esc(c.code||'')+' | '+xes(c.name));body+=t2w(CD&&CD[c.code]&&CD[c.code].text||'');body+=sp2(2);});});saveDocx(buildDocxParts(p,body),((p.abbr||'Programme').replace(/[^a-zA-Z0-9]/g,'_'))+'_Course_Units.docx','\u2705 Course Units downloaded!');}catch(e){toast('\u274c '+e.message,'e');}finally{if(s)s.style.display='none';}}
+
+async function downloadUCCCourses(){if(typeof JSZip==='undefined'){toast('JSZip not loaded','e');return;}try{rN();var body=buildCover({school:'All Schools',dept:'All Departments',award:'University Common Courses',abbr:'UCC',date:'2025',name:'KIU University Common Courses'});body+=H1('UNIVERSITY COMMON COURSES (UCC) — KIU');UCC_ORD.forEach(function(key,idx){var def=UCC[key];if(!def)return;var nh=(def.DH||0)+(def.SH||0)+(def.AH||0)+(def.OH||0);body+=H2(def.prefix+' 7'+def.year+(def.sem==='R'?'3':def.sem)+String(idx+1).padStart(2,'0')+' — '+xe(def.name));body+=mkP('Year '+def.year+' | Semester '+def.sem+' | NH: '+nh+' (DH:'+def.DH+' SH:'+def.SH+' AH:'+def.AH+' OH:'+def.OH+') | Credits: '+(key==='WRC'?'5 (NCHE)':Math.round(nh/10)),{sz:20,color:'555555'});body+=sp2();});saveDocx(buildDocxParts({name:'KIU UCC'},body),'KIU_University_Common_Courses.docx','\u2705 UCC downloaded!');}catch(e){toast('\u274c '+e.message,'e');}}
+
+async function dlDocFor(id){var ps=getProgs(),p=ps.find(function(x){return x.id===id;});if(!p||typeof JSZip==='undefined')return;try{var doc=await buildDoc(p.meta,p.courses||[],p.SC||p.sectionContent||{},p.CD||p.courseDetails||{});saveDocx(doc,((p.meta&&p.meta.abbr)||'Programme').replace(/[^a-zA-Z0-9]/g,'_')+'_CBE_Programme.docx','\u2705 Downloaded!');}catch(e){toast('\u274c '+e.message,'e');}}
+
+/* INIT */
+function init(){
+  assignCodes();renderUCCList();renderProgList();
+  setInterval(function(){fetch(API+'/api/health').catch(function(){});},13*60*1000);
+  if(typeof fsInit==='function')fsInit();
+}
+init();
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   FILE SYSTEM ACCESS API — local folder persistence
+   One-time folder picker → silent forever via IndexedDB handle
+   Chrome/Edge 86+  (graceful no-op in Firefox/Safari)
+   ═══════════════════════════════════════════════════════════ */
+
+var _fsHandle = null;          // FileSystemDirectoryHandle
+var _fsSupported = (typeof window !== 'undefined') && ('showDirectoryPicker' in window);
+var IDB_DB = 'kiu_fs_v1';
+var IDB_STORE = 'handles';
+
+/* ── IndexedDB helpers (stores the directory handle across sessions) ── */
+function idbOpen(){
+  return new Promise(function(res,rej){
+    var req = indexedDB.open(IDB_DB, 1);
+    req.onupgradeneeded = function(e){ e.target.result.createObjectStore(IDB_STORE); };
+    req.onsuccess = function(e){ res(e.target.result); };
+    req.onerror = function(){ rej(new Error('IDB open failed')); };
+  });
+}
+async function idbPut(key, val){
+  try{ var db=await idbOpen(); return new Promise(function(res,rej){
+    var tx=db.transaction(IDB_STORE,'readwrite');
+    var req=tx.objectStore(IDB_STORE).put(val,key);
+    req.onsuccess=function(){res(true);};req.onerror=function(){rej();};
+  });}catch(e){return false;}
+}
+async function idbGet(key){
+  try{ var db=await idbOpen(); return new Promise(function(res){
+    var tx=db.transaction(IDB_STORE,'readonly');
+    var req=tx.objectStore(IDB_STORE).get(key);
+    req.onsuccess=function(){res(req.result||null);};
+    req.onerror=function(){res(null);};
+  });}catch(e){return null;}
+}
+async function idbDel(key){
+  try{ var db=await idbOpen(); return new Promise(function(res){
+    var tx=db.transaction(IDB_STORE,'readwrite');
+    tx.objectStore(IDB_STORE).delete(key);
+    tx.oncomplete=function(){res(true);};
+  });}catch(e){return false;}
+}
+
+/* ── Permission helper ── */
+async function fsVerifyPermission(handle, write){
+  if(!handle)return false;
+  var mode=write?'readwrite':'read';
+  try{
+    var q=await handle.queryPermission({mode:mode});
+    if(q==='granted')return true;
+    var r=await handle.requestPermission({mode:mode});
+    return r==='granted';
+  }catch(e){return false;}
+}
+
+/* ── Connect folder (one-time picker) ── */
+async function fsConnect(){
+  if(!_fsSupported){
+    alert('Your browser does not support the File System Access API.\nPlease use Google Chrome or Microsoft Edge.');
+    return;
+  }
+  try{
+    var h = await window.showDirectoryPicker({
+      id:'kiu-cbc',
+      mode:'readwrite',
+      startIn:'documents'
+    });
+    _fsHandle = h;
+    await idbPut('folder', h);
+    await fsUpdateStatus();
+    await fsScanFiles(true);
+    toast('\ud83d\udcc1 Folder connected: '+h.name,'s');
+  }catch(e){
+    if(e.name!=='AbortError') toast('Could not connect folder: '+e.message,'e');
+  }
+}
+
+/* ── Disconnect folder ── */
+async function fsDisconnect(){
+  _fsHandle=null;
+  await idbDel('folder');
+  fsUpdateStatus();
+  var ff=document.getElementById('fs-files');if(ff)ff.style.display='none';
+  var sb=document.getElementById('fs-scan-btn');if(sb)sb.style.display='none';
+  toast('Folder disconnected','i');
+}
+
+/* ── Restore handle from IndexedDB on page load ── */
+async function fsInit(){
+  if(!_fsSupported){
+    var bar=document.getElementById('fs-bar');
+    if(bar)bar.innerHTML='<div class="al aw" style="margin:0;font-size:12px">'
+      +'\u26a0 File System Access requires <strong>Chrome or Edge</strong>. '
+      +'Your browser will use localStorage only.</div>';
+    return;
+  }
+  var h = await idbGet('folder');
+  if(!h){fsUpdateStatus();return;}
+  var ok = await fsVerifyPermission(h, true);
+  if(ok){
+    _fsHandle=h;
+    await fsUpdateStatus();
+    await fsScanFiles(false); // silent scan on load
+  }else{
+    /* Permission not yet re-granted — show reconnect button */
+    _fsHandle=h;
+    fsUpdateStatus(true);
+  }
+}
+
+/* ── Update the status bar UI ── */
+async function fsUpdateStatus(needsReconnect){
+  var lbl=document.getElementById('fs-label');
+  var sub=document.getElementById('fs-sub');
+  var icon=document.getElementById('fs-icon');
+  var dot=document.getElementById('fs-indicator');
+  var btns=document.getElementById('fs-btns');
+  var bar=document.getElementById('fs-bar');
+  var sb=document.getElementById('fs-scan-btn');
+  if(!lbl)return;
+
+  if(!_fsHandle){
+    if(lbl) lbl.textContent='Local Folder: Not Connected';
+    if(sub) sub.textContent='Connect a folder so programmes are saved as JSON files on your computer.';
+    if(icon) icon.textContent='\ud83d\udcc2';
+    if(bar) bar.style.borderColor='var(--g200)';
+    if(dot){dot.style.display='none';}
+    if(btns) btns.innerHTML='<button class="btn bt sm" onclick="fsConnect()">\ud83d\udcc1 Connect Folder</button>';
+    if(sb) sb.style.display='none';
+    return;
+  }
+
+  if(needsReconnect){
+    if(lbl) lbl.textContent='\u26a0 Folder: '+_fsHandle.name+' — Permission needed';
+    if(sub) sub.textContent='Click Reconnect to re-grant access (required after browser restart).';
+    if(icon) icon.textContent='\ud83d\udcc1';
+    if(bar) bar.style.borderColor='var(--gd)';
+    if(dot){dot.style.display='block';dot.style.background='var(--gd)';}
+    if(btns) btns.innerHTML='<button class="btn bg sm" onclick="fsReconnect()">\u21ba Reconnect</button>'
+      +'<button class="btn bo sm" onclick="fsDisconnect()">Disconnect</button>';
+    if(sb) sb.style.display='none';
+    return;
+  }
+
+  /* Connected and permission granted */
+  if(lbl) lbl.innerHTML='\ud83d\udcc1 <span style="color:var(--gn)">Connected:</span> <strong>'+esc(_fsHandle.name)+'</strong>';
+  if(sub) sub.textContent='Programmes are automatically saved as JSON files in this folder. Accessible every visit.';
+  if(icon) icon.textContent='\u2705';
+  if(bar) bar.style.borderColor='var(--gn)';
+  if(dot){dot.style.display='block';dot.style.background='var(--gn)';}
+  if(btns) btns.innerHTML='<button class="btn bo sm" onclick="fsScanFiles(true)">\u21ba Scan Files</button>'
+    +'<button class="btn bo sm" onclick="fsDisconnect()">Disconnect</button>';
+  if(sb) sb.style.display='inline-flex';
+}
+
+/* ── Reconnect after browser restart ── */
+async function fsReconnect(){
+  if(!_fsHandle){await fsConnect();return;}
+  var ok = await fsVerifyPermission(_fsHandle, true);
+  if(ok){
+    await fsUpdateStatus();
+    await fsScanFiles(true);
+    toast('\u2705 Folder re-connected: '+_fsHandle.name,'s');
+  }else{
+    toast('Permission denied — please try Connect Folder again','e');
+    _fsHandle=null;await idbDel('folder');fsUpdateStatus();
+  }
+}
+
+/* ── Save a programme JSON to folder ── */
+async function fsSaveFile(prog){
+  if(!_fsHandle)return false;
+  var ok=await fsVerifyPermission(_fsHandle,true);
+  if(!ok){fsUpdateStatus(true);return false;}
+  try{
+    var m=prog.meta||prog;
+    var nm=((m.abbr||m.name||'Programme').replace(/[^a-zA-Z0-9]/g,'_').replace(/_+/g,'_').slice(0,50))+'.json';
+    var fh=await _fsHandle.getFileHandle(nm,{create:true});
+    var wr=await fh.createWritable();
+    await wr.write(JSON.stringify(prog,null,2));
+    await wr.close();
+    return nm;
+  }catch(e){console.error('fsSaveFile',e);return false;}
+}
+
+/* ── Scan folder and list JSON files ── */
+async function fsScanFiles(show){
+  if(!_fsHandle)return;
+  var ok=await fsVerifyPermission(_fsHandle,true);
+  if(!ok){fsUpdateStatus(true);return;}
+  var files=[];
+  try{
+    for await(var entry of _fsHandle.values()){
+      if(entry.kind==='file'&&entry.name.endsWith('.json')){
+        var file=await entry.getFile();
+        try{
+          var txt=await file.text();
+          var data=JSON.parse(txt);
+          var arr=Array.isArray(data)?data:[data];
+          arr.forEach(function(prog){
+            if(prog&&prog.meta){
+              var m=prog.meta;
+              var secDone=SECTIONS.filter(function(s){return prog.SC&&prog.SC[s.key]&&prog.SC[s.key].done;}).length;
+              var cdDone=(prog.courses||[]).filter(function(c){return prog.CD&&prog.CD[c.code]&&prog.CD[c.code].done;}).length;
+              files.push({name:entry.name,prog:prog,secDone:secDone,cdDone:cdDone,size:Math.round(file.size/1024),modified:new Date(file.lastModified)});
+            }
+          });
+        }catch(e){}
+      }
+    }
+  }catch(e){toast('Scan failed: '+e.message,'e');return;}
+
+  /* Render file list */
+  var ff=document.getElementById('fs-files');
+  if(!ff)return;
+  if(!files.length){
+    if(show)toast('No programme JSON files found in folder','i');
+    ff.style.display='none';return;
+  }
+  files.sort(function(a,b){return b.modified-a.modified;});
+  var html='<div class="card"><div class="card-hd" style="background:#065f46;display:flex;justify-content:space-between;align-items:center">'
+    +'<span>\ud83d\udcc1 Files in: '+esc(_fsHandle.name)+' ('+files.length+' programme'+(files.length>1?'s':'')+')</span>'
+    +'<span style="font-size:11px;opacity:.8">Auto-saves here on every Save</span></div>'
+    +'<div class="card-body" style="padding:10px">';
+  files.forEach(function(f){
+    var m=f.prog.meta,cs=f.prog.courses||[];
+    var pctS=Math.round(f.secDone/SECTIONS.length*100);
+    var pctC=cs.length?Math.round(f.cdDone/cs.length*100):0;
+    var colS=pctS===100?'var(--gn)':pctS>0?'var(--gd)':'var(--g500)';
+    var colC=pctC===100?'var(--gn)':pctC>0?'var(--gd)':'var(--g500)';
+    html+='<div style="border:1.5px solid var(--g200);border-radius:6px;padding:10px 12px;margin-bottom:6px;background:#fff;display:flex;align-items:center;gap:10px">'
+      +'<div style="flex:1">'
+      +'<div style="font-weight:700;color:var(--nv);font-size:13px">'+esc(m.name||f.name)+'</div>'
+      +'<div style="font-size:11px;color:var(--g500);margin-top:2px">'
+        +esc(m.abbr||'')+' \u00b7 Level '+(m.level||'?')+' \u00b7 '+cs.length+' courses'
+        +' \u00b7 '+f.size+' KB \u00b7 '+f.modified.toLocaleString('en-UG',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})
+      +'</div>'
+      +'<div style="display:flex;gap:14px;margin-top:5px">'
+      +'<span style="font-size:12px"><strong style="color:var(--nv)">Sections:</strong> <span style="color:'+colS+';font-weight:700">'+f.secDone+'/'+SECTIONS.length+' ('+pctS+'%)</span></span>'
+      +'<span style="font-size:12px"><strong style="color:var(--nv)">Course Units:</strong> <span style="color:'+colC+';font-weight:700">'+f.cdDone+'/'+cs.length+' ('+pctC+'%)</span></span>'
+      +'</div></div>'
+      +'<div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0">'
+      +'<button class="btn bt sm" onclick="fsLoadFile(\''+esc(f.name)+'\')">\u21a9 Load</button>'
+      +'</div></div>';
+  });
+  html+='</div></div>';
+  ff.innerHTML=html;
+  ff.style.display='block';
+}
+
+/* ── Load a programme from a folder file ── */
+async function fsLoadFile(filename){
+  if(!_fsHandle)return;
+  var ok=await fsVerifyPermission(_fsHandle,false);
+  if(!ok){fsUpdateStatus(true);return;}
+  try{
+    var fh=await _fsHandle.getFileHandle(filename);
+    var file=await fh.getFile();
+    var txt=await file.text();
+    var data=JSON.parse(txt);
+    var prog=Array.isArray(data)?data[0]:data;
+    if(!prog||!prog.meta){toast('Invalid programme file','e');return;}
+    var m=prog.meta;
+    sv('p-name',m.name);sv('p-award',m.award||'');sv('p-abbr',m.abbr||'');
+    sv('p-prefix',m.prefix||'');sv('p-school',m.school||'');
+    sv('p-dept',m.dept||'');sv('p-hod',m.hod||'');
+    var le=document.getElementById('p-level');if(le&&m.level)le.value=String(m.level);
+    var ye=document.getElementById('p-years');if(ye&&m.years)ye.value=String(m.years);
+    sv('p-mode',m.mode||'Full-time');sv('p-date',m.date||'');
+    if(m.admission)sv('p-admission',m.admission);
+    courses=JSON.parse(JSON.stringify(prog.courses||[]));
+    nextId=Math.max.apply(null,courses.map(function(c){return c.id||0;}).concat([0]))+1;
+    var savedSC=prog.SC||{};
+    SECTIONS.forEach(function(s){SC[s.key]=savedSC[s.key]||{text:'',done:false};});
+    CD=JSON.parse(JSON.stringify(prog.CD||prog.courseDetails||{}));
+    /* Also sync to localStorage so it appears in Saved Programmes list */
+    var ps=getProgs();
+    var idx=ps.findIndex(function(x){return x.meta&&x.meta.name===m.name;});
+    var secDone=SECTIONS.filter(function(s){return SC[s.key]&&SC[s.key].done;}).length;
+    var cdDone=courses.filter(function(c){return CD[c.code]&&CD[c.code].done;}).length;
+    var header={id:prog.id||Date.now(),savedAt:prog.savedAt||new Date().toISOString(),version:3,
+      meta:m,courses:JSON.parse(JSON.stringify(courses)),secCount:secDone,cdCount:cdDone};
+    if(idx>=0)ps[idx]=header;else ps.push(header);
+    saveProgs(ps);
+    if(prog.SC&&Object.keys(prog.SC).length)lsSet('kiu_sc_'+header.id,prog.SC);
+    if(prog.CD&&Object.keys(prog.CD).length)lsSet('kiu_cd_'+header.id,prog.CD);
+    assignCodes();renderUCCList();renderCurriculum();renderGenTab();renderProgList();
+    toast('\u2705 "'+m.name+'" loaded from folder \u2014 '
+      +courses.length+' courses, '+secDone+'/'+SECTIONS.length+' sections, '+cdDone+' course units','s');
+    switchTab('curriculum');
+  }catch(e){toast('Load failed: '+e.message,'e');}
+}
+</script>
+</body>
+</html>
