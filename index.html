@@ -1342,7 +1342,21 @@ function secPrompt(key){
     delivery:'Write Section 13: Modes/Strategies of Delivery. This is a learner-centred CBE programme. Describe: facilitated contact sessions, laboratory practicals, problem-based learning, industrial training, peer learning, field trips, blended and online learning, self-directed learning, project-based learning. Do NOT use the word "lecture" or "lecturer". Use "facilitator", "facilitated session", "contact session". 250 words.\n\n'+ctx,
     assessment:'Write Section 14: Modes/Strategies of Assessment. CBE assessment: Formative 50% (CATs, practicals, assignments, presentations) and Summative 50% (written exams). Grading: A=80-100 (Distinction), B=70-79 (Merit), C=60-69 (Credit), D=50-59 (Pass), F<50 (Fail). Pass mark 50%. 300 words. Use "learners" not "students".\n\n'+ctx,
     progression:'Write Section 15: Progression Rules. Normal progression criteria, minimum GPA for progression, supplementary exams, repeat policy, probationary status, discontinuation, credit transfer. 200 words. Use "learners" not "students".\n\n'+ctx,
-    gradLoad:'Write Section 16: Minimum Graduation Load. State: minimum 360 Credit Units (3,600 NH), 600 NH per regular semester, 60 Credits per semester. Include a graduation load summary table. ~200 words.\n\n'+ctx,
+    gradLoad:(function(){
+      var award=(p.award||'').toLowerCase();
+      var isDip=award.indexOf('diploma')>=0||award.indexOf('dip')>=0;
+      var minCU=isDip?240:360;
+      var minNH=isDip?2400:3600;
+      var awardLabel=isDip?'Diploma':'Bachelor\'s Degree';
+      return 'Write Section 16: Minimum Graduation Load for the '+awardLabel+' in '+p.name+'.\n'
+        +'State the following graduation load requirements clearly:\n'
+        +'- Total Credit Units required: '+minCU+' Credit Units\n'
+        +'- Total Notional Hours: '+minNH+' NH\n'
+        +'- Maximum Notional Hours per semester: 600 NH\n'
+        +'- Maximum Credits per semester: 60 Credits\n'
+        +'Include a graduation load summary table showing the breakdown by year and semester. '
+        +'Explain the credit unit formula (1 Credit Unit = 10 Notional Hours). ~220 words.\n\n'+ctx;
+    })(),
     research:'Write Section 18: Research and Innovation. Research Methods course, final year Research Report (10 SH, 60 SH, 20 AH, 10 OH = 100 NH), departmental research clusters, undergraduate research conference participation. 200 words. Use "learners" not "students".\n\n'+ctx,
     community:'Write Section 19: Community Engagement. Industrial attachments (Internships I-III), community outreach, industry partnerships, community-based projects, professional associations. 200 words. Use "learners" not "students".\n\n'+ctx,
     policies:'Write Section 20: Policies for '+p.name+'. List and describe the following policies: Academic Regulations, Admissions Policy, Quality Assurance Policy, Laboratory Safety Policy, Gender and Equity Policy, Disability Inclusion Policy, ICT and Data Policy, Anti-Plagiarism Policy. For each policy, include a brief description. Conclude with a clear statement that: "All the above policies are available online on the KIU official website (www.kiu.ac.ug) and the institutional policy repository, accessible to all learners, facilitators and stakeholders." 280 words. Use "learners" not "students".\n\n'+ctx,
@@ -1810,6 +1824,7 @@ function saveCurrentProgramme(){
   /* ── Push to Google Sheets (server) — always, regardless of localStorage state ── */
   var scSnap=JSON.parse(JSON.stringify(SC));
   var cdSnap=JSON.parse(JSON.stringify(CD));
+  var _secDone=secDone,_cdDone=cdDone,_pname=p.name,_ccount=courses.length,_now=now;
   var payload={
     id:id,
     meta:p,
@@ -1820,15 +1835,19 @@ function saveCurrentProgramme(){
     sectionContent:scSnap,
     savedAt:now.toISOString()
   };
+  toast('\u23f3 Saving to Google Sheets...','i');
   fetch(API+'/api/programmes',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify(payload)
   }).then(function(r){
     if(r.ok){
-      toast('\u2601 "'+p.name+'" also saved to Google Sheets \u2713','s');
+      showCloudSaveNotification(_pname,_ccount,_secDone,_cdDone,_now);
     }else{
-      r.text().then(function(t){console.warn('Server save failed:',t);});
+      r.text().then(function(t){
+        toast('\u26a0 Cloud save failed — '+t.slice(0,80),'e');
+        console.warn('Server save failed:',t);
+      });
     }
   }).catch(function(e){
     console.warn('Google Sheets save error:',e.message);
@@ -1844,6 +1863,79 @@ function saveCurrentProgramme(){
         if(sub)sub.textContent='Last saved: "'+nm+'" — '+new Date().toLocaleTimeString('en-UG');}
     }).catch(function(){});
   }
+}
+
+/* ═══ GOOGLE SHEETS SAVE NOTIFICATION ═══════════════════════ */
+function showCloudSaveNotification(progName,courseCount,secCount,cdCount,savedAt){
+  /* Remove any existing notification */
+  var old=document.getElementById('cloud-save-notif');if(old)old.remove();
+
+  var totalSec=SECTIONS.length;
+  var dt=savedAt?savedAt.toLocaleString('en-UG',
+    {day:'2-digit',month:'short',year:'numeric',
+     hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
+  var isDip=(getProg().award||'').toLowerCase().indexOf('diploma')>=0;
+  var minCU=isDip?240:360,minNH=isDip?2400:3600;
+
+  var overlay=document.createElement('div');
+  overlay.id='cloud-save-notif';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99999;'
+    +'display:flex;align-items:center;justify-content:center;animation:fadeIn 0.25s ease';
+
+  var box=document.createElement('div');
+  box.style.cssText='background:#fff;border-radius:12px;padding:32px 36px;max-width:520px;width:92%;'
+    +'box-shadow:0 8px 40px rgba(0,0,0,0.35);text-align:center;position:relative';
+
+  var pctSec=Math.round(secCount/totalSec*100);
+  var pctCd=courseCount?Math.round(cdCount/courseCount*100):0;
+  var secCol=pctSec===100?'#065f46':pctSec>0?'#92400e':'#6b7280';
+  var cdCol=pctCd===100?'#065f46':pctCd>0?'#92400e':'#6b7280';
+
+  box.innerHTML=
+    '<div style="font-size:48px;margin-bottom:4px">☁️</div>'
+    +'<div style="font-size:22px;font-weight:800;color:#065f46;margin-bottom:4px">Saved to Google Sheets!</div>'
+    +'<div style="font-size:13px;color:#374151;margin-bottom:20px;font-weight:600">KIU CBE Database — Programmes Tab</div>'
+
+    +'<div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:8px;padding:16px;margin-bottom:16px;text-align:left">'
+    +'<div style="font-weight:700;color:#065f46;font-size:15px;margin-bottom:10px">📋 '+progName+'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">'
+    +'<div style="background:#fff;border-radius:6px;padding:10px;border:1px solid #d1fae5">'
+      +'<div style="color:#6b7280;font-size:11px;margin-bottom:2px">COURSES</div>'
+      +'<div style="font-weight:800;font-size:20px;color:#1e3a5f">'+courseCount+'</div>'
+    +'</div>'
+    +'<div style="background:#fff;border-radius:6px;padding:10px;border:1px solid #d1fae5">'
+      +'<div style="color:#6b7280;font-size:11px;margin-bottom:2px">GRAD LOAD</div>'
+      +'<div style="font-weight:800;font-size:16px;color:#1e3a5f">'+minCU+' CU / '+minNH+' NH</div>'
+    +'</div>'
+    +'<div style="background:#fff;border-radius:6px;padding:10px;border:1px solid #d1fae5">'
+      +'<div style="color:#6b7280;font-size:11px;margin-bottom:2px">SECTIONS GENERATED</div>'
+      +'<div style="font-weight:800;font-size:20px;color:'+secCol+'">'+secCount+'/'+totalSec
+        +' <span style="font-size:12px;font-weight:500">('+pctSec+'%)</span></div>'
+    +'</div>'
+    +'<div style="background:#fff;border-radius:6px;padding:10px;border:1px solid #d1fae5">'
+      +'<div style="color:#6b7280;font-size:11px;margin-bottom:2px">COURSE UNITS GENERATED</div>'
+      +'<div style="font-weight:800;font-size:20px;color:'+cdCol+'">'+cdCount+'/'+courseCount
+        +' <span style="font-size:12px;font-weight:500">('+pctCd+'%)</span></div>'
+    +'</div>'
+    +'</div></div>'
+
+    +'<div style="font-size:11px;color:#6b7280;margin-bottom:20px">🕐 Saved: '+dt+'</div>'
+
+    +(pctSec<100||pctCd<100
+      ?'<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:10px;font-size:12px;color:#92400e;margin-bottom:16px">'
+        +'⚠ Not all sections/course units are generated yet. Generate the remaining ones and save again to complete the programme.'
+        +'</div>'
+      :'<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px;font-size:12px;color:#065f46;margin-bottom:16px">'
+        +'✅ Programme is fully complete — all sections and course units are generated and saved!'
+        +'</div>')
+
+    +'<button onclick="document.getElementById(\'cloud-save-notif\').remove()" '
+    +'style="background:#1e3a5f;color:#fff;border:none;border-radius:6px;padding:10px 32px;'
+    +'font-size:14px;font-weight:700;cursor:pointer;width:100%">OK — Close</button>';
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click',function(e){if(e.target===overlay)overlay.remove();});
 }
 
 /* ═══ LOAD ═══════════════════════════════════════════════════ */
