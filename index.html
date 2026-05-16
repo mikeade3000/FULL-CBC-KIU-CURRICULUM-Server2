@@ -309,7 +309,7 @@ body{font-family:var(--ff);background:var(--g50);color:var(--g700);font-size:14p
 })();
 
 /* CONFIG */
-var API='https://kiu-cbe-backend.onrender.com';
+var API='https://full-cbc-kiu-curriculum.onrender.com';
 
 /* UTILS */
 function xe(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -1079,7 +1079,8 @@ function renderCurriculum(){
     g.courses.forEach(function(c){
       var nh=getNH(c),cr=getCr(c),uk=getUK(c),isW=uk==='WRC';
       var rc=isW?'wrc':uk?'ucc':c.elective?'el':'';
-      html+='<tr class="'+rc+'"><td><span class="cd" style="'+(c.lockedCode?'background:#065f46;color:#fff':'')+'" title="'+(c.lockedCode?'Registry-locked code':'Auto-generated')+'">'
+      var _codeStyle=c.lockedCode?'background:#065f46;color:#fff':uk?'':'background:#fff;color:var(--nv);border:1.5px solid var(--nv);font-weight:700';
+      html+='<tr class="'+rc+'"><td><span class="cd" style="'+_codeStyle+'" title="'+(c.lockedCode?'Registry-locked code':'Programme host code')+'">'
         +(c.lockedCode?'\ud83d\udd12 ':'')+esc(c.code||'')+'</span></td>';
       html+='<td>'+(uk?'<span style="font-size:12px;font-weight:600;color:var(--nv)">'+(isW?'\ud83d\udccb ':isUCC(c)?'\ud83d\udd12 ':'')+esc(c.name)+'</span>':'<input type="text" value="'+esc(c.name)+'" onchange="updateCourse('+c.id+',\'name\',this.value)" style="min-width:180px">')+'</td>';
       html+='<td class="c">'+(uk?'<span style="font-size:11px;font-family:var(--fm)">'+c.prefix+'</span>':'<input type="text" value="'+c.prefix+'" onchange="updateCourse('+c.id+',\'prefix\',this.value.toUpperCase())" style="width:50px;text-align:center">')+'</td>';
@@ -1124,7 +1125,7 @@ function textToHtml(text){
 
   /* flushL is properly closed before flushT is defined */
   function flushL(){
-    if(inUL){html+='</ul>';inUL=false;}
+    if(inUL){html+='</ol>';inUL=false;}
     if(inOL){html+='</ol>';inOL=false;}
   }
   function flushT(){
@@ -1166,7 +1167,7 @@ function textToHtml(text){
     }
     if((t[0]==='-'||t[0]==='\u2022'||t[0]==='*')&&t.length>1&&t[1]===' '){
       if(inOL){html+='</ol>';inOL=false;}
-      if(!inUL){html+='<ul style="margin:4px 0 8px 22px">';inUL=true;}
+      if(!inUL){html+='<ol style="margin:4px 0 8px 22px">';inUL=true;}
       html+='<li style="margin-bottom:3px">'+ml(t.slice(2))+'</li>';return;
     }
     flushL();
@@ -1304,7 +1305,13 @@ async function callAPI(prompt,sys,maxT){
 var SYS='You are a senior curriculum developer for Kampala International University (KIU), Uganda. '
   +'Write formal, professional academic programme documents following KIU CBE framework and NCHE Uganda standards. '
   +'Be specific, substantive and detailed. Write in well-structured paragraphs. Do NOT use markdown headers with #. '
-  +'Use bold text with ** only for section labels. Produce complete content for every section requested.';
+  +'Use bold text with ** only for section labels. Produce complete content for every section requested. '
+  +'CRITICAL LANGUAGE RULES — follow these absolutely without exception: '
+  +'(1) Always use "learners" — NEVER use "students", "graduates", "pupils", "trainees" or any other term. '
+  +'(2) This is a learner-centred CBE programme — minimise use of "lecturer" and "lecture". Use instead: "facilitator", "learning facilitator", "contact session", "facilitated session", "learning session", "guided session". '
+  +'(3) NEVER mention any ratio of any kind (staff-to-learner ratio, contact ratio, etc.). '
+  +'(4) When listing items, use numbered lists that restart at 1 for each new list — do NOT continue numbering across sections. '
+  +'(5) Do NOT use bullet points (- or •) — use numbered lists only.';
 function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
 
 function progCtx(){
@@ -1320,27 +1327,27 @@ function progCtx(){
 function secPrompt(key){
   var ctx=progCtx(),p=getProg();
   var m={
-    intro:'Write Section 1: Introduction for KIU '+p.name+'. Include: 1.1 Background of KIU (founded 2001, chartered by Government of Uganda, campuses in Kampala and Bushenyi) 1.2 Vision 1.3 Mission 1.4 Core Values (6-8 with descriptions) 1.5 Legal Status. Write in formal paragraphs, 400-500 words.\n\n'+ctx,
-    governance:'Write Section 2: Governance and Management for '+p.name+'. Describe KIU institutional governance: University Council, University Senate, School Board, Department Board, QA Directorate, Programme Coordinator. ~250 words in paragraphs.\n\n'+ctx,
+    intro:'Write Section 1: Introduction for KIU '+p.name+'. Include: 1.1 Background of KIU (founded 2001, chartered by Government of Uganda, campuses in Kampala and Bushenyi) 1.2 Vision 1.3 Mission 1.4 Core Values (6-8 with descriptions) 1.5 Legal Status. Write in formal paragraphs, 400-500 words. Use "learners" throughout, never "students".\n\n'+ctx,
+    governance:'Write Section 2: Governance and Management for '+p.name+'. Describe KIU institutional governance: University Council, University Senate, School Board, Department Board, QA Directorate, Programme Coordinator. ~250 words in paragraphs. Use "learners" not "students".\n\n'+ctx,
     nameCode:'Write Section 3: Programme Name, Code and Duration. Programme: '+p.name+', Code: '+p.prefix+' [Level][Year][Sem][Serial], Duration: '+p.years+' years '+p.mode+'. Include code format explanation. ~200 words.\n\n'+ctx,
-    description:'Write Section 4: Programme Description. Cover disciplinary scope, thematic areas, CBE philosophy, graduate capabilities, industry links and research emphasis. 300-400 words.\n\n'+ctx,
+    description:'Write Section 4: Programme Description. Cover disciplinary scope, thematic areas, CBE philosophy, learner capabilities, industry links and research emphasis. 300-400 words. Use "learners" not "students" or "graduates".\n\n'+ctx,
     development:'Write Section 5: Programme Development/Review Process. Cover: needs assessment, stakeholder consultation, benchmarking with regional universities, institutional approval process (Dept->School Board->Senate->Council). 250 words.\n\n'+ctx,
-    rationale:'Write Section 6: Programme Rationale and Justification. Justify the need: Uganda Vision 2040, National Development Plan III alignment, industry skills gap, regional demand, NCHE mandate. 350 words.\n\n'+ctx,
-    competences:'Write Section 7: Programme Competences. List 4 competence categories with 5-6 competences each: Knowledge Competences, Practical/Technical Competences, Cognitive/Analytical Competences, Affective/Professional Competences. One clear sentence per competence.\n\n'+ctx,
-    outcomes:'Write Section 8: Programme Learning Outcomes. List 10-12 specific measurable PLOs using Bloom\'s verbs. Format: "Upon successful completion, the graduate will be able to:" then numbered list.\n\n'+ctx,
-    targetGroup:'Write Section 9: Target Group. Describe intended learners, geographic scope Uganda and East Africa, career aspirations, professional background. 200 words.\n\n'+ctx,
-    admission:'Write Section 10: Entry/Admission Requirements based on: '+($('p-admission',''))+'. Format clearly with route labels.\n\n'+ctx,
-    humanRes:'Write Section 11: Human Resources. Staff qualifications (PhD requirement), student-staff ratios, CPD policy, laboratory technicians, visiting faculty, administrative support. 300 words.\n\n'+ctx,
-    infrastructure:'Write Section 12: Physical Infrastructure and Learning Resources. Teaching spaces, laboratories and equipment, library resources, ICT infrastructure, safety equipment, e-learning platforms. 250 words.\n\n'+ctx,
-    delivery:'Write Section 13: Modes/Strategies of Delivery. CBE delivery methods: lectures, laboratory practicals, problem-based learning, industrial training, tutorials, field trips, blended learning, self-directed learning. 250 words.\n\n'+ctx,
-    assessment:'Write Section 14: Modes/Strategies of Assessment. CBE assessment: Formative 50% (CATs, practicals, assignments, presentations) and Summative 50% (written exams). Grading: A=80-100 (Distinction), B=70-79 (Merit), C=60-69 (Credit), D=50-59 (Pass), F<50 (Fail). Pass mark 50%. 300 words.\n\n'+ctx,
-    progression:'Write Section 15: Progression Rules. Normal progression criteria, minimum GPA for progression, supplementary exams, repeat policy, probationary status, discontinuation, credit transfer. 200 words.\n\n'+ctx,
+    rationale:'Write Section 6: Programme Rationale and Justification. Justify the need: Uganda Vision 2040, National Development Plan III alignment, industry skills gap, regional demand, NCHE mandate. 350 words. Use "learners" not "students".\n\n'+ctx,
+    competences:'Write Section 7: Programme Competences. List 4 competence categories with 5-6 competences each: Knowledge Competences, Practical/Technical Competences, Cognitive/Analytical Competences, Affective/Professional Competences. One clear sentence per competence. Number each list starting from 1.\n\n'+ctx,
+    outcomes:'Write Section 8: Programme Learning Outcomes. List 10-12 specific measurable PLOs using Bloom\'s verbs. Format: "Upon successful completion, the learner will be able to:" then numbered list starting at 1. Use "learner" not "graduate" or "student".\n\n'+ctx,
+    targetGroup:'Write Section 9: Target Group. Describe intended learners, geographic scope Uganda and East Africa, career aspirations, professional background. 200 words. Use "learners" throughout.\n\n'+ctx,
+    admission:'Write Section 10: Entry/Admission Requirements based on: '+($('p-admission',''))+'. Format clearly with route labels. Use "learners" not "students".\n\n'+ctx,
+    humanRes:'Write Section 11: Human Resources for '+p.name+'. Cover: (a) Academic facilitators — qualifications required (PhD or Masters with experience), staff development and CPD policy, visiting and adjunct facilitators; (b) Technical support — laboratory technicians, ICT support staff; (c) Administrative support staff; (d) International Technical Assistance — the Technical Aid Corps (TAC) from Nigeria, deployed by the Nigerian Government to support the Government of Uganda, contributes expert facilitators and technical advisors to strengthen programme delivery at KIU; (e) Staff development — annual CPD activities, conference attendance, research engagement. Do NOT mention any ratios of any kind. Do NOT use the word "lecturer" — use "facilitator" or "learning facilitator". 350 words.\n\n'+ctx,
+    infrastructure:'Write Section 12: Physical Infrastructure and Learning Resources. Teaching spaces, laboratories and equipment, library resources, ICT infrastructure, safety equipment, e-learning platforms. 250 words. Refer to teaching spaces as "learning spaces" not "lecture halls".\n\n'+ctx,
+    delivery:'Write Section 13: Modes/Strategies of Delivery. This is a learner-centred CBE programme. Describe: facilitated contact sessions, laboratory practicals, problem-based learning, industrial training, peer learning, field trips, blended and online learning, self-directed learning, project-based learning. Do NOT use the word "lecture" or "lecturer". Use "facilitator", "facilitated session", "contact session". 250 words.\n\n'+ctx,
+    assessment:'Write Section 14: Modes/Strategies of Assessment. CBE assessment: Formative 50% (CATs, practicals, assignments, presentations) and Summative 50% (written exams). Grading: A=80-100 (Distinction), B=70-79 (Merit), C=60-69 (Credit), D=50-59 (Pass), F<50 (Fail). Pass mark 50%. 300 words. Use "learners" not "students".\n\n'+ctx,
+    progression:'Write Section 15: Progression Rules. Normal progression criteria, minimum GPA for progression, supplementary exams, repeat policy, probationary status, discontinuation, credit transfer. 200 words. Use "learners" not "students".\n\n'+ctx,
     gradLoad:'Write Section 16: Minimum Graduation Load. State: minimum 360 Credit Units (3,600 NH), 600 NH per regular semester, 60 Credits per semester. Include a graduation load summary table. ~200 words.\n\n'+ctx,
-    research:'Write Section 18: Research and Innovation. Research Methods course, final year Research Report (10 SH, 60 SH, 20 AH, 10 OH = 100 NH), departmental research clusters, undergraduate research conference participation. 200 words.\n\n'+ctx,
-    community:'Write Section 19: Community Engagement. Industrial attachments (Internships I-III), community outreach, industry partnerships, community-based projects, professional associations. 200 words.\n\n'+ctx,
-    policies:'Write Section 20: Policies. List and describe: Academic Regulations, Admissions Policy, Quality Assurance Policy, Laboratory Safety, Gender and Equity, Disability Inclusion, ICT and Data Policy, Anti-Plagiarism. 250 words.\n\n'+ctx,
-    financial:'Write Section 21: Financial Resources and Sustainability. Tuition fees (primary revenue), institutional capital investment, research grants, equipment maintenance fund, sustainability strategy. 200 words.\n\n'+ctx,
-    welfare:'Write Section 22: Students Welfare. Sports and recreation facilities, health centre, counselling services, accommodation, student union, financial aid/bursaries, career guidance centre. 200 words.\n\n'+ctx
+    research:'Write Section 18: Research and Innovation. Research Methods course, final year Research Report (10 SH, 60 SH, 20 AH, 10 OH = 100 NH), departmental research clusters, undergraduate research conference participation. 200 words. Use "learners" not "students".\n\n'+ctx,
+    community:'Write Section 19: Community Engagement. Industrial attachments (Internships I-III), community outreach, industry partnerships, community-based projects, professional associations. 200 words. Use "learners" not "students".\n\n'+ctx,
+    policies:'Write Section 20: Policies for '+p.name+'. List and describe the following policies: Academic Regulations, Admissions Policy, Quality Assurance Policy, Laboratory Safety Policy, Gender and Equity Policy, Disability Inclusion Policy, ICT and Data Policy, Anti-Plagiarism Policy. For each policy, include a brief description. Conclude with a clear statement that: "All the above policies are available online on the KIU official website (www.kiu.ac.ug) and the institutional policy repository, accessible to all learners, facilitators and stakeholders." 280 words. Use "learners" not "students".\n\n'+ctx,
+    financial:'Write Section 21: Financial Resources and Sustainability for '+p.name+'. IMPORTANT: Tuition fees are NOT the primary source of funding. Structure the section as follows: (a) Primary Funding Sources — government grants, institutional endowments, research grants, development partner funding, consultancy income and partnerships with industry; (b) Supplementary Revenue — tuition fees contribute as one of several supplementary sources; (c) Capital Investment — infrastructure development funds, equipment grants from development partners; (d) Sustainability Strategy — diversified revenue model, cost-sharing arrangements, alumni engagement, international partnerships. 250 words. Use "learners" not "students".\n\n'+ctx,
+    welfare:'Write Section 22: Learner Welfare. Cover: sports and recreation facilities, health centre, counselling services, accommodation, learner union, financial aid and bursaries, career guidance centre, mentorship programme, chaplaincy and spiritual welfare. 200 words. Use "learners" throughout — never "students".\n\n'+ctx
   };
   return m[key]||('Write the section "'+key+'" for KIU programme: '+p.name+'.\n\n'+ctx);
 }
@@ -1370,8 +1377,9 @@ function coursePrompt(c){
 
     +'Action 1: Course Justification and Aims\n'
     +'Write 2 detailed paragraphs justifying this course in the context of Uganda, East Africa, and KIU\'s CBE framework. '
-    +'Then write Course Aims as 4 bullet points starting "Upon completing this course, students will be able to:". '
-    +'Then write a Course Description paragraph of 150 words covering scope, CBE alignment and industry relevance.\n\n'
+    +'Then write Course Aims as 4 numbered points starting "Upon completing this course, learners will be able to:". '
+    +'Then write a Course Description paragraph of 150 words covering scope, CBE alignment and industry relevance. '
+    +'Use "learners" throughout — never "students". Do not use "lecturer" — use "facilitator".\n\n'
 
     +'Action 2: Cognitive Domain Outcomes\n'
     +'List 6 specific cognitive outcomes using Bloom\'s verbs (Apply, Analyse, Evaluate, Create, etc.). '
@@ -1387,7 +1395,7 @@ function coursePrompt(c){
     +'**Practical Assessment**: [list]. **Equipment and Materials**: [list].\n\n'
 
     +'Action 5: Competency Gap Analysis\n'
-    +'Write: **Current State**: [what students lack]. **Desired State**: [what they will achieve]. '
+    +'Write: **Current State**: [what learners lack]. **Desired State**: [what they will achieve]. '
     +'**Identified Gaps**: [specific gaps, 3-4 items]. **Priority Level**: High.\n\n'
 
     +'Action 6: Knowledge, Skills and Competency Mapping\n'
@@ -1412,7 +1420,8 @@ function coursePrompt(c){
 
     +'Action 10: Delivery Methods\n'
     +'Write: **Modality**: [face-to-face/blended/online]. **Tools**: [list KIU tools e.g. Moodle, Zoom]. '
-    +'**Formats**: [list]. **Accessibility**: one sentence on inclusive design.\n\n'
+    +'**Formats**: [list learner-centred formats — facilitated sessions, group work, practicals, project-based, self-directed — do NOT include lectures]. '
+    +'**Accessibility**: one sentence on inclusive design.\n\n'
 
     +'Action 11: Engaging Learning Activities\n'
     +'List 5 **Core Activities** with descriptions. Then: **Collaborative Elements**: [list]. '
@@ -1420,7 +1429,7 @@ function coursePrompt(c){
 
     +'Action 12: Flexible Learning Paths\n'
     +'Write: **Prerequisites**: [list or None]. **Within-Course Progression**: [sentence]. '
-    +'**Self-paced Mechanism**: [sentence]. **Adaptations**: [sentence for students with disabilities]. '
+    +'**Self-paced Mechanism**: [sentence]. **Adaptations**: [sentence for learners with disabilities]. '
     +'**RPL Provision**: one sentence.\n\n'
 
     +'Action 13: Instructional Strategies and Resource Materials\n'
