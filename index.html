@@ -1089,7 +1089,7 @@ function renderCurriculum(){
     html+='<span>'+g.courses.filter(function(c){return!c.elective;}).length+' core'+(g.courses.filter(function(c){return c.elective;}).length?' + '+g.courses.filter(function(c){return c.elective;}).length+' E':'')+'</span>';
     if(!isR&&!nhOk)html+='<button class="btn xs" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:10px;padding:1px 7px;cursor:pointer;border-radius:3px" onclick="balanceSem('+g.year+',\''+g.sem+'\')">Fix &rarr;</button>';
     html+='</span></div>';
-    html+='<table class="ct"><thead><tr><th style="width:120px">Code</th><th>Course Name</th><th class="c" style="width:55px">Prefix</th><th class="c" style="width:38px">DH</th><th class="c" style="width:38px">SH</th><th class="c" style="width:38px">AH</th><th class="c" style="width:38px">OH</th><th class="c" style="width:48px">NH</th><th class="c" style="width:38px">Cr</th><th class="c" style="width:70px">Type</th><th class="c" style="width:55px">Elec</th><th class="c" style="width:50px">Tier</th><th class="c" style="width:38px">Del</th></tr></thead><tbody>';
+    html+='<table class="ct"><thead><tr><th style="width:120px">Code</th><th>Course Name</th><th class="c" style="width:55px">Prefix</th><th class="c" style="width:42px">DLH</th><th class="c" style="width:42px">SLH</th><th class="c" style="width:42px">ALH</th><th class="c" style="width:42px">OLH</th><th class="c" style="width:48px">NH</th><th class="c" style="width:38px">Cr</th><th class="c" style="width:70px">Type</th><th class="c" style="width:55px">Elec</th><th class="c" style="width:50px">Tier</th><th class="c" style="width:62px">Balance</th><th class="c" style="width:38px">Del</th></tr></thead><tbody>';
     g.courses.forEach(function(c){
       var nh=getNH(c),cr=getCr(c),uk=getUK(c),isW=uk==='WRC';
       var rc=isW?'wrc':uk?'ucc':c.elective?'el':'';
@@ -1101,14 +1101,15 @@ function renderCurriculum(){
       html+='<td class="c"><input type="number" value="'+c.DH+'" min="0" onchange="updateCourse('+c.id+',\'DH\',this.value)"></td>';
       html+='<td class="c"><input type="number" value="'+c.SH+'" min="0" onchange="updateCourse('+c.id+',\'SH\',this.value)"></td>';
       html+='<td class="c"><input type="number" value="'+c.AH+'" min="0" onchange="updateCourse('+c.id+',\'AH\',this.value)"></td>';
-      html+='<td class="c"><input type="number" value="'+c.OH+'" min="0" onchange="updateCourse('+c.id+',\'OH\',this.value)"></td>';
+      html+='<td class="c"><input type="number" value="'+c.OH+'" min="0" onchange="updateCourse('+c.id+',\'OH\',this.value)" style="'+((!c.OH||c.OH===0)?'border:1.5px solid var(--rd);background:#fff5f5;':'')+'"></td>';
       html+='<td class="c"><strong class="nh">'+nh+'</strong></td><td class="c"><strong>'+cr+'</strong></td>';
-      html+='<td class="c"><select onchange="updateCourse('+c.id+',\'type\',this.value)"><option value="lec"'+(c.type==='lec'?' selected':'')+'>Lecture</option><option value="lab"'+(c.type==='lab'?' selected':'')+'>Lec+Lab</option><option value="prac"'+(c.type==='prac'?' selected':'')+'>Practical</option><option value="ind"'+(c.type==='ind'?' selected':'')+'>Industrial</option><option value="proj"'+(c.type==='proj'?' selected':'')+'>Project</option></select></td>';
-      html+='<td class="c"><input type="checkbox" '+(c.elective?'checked':'')+' onchange="updateCourse('+c.id+',\'elective\',this.checked)">'+(c.elective?'<span class="badge-gold" style="font-size:9px;margin-left:2px">E</span>':'')+'</td>';
-      html+='<td class="c" style="cursor:pointer" onclick="setTier('+c.id+')" title="Click to change tier">'+tierBadge(getTier(c))+'</td>';
-      html+='<td class="c"><button class="btn br xs" onclick="deleteCourse('+c.id+')">\u2715</button></td></tr>';
+      html+='<td class="c" style="font-size:11px">'+c.type+'</td>';
+      html+='<td class="c"><input type="checkbox"'+(c.elective?' checked':'')+' onchange="updateCourse('+c.id+',\'elective\',this.checked)"></td>';
+      html+='<td class="c"><select onchange="updateCourse('+c.id+',\'tier\',this.value)" style="width:45px"><option '+(c.tier==1?'selected':'')+'>1</option><option '+(c.tier==2?'selected':'')+'>2</option><option '+(c.tier==3?'selected':'')+'>3</option><option '+((!c.tier||c.tier==4)?'selected':'')+'>4</option></select></td>';
+      html+='<td class="c"><button class="btn xs" style="background:var(--tl);color:#fff;padding:2px 5px;font-size:10px" onclick="balanceCourseNH('+c.id+')" title="Auto-balance DLH:SLH/ALH/OLH = 1:2">&#9878;</button></td>';
+      html+='<td class="c"><button class="btn br xs" onclick="delCourse('+c.id+')">&times;</button></td></tr>';
     });
-    html+='<tr class="tr"><td colspan="7">SEMESTER TOTAL (Core)</td><td class="c">'+gNH+'</td><td class="c">'+gCr+'</td><td colspan="4"></td></tr>';
+    html+='<tr class="tr"><td colspan="8">SEMESTER TOTAL (Core)</td><td class="c">'+gNH+'</td><td class="c">'+gCr+'</td><td colspan="4"></td></tr>';
     html+='</tbody></table>';
     html+='<div style="padding:6px 12px;text-align:right"><button class="btn bt xs" onclick="addCourseTo('+g.year+',\''+g.sem+'\')">&#xFF0B; Add to semester</button></div></div>';
   });
@@ -1255,7 +1256,7 @@ function renderPreview(){
       S1.forEach(function(s){html+=sH(s[0],s[1],s[2]);});
 
       html+='<h3 style="font-size:15px;color:var(--nv);margin:28px 0 8px;border-left:4px solid var(--gd);padding-left:10px;font-weight:700">17. Curriculum Structure</h3>';
-      html+='<table><thead><tr><th style="width:110px">Code</th><th>Course Name</th><th>DH</th><th>SH</th><th>AH</th><th>OH</th><th>NH</th><th>Cr</th></tr></thead><tbody>'+mxR+'</tbody></table>';
+      html+='<table><thead><tr><th style="width:110px">Code</th><th>Course Name</th><th>DLH</th><th>SLH</th><th>ALH</th><th>OLH</th><th>NH</th><th>Cr</th></tr></thead><tbody>'+mxR+'</tbody></table>';
 
       var S2=[['research','18.','Research and Innovation'],['community','19.','Community Engagement'],['policies','20.','Policies'],['financial','21.','Financial Resources'],['welfare','22.','Students Welfare']];
       S2.forEach(function(s){html+=sH(s[0],s[1],s[2]);});
@@ -1461,7 +1462,48 @@ function secPrompt(key){
         +'Explain the credit unit formula (1 Credit Unit = 10 Notional Hours). ~220 words.\n\n'+ctx;
     })(),
     research:'Write Section 18: Research and Innovation. Research Methods course, final year Research Report (10 SH, 60 SH, 20 AH, 10 OH = 100 NH), departmental research clusters, undergraduate research conference participation. 200 words. Use "learners" not "students".\n\n'+ctx,
-    community:'Write Section 19: Community Engagement. Industrial attachments (Internships I-III), community outreach, industry partnerships, community-based projects, professional associations. 200 words. Use "learners" not "students".\n\n'+ctx,
+    community:(function(){
+      var inst=getInstitution(),isK=isKIU(),instName=isK?'Kampala International University (KIU)':inst;
+      return 'Write Section 19: Community Engagement for '+p.name+' at '+instName+'.\n\n'
+        +'Structure this section with the following sub-sections, each in full paragraphs:\n\n'
+        +'**19.1 Philosophy of Community Engagement**\n'
+        +'Write 2 paragraphs on the institutional philosophy — that universities are not isolated from society but are '
+        +'active drivers of national development. Reference Uganda Vision 2040 and NDP III. State that community engagement '
+        +'is a core function of '+instName+' alongside teaching and research.\n\n'
+        +'**19.2 The Triple Helix Model**\n'
+        +'Explain how '+instName+' adopts the Triple Helix Model of collaboration: (1) Government — policy alignment, '
+        +'national development priorities, regulatory bodies; (2) Industry/Private Sector — employer partnerships, '
+        +'internship hosts, skills validation, co-curriculum design; (3) University — knowledge generation, community '
+        +'service, applied research. Explain how the '+p.name+' programme operationalises this model.\n\n'
+        +'**19.3 Community Engagement Activities by Year and Semester**\n'
+        +'Describe specific community engagement activities structured across the '+p.years+'-year programme:\n'
+        +'- Year 1: awareness, orientation to community settings, community visits, peer learning groups\n'
+        +'- Year 2: structured community projects, community-based research, NGO and local government partnerships\n'
+        +(parseInt(p.years||2)>=3?'- Year 3 and beyond: community leadership projects, policy advocacy, applied research dissemination\n':'')
+        +'These activities are accounted for within the Other Learning Hours (OLH) of each semester\'s course units.\n\n'
+        +'**19.4 Community Partners**\n'
+        +'Name specific types of community partners involved:\n'
+        +'1. Local Government Units — district and sub-county offices for governance and administration placements\n'
+        +'2. Non-Governmental Organisations (NGOs) — for community health, education and social development projects\n'
+        +'3. Industry and Private Sector — for professional placements and co-mentorship\n'
+        +'4. Schools and Educational Institutions — for practice teaching, mentorship and community education\n'
+        +'5. Religious and Community Organisations — for welfare and outreach activities\n'
+        +'6. Research Institutes — for collaborative applied research and data collection\n\n'
+        +'**19.5 How Community Engagement is Accounted for in the Curriculum**\n'
+        +'Explain that community engagement hours are distributed across the curriculum as Other Learning Hours (OLH) '
+        +'within individual course units. Each course unit carries OLH that represents supervised experiential activities '
+        +'beyond formal facilitated sessions and self-study. For dedicated community or internship course units, OLH is '
+        +'significantly larger — typically 40–60% of total notional hours — to reflect sustained field engagement.\n\n'
+        +'**19.6 Supervision, Assessment and Quality Assurance**\n'
+        +'Describe how community engagement is: supervised by designated academic facilitators and site supervisors; '
+        +'assessed through reflection journals, community project reports, oral presentations, and supervisor evaluations; '
+        +'quality assured through structured visit schedules, MoUs with partner organisations, and annual review of '
+        +'community engagement outcomes.\n\n'
+        +'**19.7 Linkage to Programme Competences and Vision 2040**\n'
+        +'Explain how community engagement builds the competences in this programme and contributes to Uganda Vision 2040 '
+        +'goals of a transformed and prosperous Uganda, and NDP III targets for human capital development. 350 words total. '
+        +'Use "learners" not "students".\n\n'+ctx;
+    })(),
     policies:'Write Section 20: Policies for '+p.name+'. List and describe the following policies: Academic Regulations, Admissions Policy, Quality Assurance Policy, Laboratory Safety Policy, Gender and Equity Policy, Disability Inclusion Policy, ICT and Data Policy, Anti-Plagiarism Policy. For each policy, include a brief description. Conclude with a clear statement that: "All the above policies are available online on the KIU official website (www.kiu.ac.ug) and the institutional policy repository, accessible to all learners, facilitators and stakeholders." 280 words. Use "learners" not "students".\n\n'+ctx,
     financial:'Write Section 21: Financial Resources and Sustainability for '+p.name+'. IMPORTANT: Tuition fees are NOT the primary source of funding. Structure the section as follows: (a) Primary Funding Sources — government grants, institutional endowments, research grants, development partner funding, consultancy income and partnerships with industry; (b) Supplementary Revenue — tuition fees contribute as one of several supplementary sources; (c) Capital Investment — infrastructure development funds, equipment grants from development partners; (d) Sustainability Strategy — diversified revenue model, cost-sharing arrangements, alumni engagement, international partnerships. 250 words. Use "learners" not "students".\n\n'+ctx,
     welfare:'Write Section 22: Learner Welfare. Cover: sports and recreation facilities, health centre, counselling services, accommodation, learner union, financial aid and bursaries, career guidance centre, mentorship programme, chaplaincy and spiritual welfare. 200 words. Use "learners" throughout — never "students".\n\n'+ctx
@@ -1485,7 +1527,7 @@ function coursePrompt(c){
     +'Course Name: '+c.name+'\n'
     +'Course Code: '+(c.code||'')+'\n'
     +'Year / Semester: '+semLabel+'\n'
-    +'Notional Hours: '+nh+' NH | DH:'+dh+' SH:'+sh+' AH:'+ah+' OH:'+oh+'\n'
+    +'Notional Hours: '+nh+' NH | DLH:'+dh+' SLH:'+sh+' ALH:'+ah+' OLH:'+oh+'\n'
     +'Credits: '+crLabel+'\n'
     +'Programme: '+p.name+' (UHEQF Level '+p.level+')\n'
     +'School: '+p.school+'\n'
@@ -1525,15 +1567,17 @@ function coursePrompt(c){
     +'distributed across Weeks 1–15 of the 17-week course (Week 16 = Revision, Week 17 = Examination).\n\n'
 
     +'Action 8: Course Content, Notional Hours and Engagement Activities\n'
-    +'Write a **Course Content Overview** paragraph. Then produce a **Topic-by-Topic Content Plan** as a markdown table '
-    +'with these EXACT columns ONLY: Week | Topic/Subtopic | Key Content | Bloom Level | A hrs Directed | B hrs Self-dir | C hrs Applied | D hrs Assessed | Total h | Performance Indicator | Competency Link\n'
+    +'Write a **Course Content Overview** paragraph (3-4 sentences covering scope and CBE alignment). '
+    +'Then produce a **Weekly Content Plan** as a markdown table with these EXACT columns ONLY:\n'
+    +'Week | Topic/Subtopic | Key Content | Bloom Level | DLH | SLH | ALH | OLH | Total NH | Competency Link\n'
     +'Generate exactly 17 rows:\n'
-    +'- Rows 1–15: weekly study content (distribute DH='+dh+', SH='+sh+', AH='+ah+', OH='+oh+' hours across these 15 rows)\n'
-    +'- Row 16: "Revision Week" — review all topics, 0 directed hours, self-directed revision\n'
-    +'- Row 17: "Examination Week" — end-of-semester examination, assessed hours only\n'
-    +'Then a TOTALS row summing to: DH='+dh+', SH='+sh+', AH='+ah+', OH='+oh+', Total='+nh+'. '
-    +'After the table write: **Rationale for Sequencing**: [paragraph]. **CBE Blend Verification**: [calculate C+D hours / total NH as percentage].\n'
-    +'IMPORTANT: Do NOT include columns for Teaching Method, Learner Activity, Assessment Type, or Resources Required.\n\n'
+    +'- Rows 1–15: weekly study content. Distribute the totals DLH='+dh+', SLH='+sh+', ALH='+ah+', OLH='+oh+' across these 15 rows\n'
+    +'- Row 16: "Revision Week" — consolidation and review; 0 DLH, SLH only\n'
+    +'- Row 17: "Examination Week" — formal end-of-semester assessment; ALH and OLH only\n'
+    +'End with a TOTALS row: DLH='+dh+', SLH='+sh+', ALH='+ah+', OLH='+oh+', Total NH='+nh+'\n'
+    +'After the table write: **Rationale for Sequencing**: [paragraph explaining the topic sequence]. '
+    +'**1:2 Ratio Verification**: DLH ('+dh+') : (SLH+ALH+OLH) ('+((sh||0)+(ah||0)+(oh||0))+') — confirm this approximates 1:2.\n'
+    +'CRITICAL: Do NOT include columns for Teaching Method, Learner Activity, Assessment Type, Resources Required, or Performance Indicator.\n\n'
 
     +'Action 9: Evidence-based Assessments\n'
     +'Write **Formative Assessments (50%)** with 4 specific assessment tasks, each with week, weight and description. '
@@ -1565,13 +1609,83 @@ function coursePrompt(c){
     +'**Improvement Process**: [sentence]. **Success Metrics**: [3 items].\n\n'
 
     +'Action 15: Assessment Weights and Credit Structure\n'
-    +'Write **Assessment Weight Distribution**: Formative 50% (detail sub-items) and Summative 50% (detail sub-items). '
-    +'**Competence-Assessment Matrix**: sentence. '
-    +'**KIU Grading Scale**: A=80-100, B+=75-79, B=70-74, C+=65-69, C=60-64, D+=55-59, F<55. '
-    +'**Authentic Assessments** (3 real-world tasks): list. '
-    +'**Reading List (APA 7th, 8-10 refs, 2018-2025)**: list 8-10 real academic references '
-    +'including at least 2 East African or Uganda-specific sources.\n\n'
+    +'Write the following EXACTLY as structured below:\n\n'
+    +'**Two Main Forms of Assessment**\n'
+    +'The framework divides learner assessment into two complementary forms:\n\n'
+    +'**Type | Weight**\n'
+    +'Formative Assessment | Minimum 50%\n'
+    +'Summative Assessment | Maximum 50%\n\n'
+    +'**1. Formative Assessment (Minimum 50%)**\n'
+    +'Formative assessment is: continuous, developmental, feedback-oriented, and competence-focused.\n\n'
+    +'Produce a table:\n'
+    +'**Activity | Suggested Weight**\n'
+    +'Continuous Tests | 10%\n'
+    +'Practical Assignments | 15%\n'
+    +'Projects | 10%\n'
+    +'Case Studies | 5%\n'
+    +'Portfolio | 5%\n'
+    +'Participation/Conduct | 5%\n'
+    +'Total | 50%\n\n'
+    +'Write 2 paragraphs describing how formative assessment is implemented for THIS specific course, '
+    +'referencing the course content areas and competences.\n\n'
+    +'**2. Summative Assessment (Maximum 50%)**\n'
+    +'Summative assessment evaluates cumulative competence at the end of the course or semester. '
+    +'Unlike traditional systems, CBET insists that final assessment must test: analysis, synthesis, evaluation, '
+    +'integrated performance — NOT rote memorisation.\n\n'
+    +'Produce a table:\n'
+    +'**Assessment Task | Weight | Description**\n'
+    +'Mid-Semester Test | 20% | Tests analytical and applied knowledge at midpoint\n'
+    +'End-of-Semester Examination | 30% | Integrated performance assessment — case-based and applied\n'
+    +'Total | 50% |\n\n'
+    +'Write 2 paragraphs describing how summative assessment is implemented for THIS specific course.\n\n'
+    +'**KIU Grading Scale:**\n'
+    +'A (Distinction): 80–100% | B+ (Merit Plus): 75–79% | B (Merit): 70–74% | C+ (Credit Plus): 65–69% | C (Credit): 60–64% | D+ (Pass Plus): 55–59% | F (Fail): Below 55%\n\n'
+    +'**Pass Mark**: 50% minimum to demonstrate competence.\n\n'
+    +'**Authentic Assessments** — list 3 real-world tasks specific to this course that assess integrated competencies.\n\n'
+    +'**Reading List (APA 7th Edition, 2018–2025)**: list 8–10 real academic references including at least 2 East African or Uganda-specific sources.\n\n'
     +'---\nEND. Ensure every Action above is fully written. Total length should be comprehensive and detailed.';
+}
+
+/* ── Balance NH ratio (1 DLH : 2 SLH/ALH/OLH) ── */
+function balanceCourseNH(courseId){
+  var c=courses.find(function(x){return x.id===courseId;});
+  if(!c)return;
+  var nh=getNH(c);
+  if(nh<10){toast('Set Notional Hours (NH) for this course first','e');return;}
+  var isCE=(c.name||'').toLowerCase().match(/community|engagement|attachment|internship|placement|field/);
+  /* DLH = 1/3 of total NH */
+  var dlh=Math.round(nh/3);
+  var remainder=nh-dlh; /* SLH+ALH+OLH = 2/3 */
+  var olh,alh,slh;
+  if(isCE){
+    /* Community/Internship: large OLH for actual fieldwork */
+    olh=Math.round(remainder*0.60); /* 60% of remainder = ~40% of NH */
+    alh=Math.round(remainder*0.15);
+    slh=remainder-olh-alh;
+  }else{
+    /* Regular course: from example NH=120 → DLH=40,SLH=60,ALH=15,OLH=5 */
+    olh=Math.max(5,Math.round(remainder*0.0625)); /* ~4-6% of NH, min 5 */
+    alh=Math.round(remainder*0.1875);             /* ~12.5% of NH */
+    slh=remainder-olh-alh;
+  }
+  slh=Math.max(0,slh);
+  /* Write back */
+  updateCourse(courseId,'DH',dlh);
+  updateCourse(courseId,'SH',slh);
+  updateCourse(courseId,'AH',alh);
+  updateCourse(courseId,'OH',olh);
+  renderCurriculum();
+  toast('\u2696 Balanced: DLH='+dlh+' SLH='+slh+' ALH='+alh+' OLH='+olh+' (1:2 ratio \u2713)','s');
+}
+
+/* Validate OLH not zero across all courses */
+function checkOLH(){
+  var zeros=courses.filter(function(c){return !c.OH||c.OH===0;});
+  if(zeros.length>0){
+    toast('\u26a0 '+zeros.length+' course(s) have OLH=0. Use \u9878 Balance to fix.','e');
+    return false;
+  }
+  return true;
 }
 
 function updateProgress(){
@@ -2359,8 +2473,8 @@ var _nR=[],_nC=10;
 function rN(){_nR=[];_nC=10;}
 function nId(abs){var id=_nC++;_nR.push({id:id,abs:abs});return String(id);}
 function mkP(text,opts){opts=opts||{};var TFF='<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>';var sz=opts.sz||22;var col=opts.color?'<w:color w:val="'+xe(opts.color)+'"/>':'';var b=opts.bold?'<w:b/><w:bCs/>':'';var it=opts.italic?'<w:i/><w:iCs/>':'';var jc=opts.align?'<w:jc w:val="'+opts.align+'"/>':'<w:jc w:val="both"/>';var sp='<w:spacing w:before="'+(opts.before||0)+'" w:after="'+(opts.after!==undefined?opts.after:120)+'"/>';var num=opts.numId?'<w:numPr><w:ilvl w:val="0"/><w:numId w:val="'+opts.numId+'"/></w:numPr>':'';var body=typeof text==='string'?'<w:r><w:rPr>'+TFF+'<w:sz w:val="'+sz+'"/><w:szCs w:val="'+sz+'"/>'+col+b+it+'</w:rPr><w:t xml:space="preserve">'+xe(String(text))+'</w:t></w:r>':(text||'');return'<w:p><w:pPr>'+num+jc+sp+'</w:pPr>'+body+'</w:p>';}
-function H1(t){return mkP(t,{sz:28,bold:true,color:'0F2D4A',before:280,after:100,align:'left'});}
-function H2(t){return mkP(t,{sz:24,bold:true,color:'117A7A',before:200,after:80,align:'left'});}
+function H1(t){return mkP(t,{sz:28,bold:true,color:'1A5C38',before:280,after:100,align:'left'});}
+function H2(t){return mkP(t,{sz:24,bold:true,color:'236B47',before:200,after:80,align:'left'});}
 function mkC(con,opts){opts=opts||{};var w=opts.w||1800,bc=opts.bc||'CCCCCC',fill=opts.fill?'<w:shd w:val="clear" w:color="auto" w:fill="'+opts.fill+'"/>':'',span=opts.span?'<w:gridSpan w:val="'+opts.span+'"/>':'',bdr='<w:tcBorders><w:top w:val="single" w:sz="4" w:color="'+bc+'"/><w:bottom w:val="single" w:sz="4" w:color="'+bc+'"/><w:left w:val="single" w:sz="4" w:color="'+bc+'"/><w:right w:val="single" w:sz="4" w:color="'+bc+'"/></w:tcBorders>',mar='<w:tcMar><w:top w:w="80" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/><w:left w:w="120" w:type="dxa"/><w:right w:w="120" w:type="dxa"/></w:tcMar>';var body=typeof con==='string'?mkP(sm(con),Object.assign({},opts,{before:0,after:0})):con;return'<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+span+bdr+fill+mar+'</w:tcPr>'+body+'</w:tc>';}
 function mkR(cells,hdr){return'<w:tr><w:trPr>'+(hdr?'<w:tblHeader/>':'')+'</w:trPr>'+cells+'</w:tr>';}
 function mkTbl(rows,W,cws){var gc=(cws||[]).map(function(w){return'<w:gridCol w:w="'+w+'"/>';}).join('');return'<w:tbl><w:tblPr><w:tblW w:w="'+(W||9000)+'" w:type="dxa"/><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+gc+'</w:tblGrid>'+rows+'</w:tbl>';}
@@ -2403,8 +2517,8 @@ function t2w(rawText){
       for(var ci=0;ci<numCols;ci++){
         var cell=row[ci]||'';
         cells+=mkC(sm(cell),{w:cws[ci],
-          fill:isHdr?'0F2D4A':'FFFFFF',
-          bc:isHdr?'0F2D4A':'AAAAAA',
+          fill:isHdr?'1A5C38':'FFFFFF',
+          bc:isHdr?'1A5C38':'AAAAAA',
           bold:isHdr,color:isHdr?'FFFFFF':'000000',
           sz:isHdr?16:18,align:isHdr?'center':'left'});
       }
@@ -2447,7 +2561,7 @@ function t2w(rawText){
 
 function buildCover(p){var NV='0F2D4A',GR='1A7A4A';var pgB='<w:pgBorders w:offsetFrom="page"><w:top w:val="single" w:sz="24" w:space="24" w:color="'+GR+'"/><w:left w:val="single" w:sz="24" w:space="24" w:color="'+GR+'"/><w:bottom w:val="single" w:sz="24" w:space="24" w:color="'+GR+'"/><w:right w:val="single" w:sz="24" w:space="24" w:color="'+GR+'"/></w:pgBorders>';var sP='<w:sectPr>'+pgB+'<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720"/></w:sectPr>';var out=[];out.push(mkP('',{before:700,after:0,align:'center'}));out.push(mkP('KAMPALA INTERNATIONAL UNIVERSITY',{sz:26,bold:true,color:NV,before:0,after:80,align:'center'}));out.push(mkP('Kampala | Bushenyi | Uganda',{sz:20,color:'555555',italic:true,before:0,after:240,align:'center'}));out.push(mkP(xes(p.school||''),{sz:22,bold:true,color:NV,before:0,after:60,align:'center'}));out.push(mkP(xes(p.dept||''),{sz:22,color:'333333',before:0,after:200,align:'center'}));out.push(mkP(xes(p.name||''),{sz:32,bold:true,color:NV,before:0,after:60,align:'center'}));out.push(mkP('('+xes(p.award||'')+')  ('+xes(p.abbr||'')+')',{sz:24,color:'117A7A',before:0,after:200,align:'center'}));out.push(mkP('Submitted to the National Council for Higher Education (NCHE), Uganda',{sz:22,bold:true,color:NV,before:0,after:200,align:'center'}));out.push(mkP(String(p.date||'').toUpperCase(),{sz:24,bold:true,color:NV,before:0,after:0,align:'center'}));out.push('<w:p><w:pPr><w:jc w:val="center"/>'+sP+'</w:pPr></w:p>');return out.join('');}
 
-function buildMatrix(){var NV='0F2D4A',WH='FFFFFF',CW=14400,COLS=[2000,4800,800,800,800,800,900,800],HDRS=['Code','Course Name','DH','SH','AH','OH','NH','Cr'],out='',groups=groupBySem();groups.forEach(function(g){out+=H2(getSL(g.year,g.sem));var rows='';rows+=mkR(HDRS.map(function(h,i){return mkC(h,{w:COLS[i],fill:NV,bc:NV,bold:true,color:WH,sz:18,align:'center'});}).join(''),true);g.courses.forEach(function(c){var nh=getNH(c),cr=getCr(c),uk=getUK(c);var fill=uk==='WRC'?'FFFBF0':uk?'EEF8F8':c.elective?'FFFDF0':'FFFFFF',bc=uk?'117A7A':'DDDDDD';rows+=mkR([mkC(c.code||'',{w:COLS[0],fill:fill,bc:bc,sz:17,bold:!!uk}),mkC(sm(c.name)+(c.elective?' (E)':''),{w:COLS[1],fill:fill,bc:bc,sz:20,italic:!!c.elective}),mkC(String(c.DH),{w:COLS[2],fill:fill,bc:bc,sz:20,align:'center'}),mkC(String(c.SH),{w:COLS[3],fill:fill,bc:bc,sz:20,align:'center'}),mkC(String(c.AH),{w:COLS[4],fill:fill,bc:bc,sz:20,align:'center'}),mkC(String(c.OH),{w:COLS[5],fill:fill,bc:bc,sz:20,align:'center'}),mkC(String(nh),{w:COLS[6],fill:fill,bc:bc,sz:20,bold:true,align:'center'}),mkC(String(cr),{w:COLS[7],fill:fill,bc:bc,sz:20,bold:true,align:'center'})].join(''));});var gNH=semNH(g.courses),gCr=semCr(g.courses);rows+=mkR([mkC('Semester Total (Core)',{w:COLS.slice(0,6).reduce(function(a,b){return a+b;},0),fill:NV,bc:NV,bold:true,color:WH,sz:20,span:6,align:'right'}),mkC(String(gNH),{w:COLS[6],fill:NV,bc:NV,bold:true,color:WH,sz:20,align:'center'}),mkC(String(gCr),{w:COLS[7],fill:NV,bc:NV,bold:true,color:WH,sz:20,align:'center'})].join(''));out+=mkTbl(rows,CW,COLS);out+=sp2(1);});return out;}
+function buildMatrix(){var NV='1A5C38',WH='FFFFFF',CW=14400,COLS=[2000,4800,800,800,800,800,900,800],HDRS=['Code','Course Name','DLH','SLH','ALH','OLH','NH','Cr'],out='',groups=groupBySem();groups.forEach(function(g){out+=H2(getSL(g.year,g.sem));var rows='';rows+=mkR(HDRS.map(function(h,i){return mkC(h,{w:COLS[i],fill:NV,bc:NV,bold:true,color:WH,sz:18,align:'center'});}).join(''),true);g.courses.forEach(function(c){var nh=getNH(c),cr=getCr(c),uk=getUK(c);var fill=uk==='WRC'?'FFFBF0':uk?'EEF8F8':c.elective?'FFFDF0':'FFFFFF',bc=uk?'2E8B57':'DDDDDD';rows+=mkR([mkC(c.code||'',{w:COLS[0],fill:fill,bc:bc,sz:17,bold:!!uk}),mkC(sm(c.name)+(c.elective?' (E)':''),{w:COLS[1],fill:fill,bc:bc,sz:20,italic:!!c.elective}),mkC(String(c.DH),{w:COLS[2],fill:fill,bc:bc,sz:20,align:'center'}),mkC(String(c.SH),{w:COLS[3],fill:fill,bc:bc,sz:20,align:'center'}),mkC(String(c.AH),{w:COLS[4],fill:fill,bc:bc,sz:20,align:'center'}),mkC(String(c.OH),{w:COLS[5],fill:fill,bc:bc,sz:20,align:'center'}),mkC(String(nh),{w:COLS[6],fill:fill,bc:bc,sz:20,bold:true,align:'center'}),mkC(String(cr),{w:COLS[7],fill:fill,bc:bc,sz:20,bold:true,align:'center'})].join(''));});var gNH=semNH(g.courses),gCr=semCr(g.courses);rows+=mkR([mkC('Semester Total (Core)',{w:COLS.slice(0,6).reduce(function(a,b){return a+b;},0),fill:NV,bc:NV,bold:true,color:WH,sz:20,span:6,align:'right'}),mkC(String(gNH),{w:COLS[6],fill:NV,bc:NV,bold:true,color:WH,sz:20,align:'center'}),mkC(String(gCr),{w:COLS[7],fill:NV,bc:NV,bold:true,color:WH,sz:20,align:'center'})].join(''));out+=mkTbl(rows,CW,COLS);out+=sp2(1);});return out;}
 
 function buildDocxParts(p,body){var now=new Date().toISOString();var numInst='';if(_nR&&_nR.length)_nR.forEach(function(e){numInst+='<w:num w:numId="'+e.id+'"><w:abstractNumId w:val="'+e.abs+'"/><w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride></w:num>';});
   var CT='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/><Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>';
@@ -2463,7 +2577,7 @@ function buildDocxParts(p,body){var now=new Date().toISOString();var numInst='';
 
 async function saveDocx(parts,fname,msg){if(typeof JSZip==='undefined'){toast('JSZip not loaded — refresh page','e');return;}try{var zip=new JSZip();zip.file('[Content_Types].xml',parts.CT);zip.folder('_rels').file('.rels',parts.RELS);var w=zip.folder('word');w.file('document.xml',parts.DOC);w.file('styles.xml',parts.STY);w.file('numbering.xml',parts.NUM);w.file('settings.xml',parts.SET);w.folder('_rels').file('document.xml.rels',parts.DRELS);zip.folder('docProps').file('core.xml',parts.CORE);var blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',compression:'DEFLATE',compressionOptions:{level:6}});var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=fname||'KIU.docx';document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(url);},5000);toast(msg||'\u2705 Downloaded!','s');}catch(e){toast('\u274c '+e.message,'e');}}
 
-async function buildDoc(p,cs,sc,cd){rN();var _oc=courses,_od=CD;if(cs&&cs.length){courses=cs;CD=cd||{};}assignCodes();var groups=groupBySem(),body=buildCover(p);var S1=[['intro','1.','Introduction'],['governance','2.','Governance and Management'],['nameCode','3.','Programme Name, Code and Duration'],['description','4.','Programme Description'],['development','5.','Programme Development/Review Process'],['rationale','6.','Programme Rationale/Justification'],['competences','7.','Programme Competences'],['outcomes','8.','Programme Learning Outcomes'],['targetGroup','9.','Target Group'],['admission','10.','Admission Requirements'],['humanRes','11.','Human Resources'],['infrastructure','12.','Physical Infrastructure'],['delivery','13.','Modes of Delivery'],['assessment','14.','Modes of Assessment'],['progression','15.','Progression'],['gradLoad','16.','Minimum Graduation Load']];S1.forEach(function(s){rN();body+=H1(s[1]+' '+s[2]);body+=t2w(sc&&sc[s[0]]&&sc[s[0]].text||'');body+=sp2(1);});body+='<w:p><w:pPr/><w:r><w:rPr/><w:br w:type="page"/></w:r></w:p>';body+=H1('17. Curriculum Structure');body+=buildMatrix();var S2=[['research','18.','Research and Innovation'],['community','19.','Community Engagement'],['policies','20.','Policies'],['financial','21.','Financial Resources'],['welfare','22.','Students Welfare']];S2.forEach(function(s){rN();body+=H1(s[1]+' '+s[2]);body+=t2w(sc&&sc[s[0]]&&sc[s[0]].text||'');body+=sp2(1);});body+='<w:p><w:pPr/><w:r><w:rPr/><w:br w:type="page"/></w:r></w:p>';body+=H1('DETAILED COURSE CONTENT');groups.forEach(function(g){body+=H2(getSL(g.year,g.sem));g.courses.forEach(function(c){var nh=getNH(c),cr=getCr(c),uk=getUK(c);rN();body+=H2(esc(c.code||'')+' | '+xes(c.name));var CW=14400,mC=[2000,5000,2000,5000],mData=[['Course Code:',c.code||'','Year/Semester:',getSL(c.year,c.sem)],['Notional Hours:',String(nh)+' NH','Credits:',String(uk==='WRC'?'5 (NCHE)':cr)],['NH Breakdown:','DH:'+c.DH+' SH:'+c.SH+' AH:'+c.AH+' OH:'+c.OH,'Type:',c.type]],mRows='';mData.forEach(function(row){mRows+=mkR(row.map(function(cell,i){return mkC(String(cell||''),{w:mC[i<2?i:i-2],fill:i%2===0?'EEF4F8':'FFFFFF',bc:'DDDDDD',sz:20,bold:i%2===0});}).join(''));});body+=mkTbl(mRows,CW,mC);body+=sp2(1);body+=t2w(cd&&cd[c.code]&&cd[c.code].text||'');body+=sp2(2);});});var result=buildDocxParts(p,body);courses=_oc;CD=_od;assignCodes();return result;}
+async function buildDoc(p,cs,sc,cd){rN();var _oc=courses,_od=CD;if(cs&&cs.length){courses=cs;CD=cd||{};}assignCodes();var groups=groupBySem(),body=buildCover(p);var S1=[['intro','1.','Introduction'],['governance','2.','Governance and Management'],['nameCode','3.','Programme Name, Code and Duration'],['description','4.','Programme Description'],['development','5.','Programme Development/Review Process'],['rationale','6.','Programme Rationale/Justification'],['competences','7.','Programme Competences'],['outcomes','8.','Programme Learning Outcomes'],['targetGroup','9.','Target Group'],['admission','10.','Admission Requirements'],['humanRes','11.','Human Resources'],['infrastructure','12.','Physical Infrastructure'],['delivery','13.','Modes of Delivery'],['assessment','14.','Modes of Assessment'],['progression','15.','Progression'],['gradLoad','16.','Minimum Graduation Load']];S1.forEach(function(s){rN();body+=H1(s[1]+' '+s[2]);body+=t2w(sc&&sc[s[0]]&&sc[s[0]].text||'');body+=sp2(1);});body+='<w:p><w:pPr/><w:r><w:rPr/><w:br w:type="page"/></w:r></w:p>';body+=H1('17. Curriculum Structure');body+=buildMatrix();var S2=[['research','18.','Research and Innovation'],['community','19.','Community Engagement'],['policies','20.','Policies'],['financial','21.','Financial Resources'],['welfare','22.','Students Welfare']];S2.forEach(function(s){rN();body+=H1(s[1]+' '+s[2]);body+=t2w(sc&&sc[s[0]]&&sc[s[0]].text||'');body+=sp2(1);});body+='<w:p><w:pPr/><w:r><w:rPr/><w:br w:type="page"/></w:r></w:p>';body+=H1('DETAILED COURSE CONTENT');groups.forEach(function(g){body+=H2(getSL(g.year,g.sem));g.courses.forEach(function(c){var nh=getNH(c),cr=getCr(c),uk=getUK(c);rN();body+=H2(esc(c.code||'')+' | '+xes(c.name));var CW=14400,mC=[2000,5000,2000,5000],mData=[['Course Code:',c.code||'','Year/Semester:',getSL(c.year,c.sem)],['Notional Hours:',String(nh)+' NH','Credits:',String(uk==='WRC'?'5 (NCHE)':cr)],['NH Breakdown:','DLH:'+c.DH+' SLH:'+c.SH+' ALH:'+c.AH+' OLH:'+c.OH,'Type:',c.type]],mRows='';mData.forEach(function(row){mRows+=mkR(row.map(function(cell,i){return mkC(String(cell||''),{w:mC[i<2?i:i-2],fill:i%2===0?'EEF4F8':'FFFFFF',bc:'DDDDDD',sz:20,bold:i%2===0});}).join(''));});body+=mkTbl(mRows,CW,mC);body+=sp2(1);body+=t2w(cd&&cd[c.code]&&cd[c.code].text||'');body+=sp2(2);});});var result=buildDocxParts(p,body);courses=_oc;CD=_od;assignCodes();return result;}
 
 async function downloadWordDoc(){if(typeof JSZip==='undefined'){toast('JSZip not loaded — refresh page','e');return;}['ws1','ws2'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='inline-block';});try{assignCodes();var doc=await buildDoc(getProg(),courses,SC,CD);var p=getProg();saveDocx(doc,((p.abbr||p.name||'Programme').replace(/[^a-zA-Z0-9]/g,'_'))+'_CBE_Programme.docx','\u2705 Word document downloaded!');}catch(e){toast('\u274c '+e.message,'e');console.error(e);}finally{['ws1','ws2'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});}}
 
@@ -2471,7 +2585,40 @@ async function downloadAllCourseUnits(){if(typeof JSZip==='undefined'){toast('JS
 
 async function downloadUCCCourses(){if(typeof JSZip==='undefined'){toast('JSZip not loaded','e');return;}try{rN();var body=buildCover({school:'All Schools',dept:'All Departments',award:'University Common Courses',abbr:'UCC',date:'2025',name:'KIU University Common Courses'});body+=H1('UNIVERSITY COMMON COURSES (UCC) — KIU');UCC_ORD.forEach(function(key,idx){var def=UCC[key];if(!def)return;var nh=(def.DH||0)+(def.SH||0)+(def.AH||0)+(def.OH||0);body+=H2(def.prefix+' 7'+def.year+(def.sem==='R'?'3':def.sem)+String(idx+1).padStart(2,'0')+' — '+xe(def.name));body+=mkP('Year '+def.year+' | Semester '+def.sem+' | NH: '+nh+' (DH:'+def.DH+' SH:'+def.SH+' AH:'+def.AH+' OH:'+def.OH+') | Credits: '+(key==='WRC'?'5 (NCHE)':Math.round(nh/10)),{sz:20,color:'555555'});body+=sp2();});saveDocx(buildDocxParts({name:'KIU UCC'},body),'KIU_University_Common_Courses.docx','\u2705 UCC downloaded!');}catch(e){toast('\u274c '+e.message,'e');}}
 
-async function dlDocFor(id){var ps=getProgs(),p=ps.find(function(x){return x.id===id;});if(!p||typeof JSZip==='undefined')return;try{var doc=await buildDoc(p.meta,p.courses||[],p.SC||p.sectionContent||{},p.CD||p.courseDetails||{});saveDocx(doc,((p.meta&&p.meta.abbr)||'Programme').replace(/[^a-zA-Z0-9]/g,'_')+'_CBE_Programme.docx','\u2705 Downloaded!');}catch(e){toast('\u274c '+e.message,'e');}}
+async function dlDocFor(id){
+  var ps=getProgs(),prog=ps.find(function(x){return x.id===id;});
+  if(!prog||typeof JSZip==='undefined')return;
+  var m=prog.meta||prog;
+  toast('\u23f3 Loading programme from Google Sheets for download...','i');
+  try{
+    /* Fetch SC (section content) and CD (course details) from server */
+    var [progRes, cdRes] = await Promise.all([
+      fetch(API+'/api/programmes/'+id,{signal:AbortSignal.timeout(30000)}),
+      fetch(API+'/api/course-details?programme='+encodeURIComponent(m.name||''),{signal:AbortSignal.timeout(30000)})
+    ]);
+    var progData = progRes.ok ? await progRes.json() : null;
+    var cdArr    = cdRes.ok  ? await cdRes.json()    : [];
+    /* Build SC map */
+    var sc = progData ? (progData.sectionDone||progData.sectionContent||{}) : {};
+    /* Build CD map from CourseDetails rows */
+    var cd = {};
+    if(Array.isArray(cdArr)){
+      cdArr.forEach(function(cu){ if(cu.code&&cu.text) cd[cu.code]={text:cu.text,done:true}; });
+    }
+    /* Fallback to legacy courseDone blob */
+    if(!Object.keys(cd).length && progData && progData.courseDone){
+      Object.keys(progData.courseDone).forEach(function(code){
+        var v=progData.courseDone[code];
+        if(v&&v.text) cd[code]={text:v.text,done:true};
+      });
+    }
+    var doc=await buildDoc(m,prog.courses||[],sc,cd);
+    saveDocx(doc,((m.abbr||m.name||'Programme').replace(/[^a-zA-Z0-9]/g,'_'))+'_CBE_Programme.docx','\u2705 Word document downloaded!');
+  }catch(e){
+    toast('\u274c Download failed: '+e.message,'e');
+    console.error(e);
+  }
+}
 
 /* INIT */
 function init(){
