@@ -13,8 +13,8 @@
 body{font-family:var(--ff);background:var(--g50);color:var(--g700);font-size:14px;line-height:1.5}
 .hdr{background:linear-gradient(135deg,var(--nv),var(--nv2));color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 4px 16px rgba(26,92,56,.3)}
 .hdr-top{display:flex;align-items:center;gap:14px;padding:10px 20px;border-bottom:3px solid var(--gd)}
-.seal{height:52px;flex-shrink:0;display:flex;align-items:center}
-.seal img{height:48px;width:auto;object-fit:contain;filter:brightness(0) invert(1)}
+.seal{height:52px;flex-shrink:0;display:flex;align-items:center;background:#ffffff;border-radius:6px;padding:3px 10px;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.seal img{height:44px;width:auto;object-fit:contain}
 .hdr h1{font-size:16px;font-weight:700}.hdr p{font-size:11px;opacity:.75;margin-top:1px}
 .tabs{display:flex;overflow-x:auto;background:rgba(0,0,0,.25)}
 .tab{padding:10px 20px;cursor:pointer;color:rgba(255,255,255,.6);font-size:13px;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;user-select:none}
@@ -1283,25 +1283,41 @@ function renderPreview(){
 var UCC_SK='kiu_ucc_content_v1';
 var UCC_SHARED_KEYS=['ICF','ELS','CS','RM']; // the 4 fixed UCCs to share
 
-/* Cross-programme content sharing — finds generated content from any saved programme */
+/* Cross-programme content sharing — checks Google Sheets database first, then localStorage */
 async function findCrossProgContent(courseName,courseCode){
+  /* 1. Try Google Sheets by exact code */
+  if(courseCode){
+    try{
+      var r=await fetch(API+'/api/course-detail?code='+encodeURIComponent(courseCode),
+        {signal:AbortSignal.timeout(6000)});
+      if(r.ok){var d=await r.json();
+        if(d&&d.text&&d.text.length>200)
+          return{text:d.text,from:d.programme||'database'};}
+    }catch(e){}
+  }
+  /* 2. Try Google Sheets by course name */
+  if(courseName){
+    try{
+      var r2=await fetch(API+'/api/course-detail?name='+encodeURIComponent(courseName),
+        {signal:AbortSignal.timeout(6000)});
+      if(r2.ok){var d2=await r2.json();
+        if(d2&&d2.text&&d2.text.length>200)
+          return{text:d2.text,from:d2.programme||'database'};}
+    }catch(e){}
+  }
+  /* 3. Fallback: check old localStorage saves */
   var normName=(courseName||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();
   var ps=[];try{ps=getProgs();}catch(e){}
   for(var i=0;i<ps.length;i++){
-    var prog=ps[i];
-    var savedCD=lsGet('kiu_cd_'+prog.id)||{};
-    /* 1. Exact code match */
-    if(courseCode&&savedCD[courseCode]&&savedCD[courseCode].done&&savedCD[courseCode].text&&savedCD[courseCode].text.length>100){
+    var prog=ps[i];var savedCD=lsGet('kiu_cd_'+prog.id)||{};
+    if(courseCode&&savedCD[courseCode]&&savedCD[courseCode].done&&savedCD[courseCode].text&&savedCD[courseCode].text.length>100)
       return{text:savedCD[courseCode].text,from:(prog.meta&&prog.meta.abbr)||'saved programme'};
-    }
-    /* 2. Name match across courses in that programme */
     var progCourses=prog.courses||[];
     for(var j=0;j<progCourses.length;j++){
       var pc=progCourses[j];
       var pcNorm=(pc.name||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();
-      if(pcNorm===normName&&pc.code&&savedCD[pc.code]&&savedCD[pc.code].done&&savedCD[pc.code].text&&savedCD[pc.code].text.length>100){
+      if(pcNorm===normName&&pc.code&&savedCD[pc.code]&&savedCD[pc.code].done&&savedCD[pc.code].text&&savedCD[pc.code].text.length>100)
         return{text:savedCD[pc.code].text,from:(prog.meta&&prog.meta.abbr)||'saved programme'};
-      }
     }
   }
   return null;
@@ -1457,7 +1473,8 @@ function secPrompt(key){
 function coursePrompt(c){
   var p=getProg(),uk=getUK(c),nh=getNH(c),cr=getCr(c);
   var dh=c.DH||0,sh=c.SH||0,ah=c.AH||0,oh=c.OH||0;
-  var wks=Math.max(8,Math.min(15,Math.round(dh/3)||12));
+  /* FIXED: Always 17 weeks — 15 study + 1 revision + 1 examination */
+  var wks=17;
   var totalH=nh;
   var semLabel=getSL(c.year,c.sem);
   var crLabel=uk==='WRC'?'5 (NCHE)':String(cr);
@@ -1473,7 +1490,7 @@ function coursePrompt(c){
     +'Programme: '+p.name+' (UHEQF Level '+p.level+')\n'
     +'School: '+p.school+'\n'
     +'Department: '+p.dept+'\n'
-    +'Weeks: '+wks+'\n\n'
+    +'Weeks: 17 (15 study + 1 revision + 1 examination)\n\n'
     +'---\n\n'
 
     +'Action 1: Course Justification and Aims\n'
@@ -1505,13 +1522,18 @@ function coursePrompt(c){
 
     +'Action 7: SMART Learning Objectives\n'
     +'Write "Learners will be able to:" then list 6 SMART objectives, each ending with "by the end of Week [N]" '
-    +'distributed across the '+wks+'-week course.\n\n'
+    +'distributed across Weeks 1–15 of the 17-week course (Week 16 = Revision, Week 17 = Examination).\n\n'
 
     +'Action 8: Course Content, Notional Hours and Engagement Activities\n'
     +'Write a **Course Content Overview** paragraph. Then produce a **Topic-by-Topic Content Plan** as a markdown table '
-    +'with these exact columns: Week | Topic/Subtopic | Key Content | Bloom Level | A hrs Directed | B hrs Self-dir | C hrs Applied | D hrs Assessed | Total h | Teaching Method | Learner Activity | Assessment Type | Resources Required | Performance Indicator | Competency Link\n'
-    +'Generate '+wks+' data rows (one per week), then a TOTALS row summing DH='+dh+', SH='+sh+', AH='+ah+', OH='+oh+', Total='+nh+'. '
-    +'After the table write: **Rationale for Sequencing**: [paragraph]. **CBE Blend Verification**: [calculate C+D hours / total NH as percentage].\n\n'
+    +'with these EXACT columns ONLY: Week | Topic/Subtopic | Key Content | Bloom Level | A hrs Directed | B hrs Self-dir | C hrs Applied | D hrs Assessed | Total h | Performance Indicator | Competency Link\n'
+    +'Generate exactly 17 rows:\n'
+    +'- Rows 1–15: weekly study content (distribute DH='+dh+', SH='+sh+', AH='+ah+', OH='+oh+' hours across these 15 rows)\n'
+    +'- Row 16: "Revision Week" — review all topics, 0 directed hours, self-directed revision\n'
+    +'- Row 17: "Examination Week" — end-of-semester examination, assessed hours only\n'
+    +'Then a TOTALS row summing to: DH='+dh+', SH='+sh+', AH='+ah+', OH='+oh+', Total='+nh+'. '
+    +'After the table write: **Rationale for Sequencing**: [paragraph]. **CBE Blend Verification**: [calculate C+D hours / total NH as percentage].\n'
+    +'IMPORTANT: Do NOT include columns for Teaching Method, Learner Activity, Assessment Type, or Resources Required.\n\n'
 
     +'Action 9: Evidence-based Assessments\n'
     +'Write **Formative Assessments (50%)** with 4 specific assessment tasks, each with week, weight and description. '
@@ -1647,18 +1669,19 @@ async function genCourse(courseId){
     return;
   }
 
-  /* 3. Pull from server registry if available */
+  /* 3. Pull from server CourseDetails tab if this code/name was generated before */
   if(c.code){
     try{
-      var sr=await fetch(API+'/api/course-detail/'+encodeURIComponent(c.code),{signal:AbortSignal.timeout(5000)});
+      var sr=await fetch(API+'/api/course-detail?code='+encodeURIComponent(c.code),
+        {signal:AbortSignal.timeout(6000)});
       if(sr.ok){var sd=await sr.json();
         if(sd&&sd.text&&sd.text.length>200){
-          CD[c.code]={text:sd.text,done:true,pulledFrom:'registry'};
+          CD[c.code]={text:sd.text,done:true,pulledFrom:'database'};
           if(sharedKey)setUCCShared(sharedKey,{text:sd.text,done:true});
           if(btn)btn.innerHTML='\u21ba Redo';
           if(dot){dot.className='sd d';dot.textContent='\u2713';}if(item)item.className='si2 done';
           updateProgress();
-          if(!genAll)toast(c.code+' — pulled from registry \u2193','s');
+          if(!genAll)toast(c.code+' \u2014 pulled from database \u2193','s');
           return;
         }
       }
