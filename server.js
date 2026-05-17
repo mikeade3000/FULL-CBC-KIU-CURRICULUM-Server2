@@ -526,6 +526,27 @@ app.patch('/api/notifications/:id/read', async (req, res) => {
 //  COURSE DETAILS
 // ════════════════════════════════════════════════════════════════════════════
 
+// Batch fetch all course details for a programme
+app.get('/api/course-details', async (req, res) => {
+  const { programme } = req.query;
+  try {
+    const rows = await getRows(SHEET.DETAILS);
+    const filtered = programme
+      ? rows.filter(r => r.programme === programme)
+      : rows;
+    res.json(filtered.map(r => ({
+      code:      r.code,
+      name:      r.name,
+      programme: r.programme,
+      school:    r.school,
+      dept:      r.dept,
+      tier:      parseInt(r.tier) || 4,
+      text:      r.content,
+      updatedAt: r.updated_at,
+    })));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/course-detail', async (req, res) => {
   const { code, name } = req.query;
   try {
