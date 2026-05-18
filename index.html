@@ -2034,7 +2034,7 @@ function saveCurrentProgramme(){
   try{localStorage.removeItem('kiu_cd_'+id);}catch(e){}
 
   renderProgList();
-  toast('\u23f3 Saving to Google Sheets (primary storage)...','i');
+  toast('\u23f3 Saving to CLOUDS (primary storage)...','i');
 
   /* ── Push FULL content to Google Sheets ── */
   var scSnap=JSON.parse(JSON.stringify(SC));
