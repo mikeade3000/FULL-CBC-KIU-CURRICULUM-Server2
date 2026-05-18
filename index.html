@@ -299,7 +299,7 @@ body{font-family:var(--ff);background:var(--g50);color:var(--g700);font-size:14p
   </div>
   <!-- FOLDER FILE LIST -->
   <div id="fs-files" style="display:none;margin-bottom:14px"></div>
-  <div class="card"><div class="card-hd">&#128193; Saved Programmes</div><div class="card-body"><div id="prog-list"></div></div></div>
+  <div class="card"><div class="card-hd" style="display:flex;align-items:center;gap:8px">&#128193; Saved Programmes<span id="prog-list-ts" style="font-size:11px;font-weight:400;margin-left:auto;color:rgba(255,255,255,0.75)"></span><button onclick="refreshProgListFromCloud()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer" title="Refresh from Google Sheets">&#8635; Refresh</button></div><div class="card-body"><div id="prog-list"></div></div></div>
   <div class="card"><div class="card-hd gd">&#128229; Download Options</div><div class="card-body">
     <div class="r3">
       <div style="border:1.5px solid var(--g200);border-radius:6px;padding:14px;text-align:center"><div style="font-size:28px;margin-bottom:6px">&#128196;</div><div style="font-weight:700;color:var(--nv);margin-bottom:4px">Full Programme Document</div><div style="font-size:11px;color:var(--g500);margin-bottom:10px">All 22 sections + curriculum matrix + course content. NCHE-ready.</div><button class="btn bg sm" onclick="downloadWordDoc()" style="width:100%">Download .docx</button></div>
@@ -911,7 +911,19 @@ function switchTab(name){
   if(name==='curriculum'){assignCodes();enforceSems();assignCodes();renderCurriculum();renderUCCList();}
   if(name==='generate')renderGenTab();
   if(name==='preview')renderPreview();
-  if(name==='programmes')renderProgList();
+  if(name==='programmes'){
+    refreshProgListFromCloud();
+    /* Auto-refresh every 60 s while on this tab */
+    if(_progRefreshInterval)clearInterval(_progRefreshInterval);
+    _progRefreshInterval=setInterval(function(){
+      var t=document.getElementById('tab-programmes');
+      if(t&&t.classList.contains('active'))refreshProgListFromCloud();
+      else{clearInterval(_progRefreshInterval);_progRefreshInterval=null;}
+    },60000);
+  }else{
+    /* Clear interval when leaving programmes tab */
+    if(_progRefreshInterval){clearInterval(_progRefreshInterval);_progRefreshInterval=null;}
+  }
 }
 
 function assignCodes(){
@@ -2132,8 +2144,10 @@ function saveCurrentProgramme(){
   var scSnap=JSON.parse(JSON.stringify(SC));
   var cdSnap=JSON.parse(JSON.stringify(CD));
   var _secDone=secDone,_cdDone=cdDone,_pname=p.name,_ccount=courses.length,_now=now;
+  /* Include _cdCount in meta so Google Sheets list can show accurate course unit count */
+  var metaForServer=Object.assign({},p,{_cdCount:cdDone});
   var payload={
-    id:id, meta:p,
+    id:id, meta:metaForServer,
     courses:JSON.parse(JSON.stringify(courses)),
     sectionDone:scSnap,
     courseDone:cdSnap,
@@ -2184,6 +2198,8 @@ function saveCurrentProgramme(){
         }).catch(function(e){console.warn('CourseDetail save error for '+code+':',e.message);});
       });
       showCloudSaveNotification(_pname,_ccount,_secDone,_cdDone,_now);
+      /* Refresh My Programmes list from Google Sheets to reflect latest save */
+      setTimeout(refreshProgListFromCloud, 2000);
     }else{
       r.text().then(function(t){
         toast('\u26a0 Cloud save failed — '+t.slice(0,80),'e');
@@ -2288,7 +2304,23 @@ function showCloudSaveNotification(progName,courseCount,secCount,cdCount,savedAt
    ══════════════════════════════════════════════════════════ */
 function loadProgramme(id){
   var ps=getProgs(),prog=ps.find(function(x){return x.id===id;});
-  if(!prog){toast('Programme not found — try Sync from Cloud','e');return;}
+
+  /* If not in localStorage, check _serverProgs (Google Sheets cache) */
+  if(!prog&&_serverProgs&&_serverProgs.length){
+    var sp=_serverProgs.find(function(x){return String(x.id)===String(id);});
+    if(sp){
+      var secDone=Object.keys(sp.sectionDone||{})
+        .filter(function(k){return sp.sectionDone[k]&&sp.sectionDone[k].done;}).length;
+      prog={id:sp.id,savedAt:sp.savedAt,version:3,
+        meta:sp.meta,courses:sp.courses||[],
+        secCount:secDone,cdCount:(sp.meta&&sp.meta._cdCount)||0};
+      /* Import into localStorage for this session */
+      ps.push(prog);saveProgs(ps);
+      toast('\u2601 Loaded from Google Sheets — '+prog.courses.length+' courses','i');
+    }
+  }
+
+  if(!prog){toast('Programme not found — click \u8635 Refresh to sync from Google Sheets','e');return;}
 
   var m=prog.meta||prog;
 
@@ -2412,14 +2444,89 @@ function deleteProg(id){
   renderProgList();toast('Programme deleted','i');
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   GOOGLE SHEETS — SINGLE SOURCE OF TRUTH FOR MY PROGRAMMES LIST
+   _serverProgs is the in-memory cache fetched directly from Google Sheets.
+   localStorage is still used for the CURRENT session's working programme.
+   ═══════════════════════════════════════════════════════════════════════════ */
+var _serverProgs=[];
+var _lastProgFetch=null;
+var _progFetchInProgress=false;
+var _progRefreshInterval=null;
+
+async function refreshProgListFromCloud(){
+  if(_progFetchInProgress)return;
+  _progFetchInProgress=true;
+  var el=document.getElementById('prog-list');
+  var ts=document.getElementById('prog-list-ts');
+  /* Show spinner only on first load (cache empty) */
+  if(el&&!_serverProgs.length){
+    el.innerHTML='<div style="text-align:center;padding:28px">'
+      +'<div style="display:inline-block;width:28px;height:28px;border:3px solid var(--tl);'
+      +'border-top-color:transparent;border-radius:50%;animation:_sp .8s linear infinite"></div>'
+      +'<div style="margin-top:10px;color:var(--g500);font-size:13px">Fetching from Google Sheets...</div>'
+      +'</div>';
+  }
+  try{
+    var r=await fetch(API+'/api/programmes',{signal:AbortSignal.timeout(30000)});
+    if(!r.ok)throw new Error('Server returned '+r.status);
+    var data=await r.json();
+    _serverProgs=Array.isArray(data)?data:[];
+    _lastProgFetch=new Date();
+    /* Sync to localStorage so loadProgramme and in-session tools still work */
+    var ps=getProgs();
+    _serverProgs.forEach(function(sp){
+      if(!sp.id||!sp.meta||!sp.meta.name)return;
+      var secDone=Object.keys(sp.sectionDone||{})
+        .filter(function(k){return sp.sectionDone[k]&&sp.sectionDone[k].done;}).length;
+      var header={id:sp.id,savedAt:sp.savedAt||new Date().toISOString(),version:3,
+        meta:sp.meta,courses:sp.courses||[],
+        secCount:secDone,cdCount:(sp.meta&&sp.meta._cdCount)||0};
+      var idx=ps.findIndex(function(x){return String(x.id)===String(sp.id);});
+      if(idx>=0){
+        if(new Date(sp.savedAt||0)>new Date(ps[idx].savedAt||0))ps[idx]=header;
+      }else{ps.push(header);}
+    });
+    saveProgs(ps);
+    renderProgList();
+    if(ts)ts.textContent='Updated '+_lastProgFetch.toLocaleTimeString('en-UG',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }catch(e){
+    console.warn('refreshProgListFromCloud:',e.message);
+    /* Graceful fallback to localStorage */
+    if(_serverProgs.length===0)renderProgList();
+    if(ts)ts.textContent='\u26a0 Offline';
+  }finally{
+    _progFetchInProgress=false;
+  }
+}
+
 /* ═══ RENDER LIST ════════════════════════════════════════════ */
 function renderProgList(){
   var el=document.getElementById('prog-list');if(!el)return;
-  var ps=getProgs().filter(function(p){return p.id;});
+
+  /* PRIMARY SOURCE: Google Sheets (_serverProgs)
+     FALLBACK: localStorage getProgs() for offline/cold-start */
+  var ps=[];
+  if(_serverProgs&&_serverProgs.length>0){
+    ps=_serverProgs.map(function(sp){
+      var secDone=Object.keys(sp.sectionDone||{})
+        .filter(function(k){return sp.sectionDone[k]&&sp.sectionDone[k].done;}).length;
+      return{
+        id:sp.id, savedAt:sp.savedAt, version:3,
+        meta:sp.meta||{name:sp.name,abbr:sp.abbr,school:sp.school,dept:sp.dept},
+        courses:sp.courses||[],
+        secCount:secDone,
+        cdCount:(sp.meta&&sp.meta._cdCount)||0,
+      };
+    });
+  }else{
+    ps=getProgs().filter(function(p){return p.id;});
+  }
+
   if(!ps.length){
-    el.innerHTML='<div class="al ai">No programmes saved locally yet. '
-      +'Use <strong>Save Current Programme</strong> above, or click <strong>☁ Sync from Cloud</strong> to restore from Google Sheets.</div>'
-      +'<div style="margin-top:8px"><button class="btn bt sm" onclick="syncFromCloud()">&#9729; Sync from Cloud</button></div>';
+    el.innerHTML='<div class="al ai">No programmes found on Google Sheets yet. '
+      +'Use <strong>Save Current Programme</strong> above, or click <strong>&#8635; Refresh</strong> to check again.</div>'
+      +'<div style="margin-top:8px"><button class="btn bt sm" onclick="refreshProgListFromCloud()">&#9729; Refresh from Google Sheets</button></div>';
     return;
   }
   ps=ps.slice().sort(function(a,b){return new Date(b.savedAt)-new Date(a.savedAt);});
@@ -2461,9 +2568,9 @@ function renderProgList(){
   }).join('');
   el.innerHTML=listHtml
     +'<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--g200);display:flex;flex-wrap:wrap;gap:8px;align-items:center">'
-    +'<button class="btn bt sm" onclick="syncFromCloud()" style="gap:6px">&#9729; Sync from Cloud</button>'
+    +'<button class="btn bt sm" onclick="refreshProgListFromCloud()">&#8635; Refresh from Google Sheets</button>'
     +'<button class="btn sm" style="background:var(--gd);color:#fff" onclick="recoverSectionsFromBackup()">&#128257; Recover Sections from Backup</button>'
-    +'<span style="font-size:11px;color:var(--g500)">Use Recover if sections show as not generated after loading</span>'
+    +'<span style="font-size:11px;color:var(--g500)">List shows exactly what is in Google Sheets — refreshes every 60 seconds</span>'
     +'</div>';
 }
 
@@ -2503,42 +2610,8 @@ async function recoverSectionsFromBackup(){
 
 /* ═══ SYNC FROM CLOUD ════════════════════════════════════════ */
 async function syncFromCloud(){
-  toast('\u23f3 Fetching programmes from Google Sheets...','i');
-  try{
-    var r=await fetch(API+'/api/programmes',{signal:AbortSignal.timeout(10000)});
-    if(!r.ok)throw new Error('Server returned '+r.status);
-    var serverProgs=await r.json();
-    if(!serverProgs||!serverProgs.length){toast('No programmes found on server yet','i');return;}
-    var ps=getProgs();
-    var added=0,updated=0;
-    serverProgs.forEach(function(sp){
-      if(!sp.id||!sp.meta||!sp.meta.name)return;
-      var localIdx=ps.findIndex(function(x){return String(x.id)===String(sp.id);});
-      var header={
-        id:sp.id,savedAt:sp.savedAt||new Date().toISOString(),version:3,
-        meta:sp.meta,courses:sp.courses||[],
-        secCount:sp.sectionDone?SECTIONS.filter(function(s){return sp.sectionDone[s.key]&&sp.sectionDone[s.key].done;}).length:0,
-        cdCount:sp.courseDone?Object.values(sp.courseDone).filter(function(v){return v&&v.done;}).length:0
-      };
-      if(localIdx>=0){
-        /* Only overwrite if server version is newer */
-        var localDate=new Date(ps[localIdx].savedAt||0);
-        var serverDate=new Date(sp.savedAt||0);
-        if(serverDate>localDate){ps[localIdx]=header;updated++;}
-      }else{
-        ps.push(header);added++;
-      }
-      /* Restore SC and CD into localStorage sub-keys */
-      if(sp.sectionDone&&Object.keys(sp.sectionDone).length)lsSet('kiu_sc_'+sp.id,sp.sectionDone);
-      if(sp.courseDone&&Object.keys(sp.courseDone).length)lsSet('kiu_cd_'+sp.id,sp.courseDone);
-    });
-    saveProgs(ps);
-    renderProgList();
-    toast('\u2705 Cloud sync done: '+added+' new, '+updated+' updated','s');
-  }catch(e){
-    toast('\u274c Cloud sync failed: '+e.message,'e');
-    console.error('syncFromCloud error:',e);
-  }
+  /* Delegates to refreshProgListFromCloud — Google Sheets is single source of truth */
+  await refreshProgListFromCloud();
 }
 
 /* ═══ EXPORT / IMPORT ════════════════════════════════════════ */
