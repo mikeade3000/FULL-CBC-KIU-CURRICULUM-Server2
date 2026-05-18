@@ -827,6 +827,92 @@ app.post('/api/ownership', async (req, res) => {
 //  PROGRAMME SECTIONS  (one row per section — no cell size limit)
 // ════════════════════════════════════════════════════════════════════════════
 
+// ── Migrate sections from truncated section_done blob → ProgrammeSections tab ──
+app.post('/api/migrate-sections/:programme_id', async (req, res) => {
+  const { programme_id } = req.params;
+  try {
+    // Read raw Programmes rows
+    const progRows = await getRows(SHEET.PROGRAMMES);
+    const prog = progRows.find(r => String(r.id) === String(programme_id));
+    if (!prog) return res.status(404).json({ error: 'Programme not found' });
+
+    const raw = prog.section_done || prog.section_content || '';
+    if (!raw) return res.json({ recovered: 0, message: 'No section_done data found' });
+
+    // Remove truncation marker and try full parse first
+    const cleaned = raw.replace(/…\[truncated\]/g, '').replace(/\.\.\.\[truncated\]/g, '');
+    let sc = {};
+    try { sc = JSON.parse(cleaned); } catch(e) {
+      // Partial JSON — extract sections individually using string search
+      const keys = ['intro','governance','nameCode','description','development',
+        'rationale','competences','outcomes','targetGroup','admission',
+        'humanRes','infrastructure','delivery','assessment','progression',
+        'gradLoad','research','community','policies','financial','welfare'];
+      for (const key of keys) {
+        const startMarker = `"${key}":{"text":"`;
+        const startIdx = cleaned.indexOf(startMarker);
+        if (startIdx < 0) continue;
+        const textStart = startIdx + startMarker.length;
+        // Find end of text value — look for ","done":
+        let depth = 0, inStr = false, escape = false;
+        let textEnd = -1;
+        for (let i = textStart; i < cleaned.length; i++) {
+          const ch = cleaned[i];
+          if (escape) { escape = false; continue; }
+          if (ch === '\\') { escape = true; continue; }
+          if (ch === '"' && !inStr) { inStr = true; continue; }
+          if (ch === '"' && inStr) {
+            // Check if followed by ,"done":
+            const ahead = cleaned.slice(i+1, i+10);
+            if (ahead.startsWith('","done"') || ahead.startsWith('"')) {
+              textEnd = i; break;
+            }
+          }
+        }
+        if (textEnd > textStart) {
+          const text = cleaned.slice(textStart, textEnd)
+            .replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+          if (text.length > 20) {
+            sc[key] = { text, done: true };
+          }
+        }
+      }
+    }
+
+    if (!Object.keys(sc).length) {
+      return res.json({ recovered: 0, message: 'Could not extract any sections from backup' });
+    }
+
+    // Save recovered sections to ProgrammeSections tab
+    const now = new Date().toISOString();
+    let saved = 0;
+    const existingRows = await getRows(SHEET.SECTIONS);
+    for (const [key, sec] of Object.entries(sc)) {
+      if (!sec.text || sec.text.length < 20) continue;
+      const existing = existingRows.find(r =>
+        String(r.programme_id) === String(programme_id) && r.section_key === key
+      );
+      const rowData = {
+        id:             `${programme_id}_${key}`,
+        programme_id:   String(programme_id),
+        programme_name: prog.name || '',
+        section_key:    key,
+        content:        sec.text,
+        done:           'true',
+        updated_at:     now,
+      };
+      const values = rowToValues('SECTIONS', rowData);
+      if (existing) {
+        await updateRow(SHEET.SECTIONS, existing._rowIndex, 'SECTIONS', values);
+      } else {
+        await appendRow(SHEET.SECTIONS, values);
+      }
+      saved++;
+    }
+    res.json({ recovered: saved, sections: Object.keys(sc) });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/sections', async (req, res) => {
   const { programme_id } = req.query;
   try {
