@@ -2422,10 +2422,45 @@ function renderProgList(){
       +'</div></div></div>';
   }).join('');
   el.innerHTML=listHtml
-    +'<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--g200)">'
-    +'<button class="btn bt sm" onclick="syncFromCloud()" style="gap:6px">&#9729; Sync from Cloud (Google Sheets)</button>'
-    +'<span style="font-size:11px;color:var(--g500);margin-left:10px">Restores any programme saved to the server</span>'
+    +'<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--g200);display:flex;flex-wrap:wrap;gap:8px;align-items:center">'
+    +'<button class="btn bt sm" onclick="syncFromCloud()" style="gap:6px">&#9729; Sync from Cloud</button>'
+    +'<button class="btn sm" style="background:var(--gd);color:#fff" onclick="recoverSectionsFromBackup()">&#128257; Recover Sections from Backup</button>'
+    +'<span style="font-size:11px;color:var(--g500)">Use Recover if sections show as not generated after loading</span>'
     +'</div>';
+}
+
+/* ═══ RECOVER SECTIONS FROM BACKUP ══════════════════════════
+   Extracts sections from the truncated section_done blob
+   in the Programmes tab and migrates them to ProgrammeSections
+   ══════════════════════════════════════════════════════════ */
+async function recoverSectionsFromBackup(){
+  var ps=getProgs();
+  if(!ps||!ps.length){toast('No programme in local list — load a programme first','e');return;}
+  var prog=ps[0]; // recover for currently most recent
+  var m=prog.meta||prog;
+  var id=prog.id;
+  if(!id){toast('Programme ID not found','e');return;}
+  toast('\u23f3 Recovering sections from Google Sheets backup...','i');
+  try{
+    var r=await fetch(API+'/api/migrate-sections/'+id,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({}),
+      signal:AbortSignal.timeout(30000)
+    });
+    if(!r.ok)throw new Error('Server returned '+r.status);
+    var d=await r.json();
+    if(d.recovered&&d.recovered>0){
+      toast('\u2705 Recovered '+d.recovered+' sections from backup! Now click Load to restore them.','s');
+      /* Auto-load the programme */
+      loadProgramme(id);
+    }else{
+      toast('\u26a0 '+( d.message||'No sections could be recovered. Please regenerate sections.'),'e');
+    }
+  }catch(e){
+    toast('\u274c Recovery failed: '+e.message,'e');
+    console.error(e);
+  }
 }
 
 /* ═══ SYNC FROM CLOUD ════════════════════════════════════════ */
