@@ -20,6 +20,7 @@ const SHEET = {
   REGISTRY:      'Registry',
   PROGRAMMES:    'Programmes',
   DETAILS:       'CourseDetails',
+  SECTIONS:      'ProgrammeSections',
   NOTIFICATIONS: 'Notifications',
   BORROWS:       'Borrows',
 };
@@ -39,6 +40,10 @@ const HEADERS = {
   DETAILS: [
     'id','code','name','programme','school','dept',
     'tier','content','updated_at',
+  ],
+  SECTIONS: [
+    'id','programme_id','programme_name',
+    'section_key','content','done','updated_at',
   ],
   NOTIFICATIONS: [
     'id','type','title','message',
@@ -818,6 +823,55 @@ app.post('/api/ownership', async (req, res) => {
 });
 
 // ── Fetch institution website content ────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════════
+//  PROGRAMME SECTIONS  (one row per section — no cell size limit)
+// ════════════════════════════════════════════════════════════════════════════
+
+app.get('/api/sections', async (req, res) => {
+  const { programme_id } = req.query;
+  try {
+    const rows = await getRows(SHEET.SECTIONS);
+    const filtered = programme_id
+      ? rows.filter(r => String(r.programme_id) === String(programme_id))
+      : rows;
+    const sc = {};
+    filtered.forEach(r => {
+      if (r.section_key) {
+        sc[r.section_key] = { text: r.content || '', done: r.done === 'true' };
+      }
+    });
+    res.json(sc);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/section', async (req, res) => {
+  const { programme_id, programme_name, section_key, content, done } = req.body;
+  if (!programme_id || !section_key) return res.status(400).json({ error: 'programme_id and section_key required' });
+  try {
+    const now = new Date().toISOString();
+    const rows = await getRows(SHEET.SECTIONS);
+    const existing = rows.find(r =>
+      String(r.programme_id) === String(programme_id) && r.section_key === section_key
+    );
+    const rowData = {
+      id:             existing ? existing.id : `${programme_id}_${section_key}`,
+      programme_id:   String(programme_id),
+      programme_name: programme_name || '',
+      section_key:    section_key,
+      content:        content || '',
+      done:           String(!!done),
+      updated_at:     now,
+    };
+    const values = rowToValues('SECTIONS', rowData);
+    if (existing) {
+      await updateRow(SHEET.SECTIONS, existing._rowIndex, 'SECTIONS', values);
+    } else {
+      await appendRow(SHEET.SECTIONS, values);
+    }
+    res.json({ saved: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/fetch-institution', async (req, res) => {
   const { url } = req.query;
   if (!url) return res.status(400).json({ error: 'url required' });
