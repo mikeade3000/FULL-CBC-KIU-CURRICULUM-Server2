@@ -1119,7 +1119,7 @@ function renderCurriculum(){
       html+='<td class="c"><input type="checkbox"'+(c.elective?' checked':'')+' onchange="updateCourse('+c.id+',\'elective\',this.checked)"></td>';
       html+='<td class="c"><select onchange="updateCourse('+c.id+',\'tier\',this.value)" style="width:45px"><option '+(c.tier==1?'selected':'')+'>1</option><option '+(c.tier==2?'selected':'')+'>2</option><option '+(c.tier==3?'selected':'')+'>3</option><option '+((!c.tier||c.tier==4)?'selected':'')+'>4</option></select></td>';
       html+='<td class="c"><button class="btn xs" style="background:var(--tl);color:#fff;padding:2px 5px;font-size:10px" onclick="balanceCourseNH('+c.id+')" title="Auto-balance DLH:SLH/ALH/OLH = 1:2">&#9878;</button></td>';
-      html+='<td class="c"><button class="btn br xs" onclick="delCourse('+c.id+')">&times;</button></td></tr>';
+      html+='<td class="c"><button class="btn br xs" onclick="deleteCourse('+c.id+')" title="Delete this course unit">&times;</button></td></tr>';
     });
     html+='<tr class="tr"><td colspan="8">SEMESTER TOTAL (Core)</td><td class="c">'+gNH+'</td><td class="c">'+gCr+'</td><td colspan="4"></td></tr>';
     html+='</tbody></table>';
@@ -1297,6 +1297,100 @@ function textToHtml(text){
 }
 
 /* RENDER PREVIEW - with full error handling */
+/* ══════════════════════════════════════════════════════════════════════════
+   PROGRAMME DEVELOPMENT / REVIEW PROCESS DIAGRAM
+   Appears in both Full Preview (HTML) and Word document download (OOXML)
+   Static — identical for every programme, based on NCHE Uganda CBE framework
+   ══════════════════════════════════════════════════════════════════════════ */
+var PROG_DEV_STAGES=[
+  {n:1, title:'Industry & Stakeholder Needs Assessment',
+   detail:'Labour market analysis • Employer surveys • Professional body consultation • Graduate tracer studies • Skills gap identification'},
+  {n:2, title:'Programme Conceptualisation',
+   detail:'Programme rationale and justification • Target group identification • Preliminary competence framework mapping • Feasibility assessment'},
+  {n:3, title:'Curriculum Design & Development',
+   detail:'Competence framework finalisation • Course mapping and sequencing • DLH/SLH/ALH/OLH calculation (1 CU = 10 NH) • CBE alignment and NCHE compliance check'},
+  {n:4, title:'Department Board Review & Approval',
+   detail:'Internal peer review • Content and competence validation • Resource requirement confirmation • Department Board resolution'},
+  {n:5, title:'School/Faculty Board Endorsement',
+   detail:'Cross-disciplinary review • Quality assurance pre-screening • School Board endorsement and formal recommendation'},
+  {n:6, title:'University Senate Approval',
+   detail:'Academic Standards Committee review • Strategic alignment confirmation • Senate resolution and formal academic approval'},
+  {n:7, title:'University Council Ratification',
+   detail:'Governance and policy compliance review • Financial and resource approval • Council ratification and institutional commitment'},
+  {n:8, title:'NCHE Submission & External Review',
+   detail:'Programme document preparation • Accreditation application submission • Technical review panel assessment • NCHE site inspection • Standards compliance audit'},
+  {n:9, title:'NCHE Accreditation Decision',
+   detail:'Technical report deliberation • NCHE Council decision • Formal accreditation letter issued • Official programme registration and public listing'},
+  {n:10,title:'Programme Launch & Implementation',
+   detail:'Learner recruitment and enrolment • Facilitator deployment and induction • Resource mobilisation and infrastructure setup • First cohort commencement'},
+  {n:11,title:'Annual Monitoring & Evaluation',
+   detail:'Academic performance and outcomes review • Stakeholder and employer feedback • Quality assurance audit • Annual report to Senate and NCHE'},
+  {n:12,title:'Periodic Comprehensive Review (Every 5 Years)',
+   detail:'Full programme evaluation against objectives • Industry realignment • CBE framework and NCHE standards update • Decision: Continue / Revise / Discontinue → If revised: return to Stage 1'},
+];
+
+/* ── HTML version (Full Preview) ── */
+function progDevDiagramHTML(){
+  var NV='#1a5c38',GD='#c8942a',LT='#f2f8f4';
+  var h='<div style="margin:24px 0;border:2px solid '+NV+';border-radius:8px;overflow:hidden;font-family:inherit">';
+  h+='<div style="background:'+NV+';color:#fff;padding:12px 16px;text-align:center;font-weight:800;font-size:13px;letter-spacing:.5px">';
+  h+='PROGRAMME DEVELOPMENT &amp; REVIEW PROCESS — KIU CBE FRAMEWORK</div>';
+  h+='<div style="padding:16px;background:#fff">';
+  PROG_DEV_STAGES.forEach(function(s,i){
+    h+='<div style="display:flex;gap:12px;align-items:flex-start">';
+    h+='<div style="background:'+NV+';color:#fff;border-radius:50%;min-width:34px;height:34px;'
+      +'display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0">'+s.n+'</div>';
+    h+='<div style="flex:1;border:1.5px solid #c8dfd2;border-radius:6px;padding:10px 14px;background:'+LT+';margin-bottom:0">';
+    h+='<div style="font-weight:700;color:'+NV+';font-size:12.5px">'+s.title+'</div>';
+    h+='<div style="font-size:11px;color:#444;margin-top:4px;line-height:1.6">'+s.detail+'</div>';
+    h+='</div></div>';
+    if(i<PROG_DEV_STAGES.length-1){
+      h+='<div style="display:flex;align-items:center;margin:2px 0 2px 17px;gap:0">'
+        +'<div style="width:0;height:24px;border-left:2px solid '+NV+';margin-left:0"></div>'
+        +'<div style="color:'+NV+';font-size:16px;margin-left:-5px">▼</div>'
+        +'</div>';
+    }
+  });
+  h+='<div style="margin-top:14px;background:#fff8e7;border:1.5px solid '+GD+';border-radius:6px;padding:10px 14px;text-align:center;font-size:12px">';
+  h+='<strong style="color:#7a5200">&#x21BA; Continuous Improvement Cycle:</strong> '
+    +'<span style="color:#555">After Stage 12 Periodic Review, revised programmes re-enter at Stage 1 for a new development cycle aligned with updated industry needs and NCHE standards.</span>';
+  h+='</div></div></div>';
+  return h;
+}
+
+/* ── Word OOXML version (buildDoc) ── */
+function progDevDiagramDocx(){
+  var NV='1A5C38',GD='C8942A',LT='F2F8F4';
+  var CW=14400,COLS=[1100,13300];
+  var rows='';
+  /* Header row */
+  rows+=mkR([
+    mkC('STAGE',{w:COLS[0],fill:NV,bc:NV,color:'FFFFFF',bold:true,sz:18,align:'center'}),
+    mkC('PROCESS STAGE AND KEY ACTIVITIES',{w:COLS[1],fill:NV,bc:NV,color:'FFFFFF',bold:true,sz:18}),
+  ],true);
+  PROG_DEV_STAGES.forEach(function(s,i){
+    var bg=i%2===0?LT:'FFFFFF';
+    rows+=mkR([
+      mkC(String(s.n),{w:COLS[0],fill:NV,bc:NV,color:'FFFFFF',bold:true,sz:28,align:'center'}),
+      mkC(s.title+'\n'+s.detail,{w:COLS[1],fill:bg,bc:'B8D8C0',sz:19}),
+    ]);
+    if(i<PROG_DEV_STAGES.length-1){
+      rows+=mkR([
+        mkC('\u2193',{w:COLS[0],fill:'FFFFFF',bc:'FFFFFF',sz:20,align:'center',color:NV}),
+        mkC('',{w:COLS[1],fill:'FFFFFF',bc:'FFFFFF',sz:14}),
+      ]);
+    }
+  });
+  /* Cycle note */
+  rows+=mkR([
+    mkC('\u21ba',{w:COLS[0],fill:GD,bc:GD,color:'FFFFFF',bold:true,sz:24,align:'center'}),
+    mkC('CONTINUOUS IMPROVEMENT CYCLE: After Stage 12 Periodic Review, revised programmes re-enter at Stage 1 for a new development cycle aligned with updated industry needs and NCHE standards.',
+      {w:COLS[1],fill:'FFF8E7',bc:GD,sz:18,italic:true,bold:true}),
+  ]);
+  return mkP('Programme Development and Review Process Diagram',{sz:22,bold:true,color:NV,before:200,after:80})
+    +mkTbl(rows,CW,COLS)+sp2(1);
+}
+
 function renderPreview(){
   var pw=document.getElementById('pw');
   if(!pw)return;
@@ -1357,7 +1451,10 @@ function renderPreview(){
       html+='<p style="margin-top:8px;font-weight:700;color:var(--nv)">'+esc(p.date)+'</p></div>';
 
       var S1=[['intro','1.','Introduction'],['governance','2.','Governance and Management'],['nameCode','3.','Programme Name, Code and Duration'],['description','4.','Programme Description'],['development','5.','Programme Development/Review Process'],['rationale','6.','Programme Rationale/Justification'],['competences','7.','Programme Competences'],['outcomes','8.','Programme Learning Outcomes'],['targetGroup','9.','Target Group'],['admission','10.','Entry/Admission Requirements'],['humanRes','11.','Human Resources'],['infrastructure','12.','Physical Infrastructure'],['delivery','13.','Modes of Delivery'],['assessment','14.','Modes of Assessment'],['progression','15.','Progression'],['gradLoad','16.','Minimum Graduation Load']];
-      S1.forEach(function(s){html+=sH(s[0],s[1],s[2]);});
+      S1.forEach(function(s){
+        html+=sH(s[0],s[1],s[2]);
+        if(s[0]==='development')html+=progDevDiagramHTML();
+      });
 
       html+='<h3 style="font-size:15px;color:var(--nv);margin:28px 0 8px;border-left:4px solid var(--gd);padding-left:10px;font-weight:700">17. Curriculum Structure</h3>';
       html+='<table><thead><tr><th style="width:110px">Code</th><th>Course Name</th><th>DLH</th><th>SLH</th><th>ALH</th><th>OLH</th><th>NH</th><th>Cr</th></tr></thead><tbody>'+mxR+'</tbody></table>';
@@ -2113,18 +2210,38 @@ function saveCurrentProgramme(){
 
   var secDone=SECTIONS.filter(function(s){return SC[s.key]&&SC[s.key].done;}).length;
   var cdDone=courses.filter(function(c){return CD[c.code]&&CD[c.code].done;}).length;
+  /* ── Find existing programme — check localStorage THEN Google Sheets ── */
   var now=new Date();
-  var id;
   var ps=getProgs();
+  var id, alreadyConfirmed=false;
   var idx=ps.findIndex(function(x){return x.meta&&x.meta.name===p.name;});
+
+  if(idx<0&&_serverProgs&&_serverProgs.length){
+    /* Not in localStorage — check Google Sheets cache by programme name */
+    var sp=_serverProgs.find(function(x){
+      return x.meta&&x.meta.name&&x.meta.name.trim()===p.name.trim();
+    });
+    if(sp){
+      if(!confirm('"'+p.name+'" already exists in Google Sheets. Overwrite?'))return;
+      alreadyConfirmed=true;
+      id=sp.id; /* ← REUSE existing Google Sheets ID — prevents duplicate row */
+      var importHeader={id:sp.id,savedAt:now.toISOString(),version:3,meta:p,
+        courses:JSON.parse(JSON.stringify(courses)),secCount:secDone,cdCount:cdDone};
+      ps.push(importHeader);
+      idx=ps.length-1;
+    }
+  }
+
   if(idx>=0){
-    if(!confirm('"'+p.name+'" already saved. Overwrite?'))return;
-    id=ps[idx].id;
+    if(!alreadyConfirmed){
+      if(!confirm('"'+p.name+'" already saved. Overwrite?'))return;
+    }
+    if(!id)id=ps[idx].id; /* reuse existing localStorage id */
     ps[idx]={id:id,savedAt:now.toISOString(),version:3,meta:p,
               courses:JSON.parse(JSON.stringify(courses)),
               secCount:secDone,cdCount:cdDone};
   }else{
-    id=now.getTime();
+    id=now.getTime(); /* truly new programme — assign fresh ID */
     ps.push({id:id,savedAt:now.toISOString(),version:3,meta:p,
               courses:JSON.parse(JSON.stringify(courses)),
               secCount:secDone,cdCount:cdDone});
@@ -2436,12 +2553,35 @@ function loadProgramme(id){
 
 /* ═══ DELETE ═════════════════════════════════════════════════ */
 function deleteProg(id){
-  var ps=getProgs(),p=ps.find(function(x){return x.id===id;});if(!p)return;
-  if(!confirm('Delete "'+(p.meta&&p.meta.name||'this programme')+'"?\nThis also removes all saved sections and course units.'))return;
-  saveProgs(ps.filter(function(x){return x.id!==id;}));
-  lsDel('kiu_sc_'+id);
-  lsDel('kiu_cd_'+id);
-  renderProgList();toast('Programme deleted','i');
+  /* Find in _serverProgs (Google Sheets cache) first, then localStorage */
+  var sp=_serverProgs&&_serverProgs.find(function(x){return String(x.id)===String(id);});
+  var ps=getProgs(),p=ps.find(function(x){return String(x.id)===String(id);});
+  var progName=(sp&&sp.meta&&sp.meta.name)||(p&&p.meta&&p.meta.name)||'this programme';
+  if(!sp&&!p)return;
+  if(!confirm('Delete "'+progName+'"?\nThis removes it from Google Sheets and local storage.'))return;
+
+  /* 1. Remove from localStorage */
+  saveProgs(ps.filter(function(x){return String(x.id)!==String(id);}));
+  lsDel('kiu_sc_'+id);lsDel('kiu_cd_'+id);
+
+  /* 2. Remove from _serverProgs cache immediately */
+  _serverProgs=_serverProgs.filter(function(x){return String(x.id)!==String(id);});
+  renderProgList();
+
+  /* 3. Delete from Google Sheets (server) */
+  fetch(API+'/api/programmes/'+id,{method:'DELETE'})
+    .then(function(r){
+      if(r.ok){
+        toast('\u2705 "'+progName+'" deleted from Google Sheets','s');
+        /* Also delete sections from ProgrammeSections tab */
+        fetch(API+'/api/sections/'+id,{method:'DELETE'}).catch(function(){});
+      }else{
+        toast('\u26a0 Deleted locally but server delete failed — refresh to check','e');
+      }
+    })
+    .catch(function(e){
+      toast('\u26a0 Deleted locally — could not reach server: '+e.message,'e');
+    });
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -2819,7 +2959,7 @@ function buildDocxParts(p,body){var now=new Date().toISOString();var numInst='';
 
 async function saveDocx(parts,fname,msg){if(typeof JSZip==='undefined'){toast('JSZip not loaded — refresh page','e');return;}try{var zip=new JSZip();zip.file('[Content_Types].xml',parts.CT);zip.folder('_rels').file('.rels',parts.RELS);var w=zip.folder('word');w.file('document.xml',parts.DOC);w.file('styles.xml',parts.STY);w.file('numbering.xml',parts.NUM);w.file('settings.xml',parts.SET);w.folder('_rels').file('document.xml.rels',parts.DRELS);zip.folder('docProps').file('core.xml',parts.CORE);var blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',compression:'DEFLATE',compressionOptions:{level:6}});var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=fname||'KIU.docx';document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(url);},5000);toast(msg||'\u2705 Downloaded!','s');}catch(e){toast('\u274c '+e.message,'e');}}
 
-async function buildDoc(p,cs,sc,cd){rN();var _oc=courses,_od=CD;if(cs&&cs.length){courses=cs;CD=cd||{};}assignCodes();var groups=groupBySem(),body=buildCover(p);var S1=[['intro','1.','Introduction'],['governance','2.','Governance and Management'],['nameCode','3.','Programme Name, Code and Duration'],['description','4.','Programme Description'],['development','5.','Programme Development/Review Process'],['rationale','6.','Programme Rationale/Justification'],['competences','7.','Programme Competences'],['outcomes','8.','Programme Learning Outcomes'],['targetGroup','9.','Target Group'],['admission','10.','Admission Requirements'],['humanRes','11.','Human Resources'],['infrastructure','12.','Physical Infrastructure'],['delivery','13.','Modes of Delivery'],['assessment','14.','Modes of Assessment'],['progression','15.','Progression'],['gradLoad','16.','Minimum Graduation Load']];S1.forEach(function(s){rN();body+=H1(s[1]+' '+s[2]);body+=t2w(sc&&sc[s[0]]&&sc[s[0]].text||'');body+=sp2(1);});body+='<w:p><w:pPr/><w:r><w:rPr/><w:br w:type="page"/></w:r></w:p>';body+=H1('17. Curriculum Structure');body+=buildMatrix();var S2=[['research','18.','Research and Innovation'],['community','19.','Community Engagement'],['policies','20.','Policies'],['financial','21.','Financial Resources'],['welfare','22.','Students Welfare']];S2.forEach(function(s){rN();body+=H1(s[1]+' '+s[2]);body+=t2w(sc&&sc[s[0]]&&sc[s[0]].text||'');body+=sp2(1);});body+='<w:p><w:pPr/><w:r><w:rPr/><w:br w:type="page"/></w:r></w:p>';body+=H1('DETAILED COURSE CONTENT');groups.forEach(function(g){body+=H2(getSL(g.year,g.sem));g.courses.forEach(function(c){var nh=getNH(c),cr=getCr(c),uk=getUK(c);rN();body+=H2(esc(c.code||'')+' | '+xes(c.name));var CW=14400,mC=[2000,5000,2000,5000],mData=[['Course Code:',c.code||'','Year/Semester:',getSL(c.year,c.sem)],['Notional Hours:',String(nh)+' NH','Credits:',String(uk==='WRC'?'5 (NCHE)':cr)],['NH Breakdown:','DLH:'+c.DH+' SLH:'+c.SH+' ALH:'+c.AH+' OLH:'+c.OH,'Type:',c.type]],mRows='';mData.forEach(function(row){mRows+=mkR(row.map(function(cell,i){return mkC(String(cell||''),{w:mC[i<2?i:i-2],fill:i%2===0?'EEF4F8':'FFFFFF',bc:'DDDDDD',sz:20,bold:i%2===0});}).join(''));});body+=mkTbl(mRows,CW,mC);body+=sp2(1);body+=t2w(cd&&cd[c.code]&&cd[c.code].text||'');body+=sp2(2);});});var result=buildDocxParts(p,body);courses=_oc;CD=_od;assignCodes();return result;}
+async function buildDoc(p,cs,sc,cd){rN();var _oc=courses,_od=CD;if(cs&&cs.length){courses=cs;CD=cd||{};}assignCodes();var groups=groupBySem(),body=buildCover(p);var S1=[['intro','1.','Introduction'],['governance','2.','Governance and Management'],['nameCode','3.','Programme Name, Code and Duration'],['description','4.','Programme Description'],['development','5.','Programme Development/Review Process'],['rationale','6.','Programme Rationale/Justification'],['competences','7.','Programme Competences'],['outcomes','8.','Programme Learning Outcomes'],['targetGroup','9.','Target Group'],['admission','10.','Admission Requirements'],['humanRes','11.','Human Resources'],['infrastructure','12.','Physical Infrastructure'],['delivery','13.','Modes of Delivery'],['assessment','14.','Modes of Assessment'],['progression','15.','Progression'],['gradLoad','16.','Minimum Graduation Load']];S1.forEach(function(s){rN();body+=H1(s[1]+' '+s[2]);body+=t2w(sc&&sc[s[0]]&&sc[s[0]].text||'');if(s[0]==='development')body+=progDevDiagramDocx();body+=sp2(1);});body+='<w:p><w:pPr/><w:r><w:rPr/><w:br w:type="page"/></w:r></w:p>';body+=H1('17. Curriculum Structure');body+=buildMatrix();var S2=[['research','18.','Research and Innovation'],['community','19.','Community Engagement'],['policies','20.','Policies'],['financial','21.','Financial Resources'],['welfare','22.','Students Welfare']];S2.forEach(function(s){rN();body+=H1(s[1]+' '+s[2]);body+=t2w(sc&&sc[s[0]]&&sc[s[0]].text||'');body+=sp2(1);});body+='<w:p><w:pPr/><w:r><w:rPr/><w:br w:type="page"/></w:r></w:p>';body+=H1('DETAILED COURSE CONTENT');groups.forEach(function(g){body+=H2(getSL(g.year,g.sem));g.courses.forEach(function(c){var nh=getNH(c),cr=getCr(c),uk=getUK(c);rN();body+=H2(esc(c.code||'')+' | '+xes(c.name));var CW=14400,mC=[2000,5000,2000,5000],mData=[['Course Code:',c.code||'','Year/Semester:',getSL(c.year,c.sem)],['Notional Hours:',String(nh)+' NH','Credits:',String(uk==='WRC'?'5 (NCHE)':cr)],['NH Breakdown:','DLH:'+c.DH+' SLH:'+c.SH+' ALH:'+c.AH+' OLH:'+c.OH,'Type:',c.type]],mRows='';mData.forEach(function(row){mRows+=mkR(row.map(function(cell,i){return mkC(String(cell||''),{w:mC[i<2?i:i-2],fill:i%2===0?'EEF4F8':'FFFFFF',bc:'DDDDDD',sz:20,bold:i%2===0});}).join(''));});body+=mkTbl(mRows,CW,mC);body+=sp2(1);body+=t2w(cd&&cd[c.code]&&cd[c.code].text||'');body+=sp2(2);});});var result=buildDocxParts(p,body);courses=_oc;CD=_od;assignCodes();return result;}
 
 async function downloadWordDoc(){if(typeof JSZip==='undefined'){toast('JSZip not loaded — refresh page','e');return;}['ws1','ws2'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='inline-block';});try{assignCodes();var doc=await buildDoc(getProg(),courses,SC,CD);var p=getProg();saveDocx(doc,((p.abbr||p.name||'Programme').replace(/[^a-zA-Z0-9]/g,'_'))+'_CBE_Programme.docx','\u2705 Word document downloaded!');}catch(e){toast('\u274c '+e.message,'e');console.error(e);}finally{['ws1','ws2'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});}}
 
