@@ -512,49 +512,65 @@ var _syncChoices={};
 /* Build local registry from saved programmes AT EXACT SAME LEVEL */
 function buildLocalReg(exactLevel){
   var seen=new Map();
-  try{
-    getProgs().forEach(function(prog){
-      var pm=prog.meta||prog;
-      if(parseInt(pm.level||7)!==exactLevel)return;  // strict: must match exactly
-      (prog.courses||[]).forEach(function(c){
-        if(isUCCByName(c.name))return;
-        var k=normKey(c.name);if(!k||k.length<4)return;
-        var codeLevel=getCodeLevel(c.code);
-        if(codeLevel&&codeLevel!==exactLevel)return;  // skip cross-level codes
-        if(!seen.has(k)){
-          seen.set(k,{
-            code:c.code||'',name:c.name||'',prefix:c.prefix||'',
-            DH:c.DH||0,SH:c.SH||0,AH:c.AH||0,OH:c.OH||0,
-            year:c.year||1,sem:c.sem||'1',tier:c.tier||4,
-            programme:pm.name||'',abbr:pm.abbr||'',_src:'local',
-            _allProg:[pm.abbr||pm.name||''],_level:exactLevel
-          });
-        }else{
-          var ex=seen.get(k),tag=pm.abbr||pm.name||'';
-          if((ex._allProg||[]).indexOf(tag)<0)(ex._allProg=ex._allProg||[]).push(tag);
-        }
-      });
+  /* Combine localStorage AND _serverProgs (Google Sheets cache) — whichever has data */
+  var allProgs=[];
+  try{allProgs=getProgs().slice();}catch(e){}
+  if(_serverProgs&&_serverProgs.length){
+    var localIds=new Set(allProgs.map(function(p){return String(p.id);}));
+    _serverProgs.forEach(function(sp){
+      if(!localIds.has(String(sp.id))){
+        /* Add server programme in compatible format */
+        allProgs.push({id:sp.id,meta:sp.meta,courses:sp.courses||[]});
+      }
     });
-  }catch(e){}
+  }
+  allProgs.forEach(function(prog){
+    var pm=prog.meta||prog;
+    if(parseInt(pm.level||7)!==exactLevel)return;
+    (prog.courses||[]).forEach(function(c){
+      if(isUCCByName(c.name))return;
+      var k=normKey(c.name);if(!k||k.length<4)return;
+      var codeLevel=getCodeLevel(c.code);
+      if(codeLevel&&codeLevel!==exactLevel)return;
+      if(!seen.has(k)){
+        seen.set(k,{
+          code:c.code||'',name:c.name||'',prefix:c.prefix||'',
+          DH:c.DH||0,SH:c.SH||0,AH:c.AH||0,OH:c.OH||0,
+          year:c.year||1,sem:c.sem||'1',tier:c.tier||4,
+          programme:pm.name||'',abbr:pm.abbr||'',_src:'sheets',
+          _allProg:[pm.abbr||pm.name||''],_level:exactLevel
+        });
+      }else{
+        var ex=seen.get(k),tag=pm.abbr||pm.name||'';
+        if((ex._allProg||[]).indexOf(tag)<0)(ex._allProg=ex._allProg||[]).push(tag);
+      }
+    });
+  });
   var arr=[];seen.forEach(function(v){arr.push(v);});return arr;
 }
 
 async function buildRegistry(exactLevel){
+  /* If _serverProgs is empty, try to fetch from Google Sheets first */
+  if(!_serverProgs||!_serverProgs.length){
+    toast('\u23f3 Loading programmes from Google Sheets for registry comparison...','i');
+    await refreshProgListFromCloud();
+  }
   var localEntries=buildLocalReg(exactLevel);
   var serverEntries=[];
   try{
-    var r=await fetch(API+'/api/registry?level='+exactLevel,{signal:AbortSignal.timeout(4000)});
+    /* Longer timeout — Render free tier may need up to 20s to wake up */
+    var r=await fetch(API+'/api/registry?level='+exactLevel,{signal:AbortSignal.timeout(20000)});
     if(r.ok){var d=await r.json();
-      // Filter server results: only keep entries whose code level matches exactLevel
       (d.courses||d||[]).forEach(function(e){
         if(!e.name)return;
         var cl=getCodeLevel(e.code);
-        if(cl&&cl!==exactLevel)return;  // reject wrong-level entries from server too
+        if(cl&&cl!==exactLevel)return;
         serverEntries.push(Object.assign({_src:'server',_level:exactLevel},e));
       });
     }
-  }catch(e){}
-  // Build O(1) map — server wins over local
+  }catch(e){
+    console.warn('Registry server fetch failed:',e.message);
+  }
   var map=new Map();
   localEntries.forEach(function(e){var k=normKey(e.name);if(k&&!map.has(k))map.set(k,e);});
   serverEntries.forEach(function(e){var k=normKey(e.name);if(k)map.set(k,e);});
@@ -754,9 +770,12 @@ function renderSyncPanel(exactLevel){
     html+='</tbody></table></div>';
   });
 
+  var sheetsCount=reg.local.length;
   var src=reg.server.length
-    ?reg.server.length+' server + '+reg.local.length+' local (Level-'+exactLevel+' only)'
-    :reg.local.length+' local Level-'+exactLevel+' programmes'+(reg.server.length===0?' (server offline)':'');
+    ?reg.server.length+' server registry + '+sheetsCount+' Google Sheets (Level-'+exactLevel+' only)'
+    :sheetsCount>0
+      ?sheetsCount+' Google Sheets programmes, Level-'+exactLevel+' (registry DB empty or server starting up)'
+      :'No Level-'+exactLevel+' programmes found — go to My Programmes tab and click Refresh first';
 
   var legend='<div style="display:flex;gap:10px;flex-wrap:wrap;font-size:11px;margin-bottom:10px;align-items:center">'
     +'<span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:14px;background:#ffe4e4;border-left:4px solid #dc2626;display:inline-block"></span>Level mismatch (critical)</span>'
