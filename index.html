@@ -1134,7 +1134,61 @@ function renderUCCList(){
 
 <script>
 /* TEXT TO HTML - FIXED (flushL properly closed) */
+/* ── Strip banned columns from markdown tables in stored content ── */
+function stripBadTableCols(text){
+  if(!text||text.indexOf('|')<0)return text;
+  var BAD=['Teaching Method','Learner Activity','Assessment Type',
+           'Resources Required','Performance Indicator'];
+  var lines=text.split('\n');
+  var result=[];
+  var dropCols=null; // indices of columns to drop
+  for(var i=0;i<lines.length;i++){
+    var line=lines[i];
+    if(line.trim().startsWith('|')){
+      var cells=line.split('|').map(function(c){return c.trim();});
+      // Remove empty first/last from split
+      if(cells[0]==='')cells.shift();
+      if(cells[cells.length-1]==='')cells.pop();
+      // Detect header row — check if any cell is a BAD column
+      var isSep=cells.every(function(c){return /^[-: ]+$/.test(c);});
+      if(!isSep){
+        // Check if this is a header row (i==0 of table or previous line was sep)
+        var hasBad=cells.some(function(c){
+          return BAD.some(function(b){return c.toLowerCase().indexOf(b.toLowerCase())>=0;});
+        });
+        if(hasBad&&!dropCols){
+          // Identify which column indices to drop
+          dropCols=[];
+          cells.forEach(function(c,idx){
+            if(BAD.some(function(b){return c.toLowerCase().indexOf(b.toLowerCase())>=0;})){
+              dropCols.push(idx);
+            }
+          });
+        }
+      }
+      if(dropCols&&dropCols.length>0){
+        var kept=cells.filter(function(_,idx){return dropCols.indexOf(idx)<0;});
+        if(isSep){
+          result.push('| '+kept.map(function(){return '---';}).join(' | ')+' |');
+        }else{
+          result.push('| '+kept.join(' | ')+' |');
+        }
+        continue;
+      }else if(dropCols!==null&&dropCols.length===0){
+        // No bad cols found — pass through
+        result.push(line);continue;
+      }
+    }else{
+      // Non-table line — reset dropCols tracker
+      dropCols=null;
+      result.push(line);
+    }
+  }
+  return result.join('\n');
+}
+
 function textToHtml(text){
+  text=stripBadTableCols(text||'');
   if(!text)return'';
   var lines=text.split('\n'),html='',inUL=false,inOL=false,inTbl=false,tblRows=[];
 
@@ -2034,7 +2088,7 @@ function saveCurrentProgramme(){
   try{localStorage.removeItem('kiu_cd_'+id);}catch(e){}
 
   renderProgList();
-  toast('\u23f3 Saving to CLOUDS (primary storage)...','i');
+  toast('\u23f3 Saving to Google Sheets (primary storage)...','i');
 
   /* ── Push FULL content to Google Sheets ── */
   var scSnap=JSON.parse(JSON.stringify(SC));
@@ -2055,9 +2109,24 @@ function saveCurrentProgramme(){
     body:JSON.stringify(payload)
   }).then(function(r){
     if(r.ok){
-      /* Also save each course unit individually to CourseDetails tab */
+      /* Save each SECTION individually to ProgrammeSections tab (no size limit) */
+      Object.keys(scSnap).forEach(function(key){
+        var sec=scSnap[key];
+        if(!sec||!sec.text)return;
+        fetch(API+'/api/section',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            programme_id:id,
+            programme_name:p.name,
+            section_key:key,
+            content:sec.text,
+            done:!!sec.done
+          })
+        }).catch(function(e){console.warn('Section save error ('+key+'):',e.message);});
+      });
+      /* Save each COURSE UNIT individually to CourseDetails tab */
       var cdEntries=Object.entries(cdSnap);
-      var cdSaveCount=0;
       cdEntries.forEach(function(entry){
         var code=entry[0],det=entry[1];
         if(!det||!det.done||!det.text)return;
@@ -2074,9 +2143,7 @@ function saveCurrentProgramme(){
             tier:course?(course.tier||4):4,
             text:det.text
           })
-        }).then(function(){cdSaveCount++;}).catch(function(e){
-          console.warn('CourseDetail save error for '+code+':',e.message);
-        });
+        }).catch(function(e){console.warn('CourseDetail save error for '+code+':',e.message);});
       });
       showCloudSaveNotification(_pname,_ccount,_secDone,_cdDone,_now);
     }else{
@@ -2130,7 +2197,7 @@ function showCloudSaveNotification(progName,courseCount,secCount,cdCount,savedAt
 
   box.innerHTML=
     '<div style="font-size:48px;margin-bottom:4px">☁️</div>'
-    +'<div style="font-size:22px;font-weight:800;color:#065f46;margin-bottom:4px">Saved to CLOUDS!</div>'
+    +'<div style="font-size:22px;font-weight:800;color:#065f46;margin-bottom:4px">Saved to Google Sheets!</div>'
     +'<div style="font-size:13px;color:#374151;margin-bottom:20px;font-weight:600">KIU CBE Database — Programmes Tab</div>'
 
     +'<div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:8px;padding:16px;margin-bottom:16px;text-align:left">'
@@ -2211,7 +2278,7 @@ function loadProgramme(id){
   var pw=document.getElementById('pw');
   if(pw)pw.innerHTML='<div style="text-align:center;padding:60px 20px">'
     +'<div style="font-size:40px;margin-bottom:16px">☁️</div>'
-    +'<div style="font-size:18px;font-weight:700;color:var(--nv);margin-bottom:8px">Loading from CLOUDS...</div>'
+    +'<div style="font-size:18px;font-weight:700;color:var(--nv);margin-bottom:8px">Loading from Google Sheets...</div>'
     +'<div style="font-size:13px;color:var(--g500);margin-bottom:24px">'
       +'Fetching all '+courses.length+' course units and '
       +SECTIONS.length+' programme sections</div>'
@@ -2219,13 +2286,13 @@ function loadProgramme(id){
       +'border-top-color:transparent;border-radius:50%;animation:_sp .8s linear infinite"></div>'
     +'</div>';
 
-  /* ── Step 4: Fetch SC from Programmes tab + CD from CourseDetails tab ── */
-  toast('\u23f3 Fetching content from the CLOUDS...','i');
-  var progFetch=fetch(API+'/api/programmes/'+id,{signal:AbortSignal.timeout(30000)});
+  /* ── Step 4: Fetch SC from ProgrammeSections tab + CD from CourseDetails tab ── */
+  toast('\u23f3 Fetching content from Google Sheets...','i');
+  var secFetch=fetch(API+'/api/sections?programme_id='+id,{signal:AbortSignal.timeout(30000)});
   var cdFetch=fetch(API+'/api/course-details?programme='+encodeURIComponent(m.name),
     {signal:AbortSignal.timeout(30000)});
 
-  Promise.all([progFetch,cdFetch])
+  Promise.all([secFetch,cdFetch])
     .then(function(responses){
       return Promise.all(responses.map(function(r){
         if(!r.ok)throw new Error('Server error '+r.status);
@@ -2233,41 +2300,48 @@ function loadProgramme(id){
       }));
     })
     .then(function(results){
-      var d=results[0],cdArr=results[1];
+      var cloudSC=results[0]||{};
+      var cdArr=results[1]||[];
 
-      /* Restore SC from Programmes tab */
-      var cloudSC=d?d.sectionDone||d.sectionContent||{}:{};
+      /* Restore SC — if ProgrammeSections is empty, fall back to Programmes blob */
+      var hasSections=Object.keys(cloudSC).length>0;
+      if(!hasSections){
+        /* Fallback: try section_done blob from Programmes tab */
+        return fetch(API+'/api/programmes/'+id,{signal:AbortSignal.timeout(20000)})
+          .then(function(r){return r.ok?r.json():null;})
+          .then(function(d){
+            if(d&&(d.sectionDone||d.sectionContent)){
+              cloudSC=d.sectionDone||d.sectionContent||{};
+            }
+            return{cloudSC:cloudSC,cdArr:cdArr};
+          }).catch(function(){return{cloudSC:{},cdArr:cdArr};});
+      }
+      return{cloudSC:cloudSC,cdArr:cdArr};
+    })
+    .then(function(data){
+      var cloudSC=data.cloudSC||{};
+      var cdArr=data.cdArr||[];
+
+      /* Restore SC */
       SECTIONS.forEach(function(s){
         SC[s.key]=cloudSC[s.key]||{text:'',done:false};
       });
 
-      /* Restore CD from CourseDetails tab (one row per course — no size limit) */
+      /* Restore CD from CourseDetails tab */
       CD={};
       if(Array.isArray(cdArr)){
         cdArr.forEach(function(cu){
-          if(cu.code&&cu.text){
-            CD[cu.code]={text:cu.text,done:true};
-          }
-        });
-      }
-      /* Fallback: also try courseDone from Programmes blob (for older saves) */
-      if(Object.keys(CD).length===0&&d&&d.courseDone){
-        var legacyCD=d.courseDone||{};
-        Object.keys(legacyCD).forEach(function(code){
-          if(legacyCD[code]&&legacyCD[code].text){
-            CD[code]={text:legacyCD[code].text,done:true};
-          }
+          if(cu.code&&cu.text) CD[cu.code]={text:cu.text,done:true};
         });
       }
 
       var secDone=SECTIONS.filter(function(s){return SC[s.key]&&SC[s.key].done;}).length;
       var cdDone=courses.filter(function(c){return CD[c.code]&&CD[c.code].done;}).length;
 
-      renderGenTab();
-      renderPreview();
+      renderGenTab();renderPreview();
 
       if(secDone===0&&cdDone===0){
-        toast('\u2705 "'+m.name+'" loaded — no generated content yet. Use the Generator tab.','s');
+        toast('\u2705 "'+m.name+'" loaded \u2014 no generated content yet. Use the Generator tab.','s');
       }else{
         var pctS=Math.round(secDone/SECTIONS.length*100);
         var pctC=courses.length?Math.round(cdDone/courses.length*100):0;
@@ -2278,18 +2352,15 @@ function loadProgramme(id){
     })
     .catch(function(e){
       console.error('Cloud load error:',e);
-      /* Fallback: try localStorage sub-keys (old saves) */
       var savedSC=lsGet('kiu_sc_'+id)||{};
       var savedCD=lsGet('kiu_cd_'+id)||{};
       SECTIONS.forEach(function(s){SC[s.key]=savedSC[s.key]||{text:'',done:false};});
       CD=JSON.parse(JSON.stringify(savedCD));
       renderGenTab();renderPreview();
       var secDone=SECTIONS.filter(function(s){return SC[s.key]&&SC[s.key].done;}).length;
-      if(secDone>0){
-        toast('\u26a0 Cloud unavailable — restored '+secDone+' sections from local cache','e');
-      }else{
-        toast('\u26a0 Could not fetch from Google Sheets: '+e.message,'e');
-      }
+      toast(secDone>0
+        ?'\u26a0 Cloud unavailable \u2014 restored '+secDone+' sections from local cache'
+        :'\u26a0 Could not fetch from Google Sheets: '+e.message,'e');
     });
 }
 
@@ -2592,15 +2663,17 @@ async function dlDocFor(id){
   toast('\u23f3 Loading programme from Google Sheets for download...','i');
   try{
     /* Fetch SC (section content) and CD (course details) from server */
-    var [progRes, cdRes] = await Promise.all([
-      fetch(API+'/api/programmes/'+id,{signal:AbortSignal.timeout(30000)}),
+    var [secRes, cdRes] = await Promise.all([
+      fetch(API+'/api/sections?programme_id='+id,{signal:AbortSignal.timeout(30000)}),
       fetch(API+'/api/course-details?programme='+encodeURIComponent(m.name||''),{signal:AbortSignal.timeout(30000)})
     ]);
-    var progData = progRes.ok ? await progRes.json() : null;
-    var cdArr    = cdRes.ok  ? await cdRes.json()    : [];
-    /* Build SC map */
-    var sc = progData ? (progData.sectionDone||progData.sectionContent||{}) : {};
-    /* Build CD map from CourseDetails rows */
+    var sc = secRes.ok ? await secRes.json() : {};
+    var cdArr = cdRes.ok ? await cdRes.json() : [];
+    /* If ProgrammeSections is empty, fall back to Programmes blob */
+    if(!Object.keys(sc).length){
+      var progRes=await fetch(API+'/api/programmes/'+id,{signal:AbortSignal.timeout(20000)});
+      if(progRes.ok){var pd=await progRes.json();sc=pd.sectionDone||pd.sectionContent||{};}
+    }
     var cd = {};
     if(Array.isArray(cdArr)){
       cdArr.forEach(function(cu){ if(cu.code&&cu.text) cd[cu.code]={text:cu.text,done:true}; });
