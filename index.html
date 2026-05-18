@@ -2220,7 +2220,7 @@ function loadProgramme(id){
     +'</div>';
 
   /* ── Step 4: Fetch SC from Programmes tab + CD from CourseDetails tab ── */
-  toast('\u23f3 Fetching content from Google Sheets...','i');
+  toast('\u23f3 Fetching content from the CLOUDS...','i');
   var progFetch=fetch(API+'/api/programmes/'+id,{signal:AbortSignal.timeout(30000)});
   var cdFetch=fetch(API+'/api/course-details?programme='+encodeURIComponent(m.name),
     {signal:AbortSignal.timeout(30000)});
