@@ -930,6 +930,82 @@ app.get('/api/sections', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ── Batch save all sections for a programme (1 read instead of 21) ───────────
+app.post('/api/sections/batch', async (req, res) => {
+  const { programme_id, programme_name, sections } = req.body;
+  if (!programme_id || !Array.isArray(sections))
+    return res.status(400).json({ error: 'programme_id and sections array required' });
+  try {
+    const now  = new Date().toISOString();
+    // ONE read to get all existing section rows for this programme
+    const rows = await getRows(SHEET.SECTIONS);
+    const existingMap = {};
+    rows.filter(r => String(r.programme_id) === String(programme_id))
+        .forEach(r => { existingMap[r.section_key] = r; });
+
+    let saved = 0;
+    for (const sec of sections) {
+      if (!sec.section_key || !sec.content) continue;
+      const rowData = {
+        id:             `${programme_id}_${sec.section_key}`,
+        programme_id:   String(programme_id),
+        programme_name: programme_name || '',
+        section_key:    sec.section_key,
+        content:        sec.content,
+        done:           String(!!sec.done),
+        updated_at:     now,
+      };
+      const values = rowToValues('SECTIONS', rowData);
+      if (existingMap[sec.section_key]) {
+        await updateRow(SHEET.SECTIONS, existingMap[sec.section_key]._rowIndex, 'SECTIONS', values);
+      } else {
+        await appendRow(SHEET.SECTIONS, values);
+      }
+      saved++;
+    }
+    res.json({ saved });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── Batch save all course details for a programme (1 read instead of 30) ─────
+app.post('/api/course-details/batch', async (req, res) => {
+  const { programme, items } = req.body;
+  if (!programme || !Array.isArray(items))
+    return res.status(400).json({ error: 'programme and items array required' });
+  try {
+    const now  = new Date().toISOString();
+    // ONE read to get all existing course detail rows for this programme
+    const rows = await getRows(SHEET.DETAILS);
+    const existingMap = {};
+    rows.filter(r => r.programme === programme)
+        .forEach(r => { existingMap[r.code] = r; });
+
+    let saved = 0;
+    for (const item of items) {
+      if (!item.code || !item.text) continue;
+      const rowData = {
+        id:         existingMap[item.code] ? existingMap[item.code].id : `${Date.now()}_${saved}`,
+        code:       item.code,
+        name:       item.name || '',
+        programme:  item.programme || programme,
+        school:     item.school || '',
+        dept:       item.dept   || '',
+        tier:       item.tier   || 4,
+        content:    item.text,
+        updated_at: now,
+      };
+      const values = rowToValues('DETAILS', rowData);
+      if (existingMap[item.code]) {
+        await updateRow(SHEET.DETAILS, existingMap[item.code]._rowIndex, 'DETAILS', values);
+      } else {
+        await appendRow(SHEET.DETAILS, values);
+      }
+      saved++;
+    }
+    res.json({ saved });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.post('/api/section', async (req, res) => {
   const { programme_id, programme_name, section_key, content, done } = req.body;
   if (!programme_id || !section_key) return res.status(400).json({ error: 'programme_id and section_key required' });
@@ -957,6 +1033,71 @@ app.post('/api/section', async (req, res) => {
     res.json({ saved: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
+// Delete a programme row from Google Sheets
+app.delete('/api/programmes/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const rows = await getRows(SHEET.PROGRAMMES);
+    const row  = rows.find(r => String(r.id) === String(id));
+    if (!row) return res.status(404).json({ error: 'not found' });
+    // Delete by clearing the row (Google Sheets API doesn't have native delete row without batchUpdate)
+    await sheetsClient.spreadsheets.batchUpdate({
+      spreadsheetId: SPREADSHEET_ID,
+      requestBody: {
+        requests: [{
+          deleteDimension: {
+            range: {
+              sheetId: await getSheetId(SHEET.PROGRAMMES),
+              dimension: 'ROWS',
+              startIndex: row._rowIndex - 1,  // 0-based
+              endIndex:   row._rowIndex,
+            }
+          }
+        }]
+      }
+    });
+    res.json({ deleted: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Delete all sections for a programme from ProgrammeSections tab
+app.delete('/api/sections/:programme_id', async (req, res) => {
+  const { programme_id } = req.params;
+  try {
+    const rows = await getRows(SHEET.SECTIONS);
+    const toDelete = rows
+      .filter(r => String(r.programme_id) === String(programme_id))
+      .sort((a, b) => b._rowIndex - a._rowIndex); // delete from bottom up
+    const sheetId = await getSheetId(SHEET.SECTIONS);
+    for (const row of toDelete) {
+      await sheetsClient.spreadsheets.batchUpdate({
+        spreadsheetId: SPREADSHEET_ID,
+        requestBody: {
+          requests: [{
+            deleteDimension: {
+              range: {
+                sheetId,
+                dimension: 'ROWS',
+                startIndex: row._rowIndex - 1,
+                endIndex:   row._rowIndex,
+              }
+            }
+          }]
+        }
+      });
+    }
+    res.json({ deleted: toDelete.length });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Helper — get the internal sheetId (gid) for a named tab
+async function getSheetId(tabName) {
+  const meta = await sheetsClient.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
+  const sheet = meta.data.sheets.find(s => s.properties.title === tabName);
+  if (!sheet) throw new Error(`Tab "${tabName}" not found`);
+  return sheet.properties.sheetId;
+}
 
 app.get('/api/fetch-institution', async (req, res) => {
   const { url } = req.query;
