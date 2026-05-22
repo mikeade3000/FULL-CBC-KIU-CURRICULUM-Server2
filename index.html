@@ -938,7 +938,7 @@ function switchTab(name){
       var t=document.getElementById('tab-programmes');
       if(t&&t.classList.contains('active'))refreshProgListFromCloud();
       else{clearInterval(_progRefreshInterval);_progRefreshInterval=null;}
-    },60000);
+    },300000); /* 5 minutes — stays within Google Sheets API quota */
   }else{
     /* Clear interval when leaving programmes tab */
     if(_progRefreshInterval){clearInterval(_progRefreshInterval);_progRefreshInterval=null;}
@@ -2297,45 +2297,34 @@ function saveCurrentProgramme(){
     body:JSON.stringify(payload)
   }).then(function(r){
     if(r.ok){
-      /* Save each SECTION individually to ProgrammeSections tab (no size limit) */
-      Object.keys(scSnap).forEach(function(key){
-        var sec=scSnap[key];
-        if(!sec||!sec.text)return;
-        fetch(API+'/api/section',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({
-            programme_id:id,
-            programme_name:p.name,
-            section_key:key,
-            content:sec.text,
-            done:!!sec.done
-          })
-        }).catch(function(e){console.warn('Section save error ('+key+'):',e.message);});
-      });
-      /* Save each COURSE UNIT individually to CourseDetails tab */
-      var cdEntries=Object.entries(cdSnap);
-      cdEntries.forEach(function(entry){
-        var code=entry[0],det=entry[1];
-        if(!det||!det.done||!det.text)return;
-        var course=courses.find(function(c){return c.code===code;});
-        fetch(API+'/api/course-detail',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({
-            code:code,
-            name:course?course.name:code,
-            programme:p.name,
-            school:p.school||'',
-            dept:p.dept||'',
-            tier:course?(course.tier||4):4,
-            text:det.text
-          })
-        }).catch(function(e){console.warn('CourseDetail save error for '+code+':',e.message);});
-      });
+      /* ── BATCH save all sections — 1 server read instead of 21 ── */
+      var sectionsToSave=Object.entries(scSnap)
+        .filter(function(e){return e[1]&&e[1].text;})
+        .map(function(e){return{section_key:e[0],content:e[1].text,done:!!e[1].done};});
+      if(sectionsToSave.length){
+        fetch(API+'/api/sections/batch',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({programme_id:id,programme_name:p.name,sections:sectionsToSave})
+        }).catch(function(e){console.warn('Batch section save:',e.message);});
+      }
+      /* ── BATCH save all course units — 1 server read instead of 30 ── */
+      var cdItems=Object.entries(cdSnap)
+        .filter(function(e){return e[1]&&e[1].done&&e[1].text;})
+        .map(function(e){
+          var code=e[0],det=e[1];
+          var course=courses.find(function(c){return c.code===code;});
+          return{code:code,text:det.text,
+            name:course?course.name:code,programme:p.name,
+            school:p.school||'',dept:p.dept||'',tier:course?(course.tier||4):4};
+        });
+      if(cdItems.length){
+        fetch(API+'/api/course-details/batch',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({programme:p.name,items:cdItems})
+        }).catch(function(e){console.warn('Batch course-detail save:',e.message);});
+      }
       showCloudSaveNotification(_pname,_ccount,_secDone,_cdDone,_now);
-      /* Refresh My Programmes list from Google Sheets to reflect latest save */
-      setTimeout(refreshProgListFromCloud, 2000);
+      setTimeout(refreshProgListFromCloud,2000);
     }else{
       r.text().then(function(t){
         toast('\u26a0 Cloud save failed — '+t.slice(0,80),'e');
@@ -2612,9 +2601,12 @@ var _serverProgs=[];
 var _lastProgFetch=null;
 var _progFetchInProgress=false;
 var _progRefreshInterval=null;
+var _MIN_FETCH_MS=120000; /* minimum 2 minutes between auto-fetches */
 
 async function refreshProgListFromCloud(){
   if(_progFetchInProgress)return;
+  /* Skip if fetched recently — prevents quota spikes */
+  if(_lastProgFetch&&(Date.now()-_lastProgFetch.getTime())<_MIN_FETCH_MS&&_serverProgs.length>0)return;
   _progFetchInProgress=true;
   var el=document.getElementById('prog-list');
   var ts=document.getElementById('prog-list-ts');
