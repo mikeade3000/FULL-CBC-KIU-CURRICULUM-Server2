@@ -211,7 +211,7 @@ body{font-family:var(--ff);background:var(--g50);color:var(--g700);font-size:14p
     <button class="btn bt sm" onclick="addCourse()">&#xFF0B; Add Course</button>
     <div class="sep"></div>
     <button class="btn bn" onclick="autoBalanceNH()">&#9878; Enforce 600 NH</button>
-    <button class="btn sm" onclick="balanceAllCourses()" style="background:#1a5c38;color:#fff" title="Apply 1:2 DLH:(SLH+ALH+OLH) ratio to ALL courses — OLH≥1 per week">&#9878; Balance All (1:2)</button>
+    <button class="btn sm" onclick="balanceAllCourses()" style="background:#c8942a;color:#fff;font-weight:600;border:none" title="Fix 1:2 ratio (DLH=1/3 NH, OLH≥15) for ALL courses — auto-saves to Google Sheets">&#9878; Fix All NH Ratios &amp; Save</button>
     <button class="btn bo sm" onclick="showBalanceReport()">&#128202; NH Report</button>
     <button class="btn bo sm" onclick="refreshCodes()">&#8634; Codes</button>
     <div class="sep"></div>
@@ -2213,32 +2213,41 @@ function coursePrompt(c){
 }
 
 /* ── Balance NH ratio (1 DLH : 2 SLH/ALH/OLH) ── */
-/* ── Balance ALL courses in programme to 1:2 ratio ── */
+/* ── Balance ALL courses in programme to 1:2 ratio + auto-save ── */
 function balanceAllCourses(){
-  if(!courses.length){toast('No courses to balance','e');return;}
-  var changed=0;
+  if(!courses.length){toast('No courses in curriculum — load a programme first','e');return;}
+  var p=getProg();
+  if(!p||!p.name){toast('Load a programme first before balancing','e');return;}
+  var changed=0,summary=[];
   courses.forEach(function(c){
     var nh=getNH(c);
     if(nh<10)return;
-    var dlh=Math.round(nh/3);
-    var rem=nh-dlh;
     var isCE=(c.name||'').toLowerCase().match(/community|engagement|attachment|internship|placement|field/);
+    var dlh=Math.round(nh/3),rem=nh-dlh;
     var olh,slh,alh;
     if(isCE){olh=Math.round(rem*0.60);alh=Math.round(rem*0.15);slh=rem-olh-alh;}
     else{
       olh=Math.max(15,Math.round(rem*(0.5/5)));
-      var slhAlh=rem-olh;
-      slh=Math.round(slhAlh*(2.5/4.5));
-      alh=slhAlh-slh;
-      var tot=dlh+slh+alh+olh;
-      if(tot!==nh)slh+=nh-tot;
+      var sa=rem-olh;
+      slh=Math.round(sa*(2.5/4.5));alh=sa-slh;
+      var tot=dlh+slh+alh+olh;if(tot!==nh)slh+=nh-tot;
       slh=Math.max(1,slh);alh=Math.max(1,alh);
     }
-    c.DH=dlh;c.SH=slh;c.AH=alh;c.OH=olh;changed++;
+    if(c.DH!==dlh||c.SH!==slh||c.AH!==alh||c.OH!==olh){
+      summary.push((c.code||c.name.slice(0,12))+': DLH='+dlh+' SLH='+slh+' ALH='+alh+' OLH='+olh);
+      c.DH=dlh;c.SH=slh;c.AH=alh;c.OH=olh;changed++;
+    }
   });
   renderCurriculum();
-  toast('\u2696 Balanced '+changed+' courses: DLH=1/3 NH, OLH\u22651 per study week, SLH:ALH=2.5:2 \u2713','s');
+  if(changed===0){toast('\u2714 All courses already at correct 1:2 ratio \u2014 no changes needed','s');return;}
+  toast('\u2696 '+changed+' courses re-balanced. Saving to Google Sheets...','i');
+  /* Auto-save so changes persist on next load */
+  setTimeout(function(){
+    saveCurrentProgramme();
+  },600);
+  if(summary.length){console.log('Balance All changes:\n'+summary.join('\n'));}
 }
+
 
 function balanceCourseNH(courseId){
   var c=courses.find(function(x){return x.id===courseId;});
