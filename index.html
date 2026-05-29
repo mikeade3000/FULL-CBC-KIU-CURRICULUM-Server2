@@ -211,6 +211,7 @@ body{font-family:var(--ff);background:var(--g50);color:var(--g700);font-size:14p
     <button class="btn bt sm" onclick="addCourse()">&#xFF0B; Add Course</button>
     <div class="sep"></div>
     <button class="btn bn" onclick="autoBalanceNH()">&#9878; Enforce 600 NH</button>
+    <button class="btn sm" onclick="balanceAllCourses()" style="background:#1a5c38;color:#fff" title="Apply 1:2 DLH:(SLH+ALH+OLH) ratio to ALL courses — OLH≥1 per week">&#9878; Balance All (1:2)</button>
     <button class="btn bo sm" onclick="showBalanceReport()">&#128202; NH Report</button>
     <button class="btn bo sm" onclick="refreshCodes()">&#8634; Codes</button>
     <div class="sep"></div>
@@ -2019,24 +2020,34 @@ function coursePrompt(c){
   /* FIXED: Always 17 weeks — 15 study + 1 revision + 1 examination */
   var wks=17;
   var totalH=nh;
-  /* Pre-compute exact NH per section so Action 8 totals match curriculum matrix */
+  /* Pre-compute EXACT integer NH per week — guarantees whole numbers, OLH≥1 per study week */
   var _revSLH=Math.min(5,Math.max(2,Math.round(sh/6)));
   var _examALH=Math.min(5,Math.max(2,Math.round(ah/4)));
-  var _examOLH=0;
-  var _studyDH=dh,_studySH=sh-_revSLH,_studyAH=ah-_examALH,_studyOH=oh-_examOLH;
-  _studySH=Math.max(0,_studySH);_studyAH=Math.max(0,_studyAH);_studyOH=Math.max(0,_studyOH);
-  var _wDH=(_studyDH/15).toFixed(1),_wSH=(_studySH/15).toFixed(1),_wAH=(_studyAH/15).toFixed(1),_wOH=(_studyOH/15).toFixed(1);
-  if((!oh||oh===0)&&nh>0){
-    var _dlh=Math.round(nh/3);
-    var _rem=nh-_dlh;
-    dh=_dlh;
-    sh=Math.round(_rem*(2.5/5));
-    ah=Math.round(_rem*(2.0/5));
-    oh=Math.max(1,nh-dh-sh-ah);
-    sh+=nh-dh-sh-ah-oh; /* adjust for rounding */
+  /* ALL OLH goes into study weeks — OLH≥1 per study week enforced */
+  var _studyDH=dh,_studySH=Math.max(0,sh-_revSLH),_studyAH=Math.max(0,ah-_examALH),_studyOH=oh;
+  /* Integer distribution function: spread total across n items, returns array of whole numbers */
+  function _distInt(tot,n){var b=Math.floor(tot/n),ex=tot%n,arr=[];for(var i=0;i<n;i++)arr.push(i<ex?b+1:b);return arr;}
+  var _wDHarr=_distInt(_studyDH,15),_wSHarr=_distInt(_studySH,15),_wAHarr=_distInt(_studyAH,15),_wOHarr=_distInt(_studyOH,15);
+  /* Build pre-filled week table for the AI prompt */
+  var _weekTable='';
+  for(var _wi=0;_wi<15;_wi++){
+    var _wt=_wDHarr[_wi]+_wSHarr[_wi]+_wAHarr[_wi]+_wOHarr[_wi];
+    _weekTable+='Week '+(_wi+1)+': DLH='+_wDHarr[_wi]+' SLH='+_wSHarr[_wi]+' ALH='+_wAHarr[_wi]+' OLH='+_wOHarr[_wi]+' Total='+_wt+'\n';
+  }
+  _weekTable+='Week 16 (Revision): DLH=0 SLH='+_revSLH+' ALH=0 OLH=0 Total='+_revSLH+'\n';
+  _weekTable+='Week 17 (Exam): DLH=0 SLH=0 ALH='+_examALH+' OLH=0 Total='+_examALH+'\n';
+  _weekTable+='TOTALS: DLH='+dh+' SLH='+sh+' ALH='+ah+' OLH='+oh+' Total NH='+nh;
+  /* Auto-balance if OLH=0 or OLH<15 (need ≥1 per study week) */
+  if(nh>0&&(!oh||oh<15)){
+    var _dlhB=Math.round(nh/3),_remB=nh-_dlhB;
+    var _olhB=Math.max(15,Math.round(_remB*(0.5/5)));
+    var _saB=_remB-_olhB;
+    var _slhB=Math.round(_saB*(2.5/4.5)),_alhB=_saB-_slhB;
+    var _tB=_dlhB+_slhB+_alhB+_olhB;if(_tB!==nh)_slhB+=nh-_tB;
+    dh=_dlhB;sh=Math.max(1,_slhB);ah=Math.max(1,_alhB);oh=_olhB;
     updateCourse(c.id,'DH',dh);updateCourse(c.id,'SH',sh);
     updateCourse(c.id,'AH',ah);updateCourse(c.id,'OH',oh);
-    toast('\u26a0 OLH was 0 for '+c.name+' — auto-balanced to KIU 2.5:2:0.5 ratio','e');
+    toast('\u26a0 '+c.code+' OLH was <15 — auto-balanced: DLH='+dh+' SLH='+sh+' ALH='+ah+' OLH='+oh,'e');
   }
   var semLabel=getSL(c.year,c.sem);
   var crLabel=uk==='WRC'?'5 (NCHE)':String(cr);
@@ -2087,20 +2098,18 @@ function coursePrompt(c){
     +'distributed across Weeks 1–15 of the 17-week course (Week 16 = Revision, Week 17 = Examination).\n\n'
 
     +'Action 8: Course Content, Notional Hours and Engagement Activities\n'
-    +'Write a **Course Content Overview** paragraph (3-4 sentences covering scope and CBE alignment). '
+    +'Write a **Course Content Overview** paragraph (3-4 sentences covering scope and CBE alignment).\n\n'
     +'Then produce a **Weekly Content Plan** as a markdown table with these EXACT columns ONLY:\n'
-    +'Week | Topic/Subtopic | Key Content | Bloom Level | DLH | SLH | ALH | OLH | Total NH | Competency Link\n'
-    +'Generate exactly 17 rows with these EXACT NH constraints:\n\n'
-    +'ROWS 1-15 (Study Weeks): Must sum to EXACTLY: DLH='+_studyDH+', SLH='+_studySH+', ALH='+_studyAH+', OLH='+_studyOH+'\n'
-    +'  Approximate per-week pattern: DLH≈'+_wDH+', SLH≈'+_wSH+', ALH≈'+_wAH+', OLH≈'+_wOH+' (vary across weeks as needed to hit exact totals)\n\n'
-    +'ROW 16 — "Revision Week": DLH=0, SLH='+_revSLH+', ALH=0, OLH=0, Total='+_revSLH+', Topic=Consolidation and review of course content\n\n'
-    +'ROW 17 — "Examination Week": DLH=0, SLH=0, ALH='+_examALH+', OLH='+_examOLH+', Total='+(parseInt(_examALH)+parseInt(_examOLH))+', Topic=Formal end-of-semester assessment\n\n'
-    +'TOTALS ROW must read EXACTLY: DLH='+dh+', SLH='+sh+', ALH='+ah+', OLH='+oh+', Total NH='+nh+'\n'
-    +'CRITICAL: The TOTALS row values must match the curriculum matrix exactly. Double-check your column sums before writing the TOTALS row.\n'
-    +'After the table write: **Rationale for Sequencing**: [paragraph]. '
-    +'**KIU NH Ratio Verification**: DLH('+dh+') : (SLH+ALH+OLH)('+((sh||0)+(ah||0)+(oh||0))+') = 1:2 ✓\n'
+    +'Week | Topic/Subtopic | Key Content | Bloom Level | DLH | SLH | ALH | OLH | Total NH | Competency Link\n\n'
+    +'CRITICAL — USE THESE EXACT PRE-CALCULATED NH VALUES (copy verbatim into the number columns):\n'
+    +_weekTable+'\n\n'
+    +'For each of the 17 rows, ONLY fill in: Topic/Subtopic, Key Content, Bloom Level, and Competency Link.\n'
+    +'The DLH/SLH/ALH/OLH/Total NH values are pre-calculated above — copy them exactly as shown. Do NOT change them.\n'
+    +'ALL values MUST be WHOLE NUMBERS. OLH MUST be ≥1 in every study week (Weeks 1–15). Never write 0 for OLH in study weeks.\n'
+    +'After the table write:\n'
+    +'**Rationale for Sequencing**: [paragraph explaining topic sequence logic]\n'
+    +'**KIU NH Ratio Verification**: DLH('+dh+') : (SLH+ALH+OLH)('+((sh||0)+(ah||0)+(oh||0))+') = 1:2 ✓ | OLH ≥1 per study week ✓\n'
     +'CRITICAL: Do NOT include columns for Teaching Method, Learner Activity, Assessment Type, Resources Required, or Performance Indicator.\n\n'
-
     +'Action 9: Evidence-based Assessments\n'
     +'Write **Formative Assessments (50%)** with 4 specific assessment tasks, each with week, weight and description. '
     +'**Summative Assessments (50%)**: mid-semester test (20%) and end-of-semester examination (30%). '
@@ -2204,6 +2213,33 @@ function coursePrompt(c){
 }
 
 /* ── Balance NH ratio (1 DLH : 2 SLH/ALH/OLH) ── */
+/* ── Balance ALL courses in programme to 1:2 ratio ── */
+function balanceAllCourses(){
+  if(!courses.length){toast('No courses to balance','e');return;}
+  var changed=0;
+  courses.forEach(function(c){
+    var nh=getNH(c);
+    if(nh<10)return;
+    var dlh=Math.round(nh/3);
+    var rem=nh-dlh;
+    var isCE=(c.name||'').toLowerCase().match(/community|engagement|attachment|internship|placement|field/);
+    var olh,slh,alh;
+    if(isCE){olh=Math.round(rem*0.60);alh=Math.round(rem*0.15);slh=rem-olh-alh;}
+    else{
+      olh=Math.max(15,Math.round(rem*(0.5/5)));
+      var slhAlh=rem-olh;
+      slh=Math.round(slhAlh*(2.5/4.5));
+      alh=slhAlh-slh;
+      var tot=dlh+slh+alh+olh;
+      if(tot!==nh)slh+=nh-tot;
+      slh=Math.max(1,slh);alh=Math.max(1,alh);
+    }
+    c.DH=dlh;c.SH=slh;c.AH=alh;c.OH=olh;changed++;
+  });
+  renderCurriculum();
+  toast('\u2696 Balanced '+changed+' courses: DLH=1/3 NH, OLH\u22651 per study week, SLH:ALH=2.5:2 \u2713','s');
+}
+
 function balanceCourseNH(courseId){
   var c=courses.find(function(x){return x.id===courseId;});
   if(!c)return;
@@ -2220,15 +2256,15 @@ function balanceCourseNH(courseId){
     alh=Math.round(remainder*0.15);
     slh=remainder-olh-alh;
   }else{
-    /* Standard KIU ratio SLH:ALH:OLH = 2.5:2:0.5 */
-    slh=Math.round(remainder*(2.5/5));
-    alh=Math.round(remainder*(2.0/5));
-    olh=remainder-slh-alh;
-    olh=Math.max(1,olh); /* OLH must never be zero */
+    /* Standard KIU ratio: DLH=1/3; OLH≥15 (1 per study week, min); SLH:ALH = 2.5:2 of remainder */
+    olh=Math.max(15,Math.round(remainder*(0.5/5))); /* min 15 = 1 OLH per study week, never 0 */
+    var slhAlh=remainder-olh;
+    slh=Math.round(slhAlh*(2.5/4.5));
+    alh=slhAlh-slh;
     /* Adjust for rounding: ensure total = nh */
     var tot=dlh+slh+alh+olh;
-    if(tot!==nh)slh+=nh-tot;
-    slh=Math.max(0,slh);
+    if(tot!==nh){slh+=nh-tot;}
+    slh=Math.max(1,slh);alh=Math.max(1,alh);
   }
   updateCourse(courseId,'DH',dlh);
   updateCourse(courseId,'SH',slh);
