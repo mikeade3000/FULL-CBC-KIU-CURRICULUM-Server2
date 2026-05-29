@@ -1817,7 +1817,60 @@ function secPrompt(key){
     description:'Write Section 4: Programme Description. Cover disciplinary scope, thematic areas, CBE philosophy, learner capabilities, industry links and research emphasis. 300-400 words. Use "learners" not "students" or "graduates".\n\n'+ctx,
     development:'Write Section 5: Programme Development/Review Process. Cover: needs assessment, stakeholder consultation, benchmarking with regional universities, institutional approval process (Dept->School Board->Senate->Council). 250 words.\n\n'+ctx,
     rationale:'Write Section 6: Programme Rationale and Justification. Justify the need: Uganda Vision 2040, National Development Plan III alignment, industry skills gap, regional demand, NCHE mandate. 350 words. Use "learners" not "students".\n\n'+ctx,
-    competences:'Write Section 7: Programme Competences. List 4 competence categories with 5-6 competences each: Knowledge Competences, Practical/Technical Competences, Cognitive/Analytical Competences, Affective/Professional Competences. One clear sentence per competence. Number each list starting from 1.\n\n'+ctx,
+    competences:(function(){
+      var discipline=p.name||'';
+      var award=(p.award||'Diploma').replace(/\(.*?\)/g,'').trim();
+      var isHealth=discipline.match(/health|nurs|medic|pharma|dental|clinical/i);
+      var isEng=discipline.match(/engineer|technolog|computing|computer|information/i);
+      var isLaw=discipline.match(/law|legal|justice/i);
+      var isAgri=discipline.match(/agri|rural|environment|natural|forest|soil|crop|animal|livestock/i);
+      var isBiz=discipline.match(/business|commerce|account|finance|manage|market|entrepreneur/i);
+      var isEdu=discipline.match(/educat|teach|pedagog|curriculum/i);
+      var isSocial=discipline.match(/social|communit|counsel|guidance|psychol|welfare|development/i);
+      /* Identify relevant professional body */
+      var profBody=isHealth?'Uganda Medical and Dental Practitioners Council / Uganda Nurses and Midwives Council'
+        :isEng?'Uganda Institution of Professional Engineers (UIPE) / Engineers Committee for Accreditation (ECA)'
+        :isLaw?'Uganda Law Council'
+        :isAgri?'Uganda Institute of Professional Engineers (Agriculture) / National Agricultural Research Organisation (NARO)'
+        :isBiz?'Institute of Certified Public Accountants of Uganda (ICPAU) / Uganda Institute of Banking and Financial Services'
+        :isEdu?'Uganda National Institute for Teacher Education (UNITE) / National Curriculum Development Centre (NCDC)'
+        :isSocial?'Social Work Standards Council (SWSC) of Uganda'
+        :'National Council for Higher Education (NCHE) and relevant industry bodies';
+      return 'Write Section 7: Programme Competences for '+p.name+' at Kampala International University.\n\n'
+        +'IMPORTANT: Do NOT write a generic introductory paragraph about the programme. Go directly into the structured competency framework. Use "learners" not "students" throughout. Total target: approximately 600 words.\n\n'
+        +'**7.1 Programme Competency Philosophy**\n'
+        +'Write ONE paragraph (3 sentences max) stating that competency in this programme is defined holistically across three domains: Knowledge (Cognitive), Skills (Psychomotor), and Attitudes/Values (Affective). Reference NCHE Uganda 2026 CBET standards and the requirement for applied ability — not knowledge alone.\n\n'
+        +'**7.2 Programme Competency Domains**\n'
+        +'List exactly 6 named competency domains specific to the '+discipline+' discipline. Each domain must have:\n'
+        +'- A BOLD domain name (e.g. **Domain Name**)\n'
+        +'- One sentence describing what this domain covers in the context of '+discipline+'\n'
+        +'These must NOT be generic — they must reflect the actual discipline knowledge areas of '+discipline+'.\n\n'
+        +'**7.3 Knowledge Competencies (Cognitive Domain)**\n'
+        +'List 5 specific knowledge competencies. Each must:\n'
+        +'- Start with an action verb at Bloom\'s analysis or higher level (Analyse, Evaluate, Synthesise, Apply, Explain)\n'
+        +'- Be specific to '+discipline+' — NOT generic\n'
+        +'- Be one clear, measurable sentence\n'
+        +'Number each item starting from 1.\n\n'
+        +'**7.4 Skills Competencies (Psychomotor Domain)**\n'
+        +'List 5 specific practical/technical skills competencies. Each must:\n'
+        +'- Describe a demonstrable skill specific to '+discipline+' professional practice\n'
+        +'- Start with an action verb (Demonstrate, Perform, Execute, Apply, Construct, Operate)\n'
+        +'- Be one clear, measurable sentence\n'
+        +'Number each item starting from 1.\n\n'
+        +'**7.5 Attitudes and Values Competencies (Affective Domain)**\n'
+        +'List 5 specific professional attitudes and values competencies. Each must:\n'
+        +'- Describe a professional value or ethical commitment specific to '+discipline+' practice in Uganda\n'
+        +'- Reference Krathwohl\'s affective domain levels where appropriate\n'
+        +'- Be one clear, measurable sentence\n'
+        +'Number each item starting from 1.\n\n'
+        +'**7.6 Practical Industry, Marketplace and Career Experience**\n'
+        +'Write 2 sentences describing: (a) how this programme integrates industry partnerships, work-integrated learning, internships and practical placements; (b) how this prepares learners for the Uganda labour market and NDP III priorities, in alignment with NCHE\'s requirement for university-industry collaboration.\n\n'
+        +'**7.7 Career Pathways**\n'
+        +'Write one sentence: "Graduates of the '+discipline+' programme at KIU are prepared for professional employment in the following roles:"\n'
+        +'Then list 8 specific, realistic job roles/titles for '+discipline+' graduates in Uganda and East Africa. Number each starting from 1.\n\n'
+        +'**7.8 Professional and Regulatory Body Alignment**\n'
+        +'Write 2 sentences stating: (a) that the programme competencies are designed in alignment with '+profBody+'; (b) how graduates may pursue professional registration or membership with the relevant body upon graduation.\n\n'+ctx;
+    })(),
     outcomes:'Write Section 8: Programme Learning Outcomes. List 10-12 specific measurable PLOs using Bloom\'s verbs. Format: "Upon successful completion, the learner will be able to:" then numbered list starting at 1. Use "learner" not "graduate" or "student".\n\n'+ctx,
     targetGroup:'Write Section 9: Target Group. Describe intended learners, geographic scope Uganda and East Africa, career aspirations, professional background. 200 words. Use "learners" throughout.\n\n'+ctx,
     admission:'Write Section 10: Entry/Admission Requirements based on: '+($('p-admission',''))+'. Format clearly with route labels. Use "learners" not "students".\n\n'+ctx,
