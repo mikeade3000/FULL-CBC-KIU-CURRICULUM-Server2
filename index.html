@@ -947,51 +947,46 @@ function switchTab(name){
 }
 
 function assignCodes(){
-  var p=getProg(),lv=p.level,ss={};
-  /* Pass 1: assign all codes (UCC fixed, lockedCode preserved, others sequential) */
+  var p=getProg(),ss={};
+  /* 3-DIGIT CODE: Year(1) + Semester(1) + Serial(1) = e.g. COS 111, UCC 201 */
   courses.forEach(function(c){
-    var sn=c.sem==='R'?'3':c.sem,uk=getUK(c);
+    var sn=c.sem==='R'?'3':String(c.sem);
+    var yr=String(c.year||1);
+    var uk=getUK(c);
     if(uk){
-      var ui=UCC_ORD.indexOf(uk),sr=String(ui>=0?ui+1:99).padStart(2,'0');
-      c.code=c.prefix+' '+lv+c.year+sn+sr;
-      var uD=UCC[uk];if(uD){c.DH=uD.DH;c.SH=uD.SH;c.AH=uD.AH;c.OH=uD.OH;c.type=uD.type||c.type;c.prefix=uD.prefix||c.prefix;c.locked=true;}
+      var ui=UCC_ORD.indexOf(uk);
+      var serial=String(ui>=0?ui+1:9);
+      c.code=c.prefix+' '+yr+sn+serial;
+      var uD=UCC[uk];
+      if(uD){c.DH=uD.DH;c.SH=uD.SH;c.AH=uD.AH;c.OH=uD.OH;c.type=uD.type||c.type;c.prefix=uD.prefix||c.prefix;c.locked=true;}
     }else if(c.lockedCode){
       c.code=c.lockedCode;
-      var k2l=c.prefix+'_'+c.year+'_'+sn;
-      if(!ss[k2l])ss[k2l]=courses.filter(function(x){return isUCC(x)&&x.year===c.year&&x.sem===c.sem;}).length+1;
-      ss[k2l]++;
     }else{
-      var k2=c.prefix+'_'+c.year+'_'+sn;
+      var k2=c.prefix+'_'+yr+'_'+sn;
       var uccN=courses.filter(function(x){return isUCC(x)&&x.year===c.year&&x.sem===c.sem;}).length;
       if(!ss[k2])ss[k2]=uccN+1;
-      c.code=c.prefix+' '+lv+c.year+sn+String(ss[k2]++).padStart(2,'0');
+      var serial=String(ss[k2]++);
+      c.code=c.prefix+' '+yr+sn+serial;
     }
   });
-  /* Pass 2: detect and resolve duplicate codes within this programme */
+  /* Resolve duplicates */
   var usedCodes={};
   courses.forEach(function(c){
     var ck=(c.code||'').trim().toUpperCase();
     if(!ck)return;
     if(usedCodes[ck]){
-      /* Duplicate found — release the lockedCode on the LATER course and regenerate */
-      if(c.lockedCode){
-        c.lockedCode=null;
-        toast('⚠ Code conflict: '+c.code+' already used. Re-assigning "'+c.name.slice(0,30)+'"','e');
-      }
-      /* Regenerate with next available serial */
-      var sn=c.sem==='R'?'3':c.sem;
-      var k3=c.prefix+'_'+c.year+'_'+sn;
-      if(!ss[k3])ss[k3]=courses.filter(function(x){return isUCC(x)&&x.year===c.year&&x.sem===c.sem;}).length+1;
+      var sn=c.sem==='R'?'3':String(c.sem),yr=String(c.year||1);
+      var k3=c.prefix+'_'+yr+'_'+sn;
+      if(!ss[k3])ss[k3]=10;
       var newCode;
-      do{newCode=c.prefix+' '+lv+c.year+sn+String(ss[k3]++).padStart(2,'0');}
+      do{newCode=c.prefix+' '+yr+sn+String(ss[k3]++);}
       while(usedCodes[newCode.toUpperCase()]);
       c.code=newCode;
       usedCodes[newCode.toUpperCase()]=true;
-    }else{
-      usedCodes[ck]=true;
-    }
+    }else{usedCodes[ck]=true;}
   });
 }
+
 
 var T=600;
 function enforceSems(){
@@ -1342,30 +1337,20 @@ function textToHtml(text){
    Static — identical for every programme, based on NCHE Uganda CBE framework
    ══════════════════════════════════════════════════════════════════════════ */
 var PROG_DEV_STAGES=[
-  {n:1, title:'Industry & Stakeholder Needs Assessment',
-   detail:'Labour market analysis • Employer surveys • Professional body consultation • Graduate tracer studies • Skills gap identification'},
-  {n:2, title:'Programme Conceptualisation',
-   detail:'Programme rationale and justification • Target group identification • Preliminary competence framework mapping • Feasibility assessment'},
-  {n:3, title:'Curriculum Design & Development',
-   detail:'Competence framework finalisation • Course mapping and sequencing • DLH/SLH/ALH/OLH calculation (1 CU = 10 NH) • CBE alignment and NCHE compliance check'},
-  {n:4, title:'Department Board Review & Approval',
-   detail:'Internal peer review • Content and competence validation • Resource requirement confirmation • Department Board resolution'},
-  {n:5, title:'School/Faculty Board Endorsement',
-   detail:'Cross-disciplinary review • Quality assurance pre-screening • School Board endorsement and formal recommendation'},
-  {n:6, title:'University Senate Approval',
-   detail:'Academic Standards Committee review • Strategic alignment confirmation • Senate resolution and formal academic approval'},
-  {n:7, title:'University Council Ratification',
-   detail:'Governance and policy compliance review • Financial and resource approval • Council ratification and institutional commitment'},
-  {n:8, title:'NCHE Submission & External Review',
-   detail:'Programme document preparation • Accreditation application submission • Technical review panel assessment • NCHE site inspection • Standards compliance audit'},
-  {n:9, title:'NCHE Accreditation Decision',
-   detail:'Technical report deliberation • NCHE Council decision • Formal accreditation letter issued • Official programme registration and public listing'},
-  {n:10,title:'Programme Launch & Implementation',
-   detail:'Learner recruitment and enrolment • Facilitator deployment and induction • Resource mobilisation and infrastructure setup • First cohort commencement'},
-  {n:11,title:'Annual Monitoring & Evaluation',
-   detail:'Academic performance and outcomes review • Stakeholder and employer feedback • Quality assurance audit • Annual report to Senate and NCHE'},
-  {n:12,title:'Periodic Comprehensive Review (Every 5 Years)',
-   detail:'Full programme evaluation against objectives • Industry realignment • CBE framework and NCHE standards update • Decision: Continue / Revise / Discontinue → If revised: return to Stage 1'},
+  {n:1,title:'Stakeholder Needs Assessment and Programme Conceptualisation',
+   detail:'A comprehensive labour market analysis and skills gap identification exercise is conducted involving employer surveys, industry focus groups, professional body consultations, and graduate tracer studies. The institution defines the programme rationale, target group, and preliminary competence framework. This stage anchors the entire programme in real-world demand and ensures NCHE\'s industry-community linkage requirement is addressed from the outset.'},
+  {n:2,title:'Curriculum Design and CBE Framework Development',
+   detail:'The competence framework is finalised and all course units are mapped, sequenced, and coded using the 3-digit system (Year-Semester-Position). Notional Hours are calculated for each course unit using the KIU 1:2 ratio (DLH=1/3 NH; SLH:ALH:OLH=2.5:2:0.5), Credit Units are allocated (1 CU = 10 NH), and all 22 required programme document sections are developed in compliance with NCHE Minimum Standards (2026). Assessment frameworks, observation checklists, and scoring rubrics are designed for each course unit.'},
+  {n:3,title:'Internal Quality Review and Departmental Approval',
+   detail:'The complete programme document undergoes internal peer review at Department Board level, involving subject experts, industry practitioners, and quality assurance officers. Content accuracy, competence alignment, resource requirements, and NCHE compliance are validated at this stage. The Department Board passes a formal resolution approving the programme for advancement to School Board review.'},
+  {n:4,title:'University Governance Approval',
+   detail:'The School/Faculty Board conducts a cross-disciplinary review and endorses the programme before forwarding it to the University Senate Academic Standards Committee. The Senate conducts a formal academic review and passes a resolution for University Council ratification. The Council confirms strategic alignment, financial viability, and institutional commitment — completing the internal governance cycle.'},
+  {n:5,title:'NCHE Submission, External Review and Accreditation',
+   detail:'The formally approved programme document is submitted to the National Council for Higher Education (NCHE) for accreditation. A NCHE Technical Review Panel conducts a desk review and site inspection visit, assessing compliance with the NCHE Minimum Standards for CBET (2026). Upon satisfactory review, NCHE issues a formal Accreditation Letter and registers the programme for public delivery. This is the mandatory compliance gateway before any learner enrolment.'},
+  {n:6,title:'Programme Launch, Implementation and Delivery',
+   detail:'The accredited programme is launched with the recruitment of the first learner cohort. Facilitators are inducted in CBE delivery methods including Project-Based Learning, Work-Integrated Learning, and community engagement (OLH). All resources — laboratories, fieldwork sites, industry partnerships, and learning materials — are mobilised. Delivery begins in accordance with the approved curriculum document, with all CBE assessment methods operational from day one.'},
+  {n:7,title:'Continuous Review, Monitoring, Improvement and Re-accreditation',
+   detail:'Annual academic performance reviews, employer feedback cycles, and NCHE quality assurance audits ensure the programme remains responsive to evolving industry needs. Annual reports are submitted to Senate and NCHE. Every five years, a comprehensive programme review is conducted — if significant revisions are required, the programme re-enters the cycle at Stage 1 with updated industry needs assessment. This continuous improvement loop ensures lifelong programme relevance, NCHE compliance, and alignment with Uganda Vision 2040.'},
 ];
 
 /* ── HTML version (Full Preview) ── */
@@ -1803,20 +1788,85 @@ function secPrompt(key){
   var ctx=progCtx(),p=getProg();
   var m={
     intro:(function(){
-      var inst=getInstitution(),ctx2=ctx,isK=isKIU();
-      if(isK){
-        return'Write Section 1: Introduction for KIU '+p.name+'. Include: 1.1 Background of KIU (founded 2001, chartered by Government of Uganda, campuses in Kampala and Bushenyi) 1.2 Vision 1.3 Mission 1.4 Core Values (6-8 with descriptions) 1.5 Legal Status. Write in formal paragraphs, 400-500 words. Use "learners" throughout, never "students".\n\n'+ctx2;
-      }
-      return'Write Section 1: Introduction for '+inst+'. Based on all available information about this institution, include: 1.1 Background and History of '+inst+' (founding year, charter, campuses, notable achievements) 1.2 Vision 1.3 Mission 1.4 Core Values (6-8 with descriptions) 1.5 Legal Status and Accreditation. Write in formal paragraphs, 400-500 words. Use "learners" throughout, never "students". Generate accurate, specific content based on what is known about this institution.\n\n'+ctx2;
+      var inst=getInstitution(),isK=isKIU(),instName=isK?'Kampala International University (KIU)':inst;
+      var km=isK?'360':'';
+      return 'Write Section 1: Introduction for '+instName+' — '+p.name+'.\n\n'
+        +'**OPENING — Bold Flagship Statement**\n'
+        +'Open Section 1 with this bold phrase as a standalone heading: **\"Exploring the Heights\"** — just as Purdue University in the USA boldly declares \"We Make Giant Leaps\", '
+        +(isK?instName+' proudly declares \"Exploring the Heights\" as its defining educational aspiration. This phrase must appear as a bold, prominent flag at the very top of Section 1, before any other text.\n\n':'this institution declares its own aspiration. This phrase must appear as a bold, prominent flag at the very top of Section 1.\n\n')
+        +'**About '+instName+'**\n'
+        +(isK?'Write 2 paragraphs about KIU. Include: Founded in 2001 by the KIU founding council; main campus in Ishaka-Bushenyi (southwestern Uganda) and second campus in Kampala (capital city) — the two campuses are approximately 360 kilometres apart, connected by KIU\'s unified academic governance; the university partners with the University of Groningen (Netherlands), one of Europe\'s oldest and most prestigious universities, for academic exchange and research collaboration; KIU serves over 9,000 learners from 50+ nationalities across East and Central Africa; accredited by NCHE Uganda.\n\n'
+          :'Write 2 paragraphs describing the institution, its founding, location, partnerships, learner population, and accreditation.\n\n')
+        +'**Vision**\n'
+        +(isK?'State KIU\'s vision in one line: "To be a centre of academic excellence that produces competent, innovative, and ethical graduates who contribute to sustainable development."\n\n'
+          :'State the institution\'s vision in one line.\n\n')
+        +'**Mission**\n'
+        +(isK?'State KIU\'s mission in one line: "To provide high quality, accessible and relevant education through teaching, research, and community service for the transformation of society."\n\n'
+          :'State the institution\'s mission in one line.\n\n')
+        +'**Core Values**\n'
+        +(isK?'List KIU\'s 7 core values on one line each (compact, not paragraphs): Integrity | Excellence | Innovation | Inclusivity | Accountability | Teamwork | Service. Write each as a single bold word followed by a colon and a 5-word description on the same line.\n\n'
+          :'List the institution\'s core values compactly — each value as a bold word followed by a colon and a 5-word description on the same line.\n\n')
+        +'**Legal and Accreditation Status**\n'
+        +(isK?'State that KIU is a private chartered university established under the Universities and Other Tertiary Institutions Act (2001) Cap 210, and is fully accredited by the National Council for Higher Education (NCHE) Uganda.\n\n'
+          :'State the institution\'s legal establishment and accreditation status.\n\n')
+        +'Do NOT write generic AI padding. Every sentence must be specific and factual. Total target: 500-600 words. Use "learners" not "students".\n\n'+ctx;
     })(),
-    governance:(function(){
+        governance:(function(){
       var inst=getInstitution(),isK=isKIU();
       if(isK) return'Write Section 2: Governance and Management for '+p.name+'. Describe KIU institutional governance: University Council, University Senate, School Board, Department Board, QA Directorate, Programme Coordinator. ~250 words in paragraphs. Use "learners" not "students".\n\n'+ctx;
       return'Write Section 2: Governance and Management for '+p.name+' at '+inst+'. Describe the institutional governance structure of '+inst+' including its governing council/board, senate/academic board, school/faculty boards, department boards, quality assurance structures, and programme coordinator roles. ~250 words in paragraphs. Use "learners" not "students".\n\n'+ctx;
     })(),
-    nameCode:'Write Section 3: Programme Name, Code and Duration. Programme: '+p.name+', Code: '+p.prefix+' [Level][Year][Sem][Serial], Duration: '+p.years+' years '+p.mode+'. Include code format explanation. ~200 words.\n\n'+ctx,
-    description:'Write Section 4: Programme Description. Cover disciplinary scope, thematic areas, CBE philosophy, learner capabilities, industry links and research emphasis. 300-400 words. Use "learners" not "students" or "graduates".\n\n'+ctx,
-    development:'Write Section 5: Programme Development/Review Process. Cover: needs assessment, stakeholder consultation, benchmarking with regional universities, institutional approval process (Dept->School Board->Senate->Council). 250 words.\n\n'+ctx,
+    nameCode:'Write Section 3: Programme Name, Code and Duration. Programme: '+p.name+', Abbreviation: '+p.abbr+', Programme Code: '+p.prefix+' [3-DIGIT NUMBER]. The 3-digit code format is: First digit = Year of study (1 or 2), Second digit = Semester within year (1 or 2), Third digit = Course position in semester (1-6). Example: '+p.prefix+' 111 = Year 1, Semester 1, Course 1. Duration: '+p.years+' years, '+p.mode+'. School: '+p.school+', Department: '+p.dept+'. Include explanation of the 3-digit code system, award type, credit hours, and NCHE accreditation status. ~200 words. Use "learners" not "students".\n\n'+ctx,
+    description:(function(){
+      var totalNH=parseInt(p.years||2)>=3?3600:2400;
+      var totalCU=parseInt(p.years||2)>=3?360:240;
+      var semCount=parseInt(p.years||2)*2;
+      return 'Write Section 4: Programme Description for '+p.name+' at '+getInstitution()+'.\n\n'
+        +'**4.1 Overview of the Programme**\n'
+        +'Write 2 paragraphs: what this programme is, why it exists (link to Uganda\'s national development — Vision 2040, NDP III, labour market demand), and its unique CBE approach at KIU.\n\n'
+        +'**4.2 Total Notional Hours and Credit Units**\n'
+        +'State clearly in a compact table format:\n'
+        +'- Total Notional Hours (NH): '+totalNH+' NH\n'
+        +'- Total Credit Units (CU): '+totalCU+' CU\n'
+        +'- Duration: '+p.years+' year(s) / '+semCount+' semesters\n'
+        +'- Mode: '+p.mode+'\n'
+        +'- Award: '+p.award+'\n'
+        +'Explain: 1 Credit Unit = 10 Notional Hours. Each 600 NH semester = 60 Credit Units.\n\n'
+        +'**4.3 What Learners Will Study**\n'
+        +'Write 1 paragraph describing the broad curriculum areas learners will engage with — the subjects, themes, and disciplines covered across the '+semCount+' semesters of the programme.\n\n'
+        +'**4.4 Programme Competency Domains**\n'
+        +'List the 4-6 core competency domains that define this programme — what learners will KNOW, DO, and BECOME. Each domain: bold title + 1 sentence. Make these discipline-specific to '+p.name+'.\n\n'
+        +'**4.5 Programme Competency Pathways**\n'
+        +'Describe the three competency pathways available to graduates:\n'
+        +'(a) Employment Pathway — specific roles/jobs graduates are prepared for in Uganda and East Africa\n'
+        +'(b) Further Study Pathway — higher degrees and professional qualifications graduates can pursue\n'
+        +'(c) Entrepreneurship Pathway — how graduates can apply their competencies to start and grow enterprises\n'
+        +'(d) Professional Body Pathway — professional registration or membership available upon graduation\n\n'
+        +'**4.6 Industry and Community Linkages**\n'
+        +'Write 1 paragraph on how the programme connects with industry, community, and government partners — Triple Helix model (Government + Industry + University).\n\n'
+        +'Total target: 450 words. Use "learners" not "students". Be specific to '+p.name+'.\n\n'+ctx;
+    })(),
+        development:'Write Section 5: Programme Development and Review Process for '+p.name+'.\n\n'
+      +'Describe EXACTLY 7 stages of the programme development process. For each stage write:\n'
+      +'- A bold numbered title (Stage 1, Stage 2, etc.)\n'
+      +'- A 2-3 sentence explanation of what happens in this stage, who is involved, and what outputs are produced.\n\n'
+      +'The 7 stages MUST be:\n'
+      +'**Stage 1: Stakeholder Needs Assessment and Conceptualisation**\n'
+      +'Explain: identifying industry gaps, labour market demands, graduate employer surveys, community needs, and Uganda Vision 2040/NDP III alignment. Who participates: industry partners, alumni, community leaders, government agencies. Output: needs assessment report.\n\n'
+      +'**Stage 2: Curriculum Design and CBE Framework Development**\n'
+      +'Explain: designing competency domains, learning outcomes, notional hours matrix, course unit structure, and assessment framework aligned to NCHE CBET Minimum Standards (2026). Who participates: academic staff, curriculum specialists, industry mentors. Output: draft curriculum document.\n\n'
+      +'**Stage 3: Internal Quality Review and Departmental Approval**\n'
+      +'Explain: peer review by the School curriculum committee, heads of department review, department board approval. Feedback incorporated and curriculum revised. Output: internally approved curriculum.\n\n'
+      +'**Stage 4: University Governance Approval (Senate and Council)**\n'
+      +'Explain: presentation to the Academic Registrar, University Senate scrutiny (academic quality), and final approval by the University Council (policy and financial oversight). Output: officially approved KIU programme.\n\n'
+      +'**Stage 5: NCHE Submission, External Review and Accreditation**\n'
+      +'Explain: submission of the full programme document to NCHE Uganda for accreditation review. NCHE appoints external peer reviewers (academic and industry). Site visits may be conducted. Feedback incorporated and programme adjusted. Output: NCHE letter of accreditation.\n\n'
+      +'**Stage 6: Programme Launch, Implementation and Delivery**\n'
+      +'Explain: student recruitment, orientation, delivery by trained facilitators using CBE methods (facilitated sessions, PBL, WIL, portfolio assessment). Quality monitoring through class observations, student feedback, and progress tracking. Output: active programme delivery.\n\n'
+      +'**Stage 7: Continuous Review, Monitoring, Improvement and Re-accreditation**\n'
+      +'Explain: annual programme review meetings with stakeholders, updating of curriculum to reflect industry changes, periodic NCHE re-accreditation cycles, and integration of graduate tracer study findings. Output: revised curriculum submitted for re-accreditation.\n\n'
+      +'End with one paragraph on the Triple Helix principle (Government + Industry + University) that underpins the entire process.\n'
+      +'Total target: 400 words. Use "learners" not "students".\n\n'+ctx,
     rationale:'Write Section 6: Programme Rationale and Justification. Justify the need: Uganda Vision 2040, National Development Plan III alignment, industry skills gap, regional demand, NCHE mandate. 350 words. Use "learners" not "students".\n\n'+ctx,
     competences:(function(){
       var discipline=p.name||'';
@@ -1828,57 +1878,105 @@ function secPrompt(key){
       var isBiz=discipline.match(/business|commerce|account|finance|manage|market|entrepreneur/i);
       var isEdu=discipline.match(/educat|teach|pedagog|curriculum/i);
       var isSocial=discipline.match(/social|communit|counsel|guidance|psychol|welfare|development/i);
-      /* Identify relevant professional body */
       var profBody=isHealth?'Uganda Medical and Dental Practitioners Council / Uganda Nurses and Midwives Council'
         :isEng?'Uganda Institution of Professional Engineers (UIPE) / Engineers Committee for Accreditation (ECA)'
         :isLaw?'Uganda Law Council'
-        :isAgri?'Uganda Institute of Professional Engineers (Agriculture) / National Agricultural Research Organisation (NARO)'
+        :isAgri?'National Agricultural Research Organisation (NARO) / relevant agricultural bodies'
         :isBiz?'Institute of Certified Public Accountants of Uganda (ICPAU) / Uganda Institute of Banking and Financial Services'
         :isEdu?'Uganda National Institute for Teacher Education (UNITE) / National Curriculum Development Centre (NCDC)'
         :isSocial?'Social Work Standards Council (SWSC) of Uganda'
         :'National Council for Higher Education (NCHE) and relevant industry bodies';
       return 'Write Section 7: Programme Competences for '+p.name+' at Kampala International University.\n\n'
-        +'IMPORTANT: Do NOT write a generic introductory paragraph about the programme. Go directly into the structured competency framework. Use "learners" not "students" throughout. Total target: approximately 600 words.\n\n'
+        +'**FOUNDATIONAL CONCEPTUAL DISTINCTION — De Ketele (2010)**\n'
+        +'Begin Section 7 with a brief conceptual table or paragraph that distinguishes between:\n'
+        +'(a) **Programme Competencies** (plural — broad, intended learning outcomes): General statements of expected outcomes formulated by educators and curriculum designers. They describe the knowledge, skills, and attitudes the programme intends to instill. They serve as *reference points* for curriculum/programme design, assessment criteria, and alignment with industry, professional, and academic standards. Source: De Ketele (2010).\n'
+        +'(b) **Programme Competency** (singular — demonstrated mastery): The actual standalone ability, behaviour, and performance demonstrated by learners after engaging in the programme. They are the *constructivist realisation* of competencies — showing how learners internalise, mobilise from the backpack, and enact the intended outcomes in practice.\n'
+        +'State clearly that Section 7 addresses Programme Competencies (plural) as defined by De Ketele — the broad, intended curriculum-level outcomes — which learners will progressively demonstrate as Programme Competency (singular) throughout the '+p.years+'-year programme.\n\n'
+        +'Do NOT write a generic introductory paragraph. Go directly into the structured framework below.\n\n'
         +'**7.1 Programme Competency Philosophy**\n'
-        +'Write ONE paragraph (3 sentences max) stating that competency in this programme is defined holistically across three domains: Knowledge (Cognitive), Skills (Psychomotor), and Attitudes/Values (Affective). Reference NCHE Uganda 2026 CBET standards and the requirement for applied ability — not knowledge alone.\n\n'
+        +'Write ONE paragraph (3 sentences max): competency in this programme is defined holistically across three domains per Uganda NCHE 2026 CBET standards: Knowledge (Cognitive), Skills (Psychomotor), and Attitudes/Values (Affective). Reference De Ketele\'s constructivist framework — competencies are not merely known but are enacted in authentic, contextualised practice.\n\n'
         +'**7.2 Programme Competency Domains**\n'
-        +'List exactly 6 named competency domains specific to the '+discipline+' discipline. Each domain must have:\n'
-        +'- A BOLD domain name (e.g. **Domain Name**)\n'
+        +'List exactly 6 named competency domains specific to the '+discipline+' discipline. Each must have:\n'
+        +'- A BOLD domain name\n'
         +'- One sentence describing what this domain covers in the context of '+discipline+'\n'
-        +'These must NOT be generic — they must reflect the actual discipline knowledge areas of '+discipline+'.\n\n'
-        +'**7.3 Knowledge Competencies (Cognitive Domain)**\n'
+        +'These must reflect the actual discipline knowledge areas — NOT generic.\n\n'
+        +'**7.3 Knowledge Competencies — Programme Competencies (Broad Abilities, Cognitive Domain)**\n'
+        +'Heading note: "As conceptualised by De Ketele, these are the broad intended outcomes the programme aims for learners to achieve in the knowledge domain."\n'
         +'List 5 specific knowledge competencies. Each must:\n'
-        +'- Start with an action verb at Bloom\'s analysis or higher level (Analyse, Evaluate, Synthesise, Apply, Explain)\n'
+        +'- Start with an action verb at Bloom\'s analysis level or higher (Analyse, Evaluate, Synthesise, Apply)\n'
         +'- Be specific to '+discipline+' — NOT generic\n'
         +'- Be one clear, measurable sentence\n'
-        +'Number each item starting from 1.\n\n'
-        +'**7.4 Skills Competencies (Psychomotor Domain)**\n'
-        +'List 5 specific practical/technical skills competencies. Each must:\n'
+        +'Number each from 1.\n\n'
+        +'**7.4 Skills Competencies — Programme Competencies (Broad Abilities, Psychomotor Domain)**\n'
+        +'Heading note: "These broad intended outcomes define what the programme aims for learners to demonstrate in professional practice."\n'
+        +'List 5 specific practical/technical skills. Each must:\n'
         +'- Describe a demonstrable skill specific to '+discipline+' professional practice\n'
         +'- Start with an action verb (Demonstrate, Perform, Execute, Apply, Construct, Operate)\n'
         +'- Be one clear, measurable sentence\n'
-        +'Number each item starting from 1.\n\n'
-        +'**7.5 Attitudes and Values Competencies (Affective Domain)**\n'
-        +'List 5 specific professional attitudes and values competencies. Each must:\n'
-        +'- Describe a professional value or ethical commitment specific to '+discipline+' practice in Uganda\n'
+        +'Number each from 1.\n\n'
+        +'**7.5 Attitudes and Values Competencies — Programme Competencies (Broad Abilities, Affective Domain)**\n'
+        +'Heading note: "These broad intended outcomes reflect the professional values and ethics the programme instils — assessed through co-created, observation-based processes as per De Ketele\'s evaluative framework."\n'
+        +'List 5 professional values specific to '+discipline+' practice in Uganda. Each must:\n'
         +'- Reference Krathwohl\'s affective domain levels where appropriate\n'
         +'- Be one clear, measurable sentence\n'
-        +'Number each item starting from 1.\n\n'
+        +'Number each from 1.\n\n'
         +'**7.6 Practical Industry, Marketplace and Career Experience**\n'
-        +'Write 2 sentences describing: (a) how this programme integrates industry partnerships, work-integrated learning, internships and practical placements; (b) how this prepares learners for the Uganda labour market and NDP III priorities, in alignment with NCHE\'s requirement for university-industry collaboration.\n\n'
+        +'Write 2 sentences: (a) how this programme integrates industry partnerships, WIL, internships and placements; (b) how this prepares learners for the Uganda labour market and NDP III priorities.\n\n'
         +'**7.7 Career Pathways**\n'
-        +'Write one sentence: "Graduates of the '+discipline+' programme at KIU are prepared for professional employment in the following roles:"\n'
-        +'Then list 8 specific, realistic job roles/titles for '+discipline+' graduates in Uganda and East Africa. Number each starting from 1.\n\n'
+        +'Write one sentence: "Graduates of the '+discipline+' programme at KIU are prepared for professional employment in the following roles:" Then list 8 specific, realistic job roles for '+discipline+' graduates in Uganda and East Africa. Number each from 1.\n\n'
         +'**7.8 Professional and Regulatory Body Alignment**\n'
-        +'Write 2 sentences stating: (a) that the programme competencies are designed in alignment with '+profBody+'; (b) how graduates may pursue professional registration or membership with the relevant body upon graduation.\n\n'+ctx;
+        +'Write 2 sentences: (a) how the programme competencies align with '+profBody+'; (b) how graduates may pursue professional registration upon graduation.\n\n'
+        +'Use "learners" not "students". Total target: approximately 600 words.\n\n'+ctx;
     })(),
-    outcomes:'Write Section 8: Programme Learning Outcomes. List 10-12 specific measurable PLOs using Bloom\'s verbs. Format: "Upon successful completion, the learner will be able to:" then numbered list starting at 1. Use "learner" not "graduate" or "student".\n\n'+ctx,
-    targetGroup:'Write Section 9: Target Group. Describe intended learners, geographic scope Uganda and East Africa, career aspirations, professional background. 200 words. Use "learners" throughout.\n\n'+ctx,
+
+    outcomes:(function(){
+      var semCount=parseInt(p.years||2)*2;
+      return 'Write Section 8: Programme Learning Outcomes (PLOs) for '+p.name+'.\n\n'
+        +'**CRITICAL STRUCTURE RULE — Every PLO must follow this EXACT 4-part format:**\n'
+        +'[ACTION VERB] + [SPECIFIC CONCEPT from '+p.name+'] + [so that / in order to] + [GOAL in present simple tense] + [comma] + [INDEPENDENT CLAUSE 1 showing application] + [and] + [INDEPENDENT CLAUSE 2 showing broader impact]\n\n'
+        +'**Example format:**\n'
+        +'"Analyse the ecological systems of agricultural environments so that learners demonstrate evidence-based decision-making in field management, and contribute to sustainable land use practices in Uganda."\n\n'
+        +'Write exactly 10 PLOs for the '+p.name+' programme, covering:\n'
+        +'- At least 3 PLOs from the Cognitive domain (Knowledge — use: Analyse, Evaluate, Synthesise, Apply, Explain)\n'
+        +'- At least 3 PLOs from the Psychomotor domain (Skills — use: Demonstrate, Perform, Execute, Construct, Operate)\n'
+        +'- At least 2 PLOs from the Affective domain (Values — use: Exhibit, Advocate, Commit, Uphold, Integrate)\n'
+        +'- At least 2 PLOs addressing Industry/Career readiness (use: Navigate, Collaborate, Lead, Engage)\n\n'
+        +'Number each PLO from 1 to 10.\n'
+        +'Each PLO must be SPECIFIC to the '+p.name+' discipline — no generic statements.\n'
+        +'Each PLO must be measurable and assessable within the '+p.years+'-year programme.\n'
+        +'Total target: 300 words. Use "learners" not "students".\n\n'+ctx;
+    })(),
+        targetGroup:'Write Section 9: Target Group. Describe intended learners, geographic scope Uganda and East Africa, career aspirations, professional background. 200 words. Use "learners" throughout.\n\n'+ctx,
     admission:'Write Section 10: Entry/Admission Requirements based on: '+($('p-admission',''))+'. Format clearly with route labels. Use "learners" not "students".\n\n'+ctx,
     humanRes:'Write Section 11: Human Resources for '+p.name+'. Cover: (a) Academic facilitators — qualifications required (PhD or Masters with experience), staff development and CPD policy, visiting and adjunct facilitators; (b) Technical support — laboratory technicians, ICT support staff; (c) Administrative support staff; (d) International Technical Assistance — the Technical Aid Corps (TAC) from Nigeria, deployed by the Nigerian Government to support the Government of Uganda, contributes expert facilitators and technical advisors to strengthen programme delivery at KIU; (e) Staff development — annual CPD activities, conference attendance, research engagement. Do NOT mention any ratios of any kind. Do NOT use the word "lecturer" — use "facilitator" or "learning facilitator". 350 words.\n\n'+ctx,
     infrastructure:'Write Section 12: Physical Infrastructure and Learning Resources. Teaching spaces, laboratories and equipment, library resources, ICT infrastructure, safety equipment, e-learning platforms. 250 words. Refer to teaching spaces as "learning spaces" not "lecture halls".\n\n'+ctx,
-    delivery:'Write Section 13: Modes/Strategies of Delivery. This is a learner-centred CBE programme. Describe: facilitated contact sessions, laboratory practicals, problem-based learning, industrial training, peer learning, field trips, blended and online learning, self-directed learning, project-based learning. Do NOT use the word "lecture" or "lecturer". Use "facilitator", "facilitated session", "contact session". 250 words.\n\n'+ctx,
-    assessment:(function(){return 'Write Section 14: Modes and Strategies of Assessment for '+p.name+'.\n\n'
+    delivery:(function(){
+      var inst=getInstitution(),isK=isKIU();
+      return 'Write Section 13: Unified Modes and Strategies of Delivery for '+p.name+' at '+inst+'.\n\n'
+        +'**IMPORTANT: This is ONE UNIFIED delivery framework that applies to ALL course units in the programme — not course-specific. Do NOT write separate frameworks per course.**\n\n'
+        +'**13.1 KIU CBE Delivery Philosophy**\n'
+        +'Write 2 sentences: the programme uses a learner-centred, competency-driven delivery approach. Replace "lecture/lecturer" with "facilitated session/facilitator" throughout.\n\n'
+        +'**13.2 Eight Core Delivery Methods (for all courses)**\n'
+        +'Describe these 8 methods briefly (1-2 sentences each), showing how each applies across the programme:\n'
+        +'1. Facilitated Sessions — structured interactive sessions led by a qualified facilitator\n'
+        +'2. Project-Based Learning (PBL) — authentic tasks with driving questions, sustained inquiry, and public exhibition\n'
+        +'3. Work-Integrated Learning (WIL) — industry placements, internships, and real workplace tasks\n'
+        +'4. Self-Directed Learning — guided independent study using digital and library resources\n'
+        +'5. Practical and Laboratory Sessions — hands-on skills practice in relevant settings\n'
+        +'6. Peer Teaching and Collaborative Learning — group tasks, peer feedback circles, team projects\n'
+        +'7. Case-Based Learning — analysis of real industry cases with multiple solution pathways\n'
+        +'8. E-Learning and Digital Resources — blended delivery using online platforms and digital tools\n\n'
+        +'**13.3 Notional Hours Delivery Allocation**\n'
+        +'Write a compact paragraph mapping the KIU NH breakdown to delivery methods:\n'
+        +'DLH (Directed Learning Hours) → facilitated sessions and laboratory practicals\n'
+        +'SLH (Self-Learning Hours) → self-directed study, e-learning, research\n'
+        +'ALH (Assessment Learning Hours) → assignments, projects, tests, examinations\n'
+        +'OLH (Other Learning Hours) → WIL, community service, industry visits, PBL exhibitions\n\n'
+        +'**13.4 Facilitation Standards**\n'
+        +'Write 3 bullet points on the expected standard of facilitation: active facilitation (not passive lecturing); use of formative assessment triangulation (observation, conversation, product); and inclusive, accessible delivery for all learners.\n\n'
+        +'Total target: 350 words. Use "learners" and "facilitator" throughout — NEVER "students" or "lecturer".\n\n'+ctx;
+    })(),
+        assessment:(function(){return 'Write Section 14: Modes and Strategies of Assessment for '+p.name+'.\n\n'
       +'Structure this section with the following sub-sections:\n\n'
       +'**14.1 Philosophy of Assessment**\n'
       +'Assessment is a continuous, integral part of the CBE teaching and learning process. It serves three purposes: '
@@ -1921,50 +2019,52 @@ function secPrompt(key){
       +'A — Distinction: 80–100% | B+ — Merit Plus: 75–79% | B — Merit: 70–74% | C+ — Credit Plus: 65–69% | '
       +'C — Credit: 60–64% | D+ — Pass Plus: 55–59% | F — Fail: Below 55%. Pass Mark: 55% minimum to demonstrate competence.\n\n'
       +'Use "learners" throughout. Approximately 500 words.\n\n'+ctx;})(),
-    progression:(function(){return 'Write Section 15: Progression Rules and Competency Development Framework for '+p.name+' at Kampala International University (KIU). This section is detailed, comprehensive and explicitly references internationally recognised progression frameworks as applied to Uganda CBE standards. Structure as follows:\n\n'
-      +'**15.1 Philosophy of Competency-Based Progression**\n'
-      +'In CBE/CBET, learners progress by demonstrating mastery of required competencies — not merely by time elapsed. Progression is earned through evidence of performance across three domains: Cognitive (knowledge), Affective (values and attitudes), and Psychomotor (practical skills). Write 2 paragraphs explaining KIU\'s learner-centred progression philosophy.\n\n'
-      +'**15.2 Dave\'s Psychomotor Skill Acquisition Framework (Primary Progression Standard)**\n'
-      +'This programme uses Dave\'s Psychomotor Domain framework, which aligns directly with the UNEB Uganda 5-level CBE competency progression. Describe each level with programme-specific examples:\n'
-      +'- **Level 1 — Imitation**: The learner watches, copies, and imitates demonstrated skills under close supervision. Performance is tentative and relies on direct guidance. (Semester 1 benchmark)\n'
-      +'- **Level 2 — Manipulation**: The learner follows written/verbal instructions to perform tasks. Actions are carried out through memorisation and procedural following. Minimal supervision needed. (Semester 2 benchmark)\n'
-      +'- **Level 3 — Precision**: Performance becomes expert and accurate. The learner performs tasks independently with minimal errors and increasing confidence. (Year 2 Semester 1)\n'
-      +'- **Level 4 — Articulation**: Several skills can be performed together in a coordinated, harmonious way. The learner adapts skills to new situations innovatively. (Year 2 Semester 2)\n'
-      +'- **Level 5 — Naturalisation**: The highest level — actions become second nature. High-level performance achieved with ease, fluency and creative application. (Graduation standard)\n\n'
-      +'**15.3 Krathwohl\'s Affective Domain Progression (Values and Professional Attitudes)**\n'
-      +'Alongside psychomotor competency, learners must demonstrate progressive development of professional values and attitudes through Krathwohl\'s Affective Domain hierarchy:\n'
-      +'- **Receiving/Attending**: Learner is willing to be aware of professional contexts; open to the learning experience; gives attention by choice.\n'
-      +'- **Responding**: Learner willingly participates, volunteers, finds satisfaction in contributing; ready to respond to professional demands.\n'
-      +'- **Valuing**: Learner is motivated to invest in professional behaviour; begins to identify with and commit to professional values.\n'
-      +'- **Organising**: Values become systematic; learner can compare, contrast and prioritise professional values and behaviours; commits to a value system.\n'
-      +'- **Characterising**: Learner acts consistently from an internal belief system; can articulate a professional philosophy; responds to complex situations based on deeply held values.\n'
-      +'Describe how facilitators assess affective domain progression using observation checklists and anecdotal records for this programme.\n\n'
-      +'**15.4 Dreyfus Model of Skill Acquisition (Professional Competency Progression)**\n'
-      +'The Dreyfus Model provides an additional lens for understanding skill development in professional practice contexts:\n'
-      +'- **Novice**: Little to no experience; needs clear instructions and rules; follows procedures without understanding context.\n'
-      +'- **Advanced Beginner**: Starts to recognise patterns; understands tasks with some guidance; beginning to see situational variations.\n'
-      +'- **Competent**: Plans and makes decisions; manages priorities with minimal supervision; beginning to see own actions in terms of long-range goals.\n'
-      +'- **Proficient**: Views situation holistically; adapts plans and foresees issues; uses intuitive responses based on experience.\n'
-      +'- **Expert**: Intuitive grasp of complex situations; provides strategic guidance; performance is fluid, integrated and automatic.\n'
-      +'Map each Dreyfus level to the relevant semester of the '+p.name+' programme.\n\n'
-      +'**15.5 NAEP Achievement Level Benchmarks (Academic Performance Standards)**\n'
-      +'Academic attainment in formal assessments is benchmarked against the NAEP (National Assessment of Educational Progress) three-level achievement descriptor framework, adapted to KIU context:\n'
-      +'- **NAEP Basic**: Indicates partial mastery of fundamental discipline knowledge and skills. A learner at this level has foundational understanding but has not yet demonstrated full competence.\n'
-      +'- **NAEP Proficient**: Represents solid academic performance and competency over challenging subject matter. This is the expected standard for progression at the end of each academic year.\n'
-      +'- **NAEP Advanced**: Demonstrates superior performance that goes beyond proficiency. Learners at this level show deep analytical ability, creative application, and professional-level insight.\n'
-      +'Explain how these three levels map onto KIU\'s grading scale (A/B/C) and progression requirements.\n\n'
-      +'**15.6 Progression Requirements — Cognitive Domain**\n'
-      +'State the minimum academic performance requirements: pass mark per course (55%), minimum semester GPA for normal progression (2.0 on 4.0 scale or equivalent), minimum credits to proceed, and how the three cognitive levels (Knowledge, Application, Analysis/Synthesis/Evaluation) are weighted in progression decisions.\n\n'
-      +'**15.7 Supplementary Examinations**\n'
-      +'Describe eligibility criteria: which courses qualify for supplementary, minimum mark required to sit (40% in course), maximum mark achievable after supplementary (55%), and maximum number of supplementary attempts permitted.\n\n'
-      +'**15.8 Repeat, Probation and Discontinuation Policy**\n'
-      +'State clearly: (a) conditions for repeating a semester or year; (b) GPA threshold triggering probationary status; (c) maximum total duration of study; (d) conditions leading to discontinuation; (e) Senate appeal process for discontinued learners; (f) reinstatement criteria.\n\n'
-      +'**15.9 Credit Transfer and Recognition of Prior Learning (RPL)**\n'
-      +'Describe credit transfer policy in accordance with NCHE Uganda guidelines and the Uganda Credit Accumulation and Transfer System (UCATS). State RPL procedures, evidence requirements, and maximum transferable credits.\n\n'
-      +'**15.10 Employability Progression Milestones**\n'
-      +'Explicitly state the employability level attained at the end of each semester of the '+p.name+' programme, linking each to the Dave\'s psychomotor level, Dreyfus model stage, and professional roles attainable at that point. Show the progressive development of professional readiness from Semester 1 to graduation.\n\n'
-      +'Use "learners" not "students" throughout. Target approximately 700 words. Be specific to the '+p.name+' programme context.\n\n'+ctx;
+    progression:(function(){
+      var semCount=parseInt(p.years||2)*2;
+      var twoThird=Math.round(100*2/3);
+      return 'Write Section 15: Progression Rules and Competency Development Framework for '+p.name+' at Kampala International University. This section is comprehensive, detailed, and explicitly references internationally recognised frameworks. Use "learners" not "students". Target: approximately 700 words.\n\n'
+        +'**15.1 Competency-Based Progression Philosophy — De Ketele\'s Constructivist Framework**\n'
+        +'Write 2 paragraphs on De Ketele\'s CBE progression framework:\n'
+        +'(a) In De Ketele\'s constructivist CBE framework, progression is defined NOT by time spent in class but by demonstration of mastery of the competencies of each module, assessed through co-created evaluation processes in which learners actively participate. Competencies are not merely known — they are enacted, contextualised, and measurable.\n'
+        +'(b) The curriculum is structured so that Programme Competencies (the broad intended learning outcomes the programme aims for learners to achieve) are progressively demonstrated through Programme Competency (singular) — the actual standalone abilities, behaviours and performances enacted by learners. Reference: De Ketele, J.M. (2010). Ne pas se tromper d\'évaluation. *Revue française de linguistique appliquée*, 15(1), 25-37.\n\n'
+        +'**15.2 The Two-Thirds (2/3) Mastery Rule**\n'
+        +'Write 3 paragraphs explicitly explaining the Two-Thirds Rule as applied in this programme:\n'
+        +'(a) Definition: The Two-Thirds Rule specifies that learners must demonstrate mastery of at least two-thirds (≥66.7%) of the defined competencies of a module to qualify for progression to the next module or semester. This ensures both rigour (competency is genuinely demonstrated) and fairness (allowance for partial mastery without penalising minor gaps).\n'
+        +'(b) Application in '+p.name+': In this programme, a learner who demonstrates mastery of fewer than two-thirds of a module\'s competencies is identified as "Not Yet Competent" and must engage in targeted remediation activities before re-assessment. A learner who achieves two-thirds or above is certified as "Competent" at that level and progresses.\n'
+        +'(c) Two certification levels: (i) Two-Thirds Competent Level — learner demonstrates mastery of exactly two-thirds of competencies; may progress with a remediation plan for the remaining competencies; this constitutes a partial qualification (micro-credential); (ii) Full Competent Level — learner demonstrates mastery of all or near-all competencies; progresses without conditions. State the KIU minimum pass mark for full competency: 55%.\n\n'
+        +'**15.3 Dave\'s Psychomotor Framework (Primary UNEB Uganda Standard)**\n'
+        +'Describe each of the 5 levels with programme-specific examples for '+p.name+', mapped to each semester:\n'
+        +'- Level 1 — Imitation: Learns by watching and copying; performs with direct guidance (Semester 1)\n'
+        +'- Level 2 — Manipulation: Follows instructions independently; actions through memorisation (Semester 2)\n'
+        +'- Level 3 — Precision: Performance becomes expert and precise; minimal errors (Year 2, Semester 1)\n'
+        +'- Level 4 — Articulation: Several skills performed together harmoniously; adapts innovatively (Year 2, Semester 2)\n'
+        +'- Level 5 — Naturalisation: High-level mastery; actions become second nature (Graduation standard)\n\n'
+        +'**15.4 Krathwohl\'s Affective Domain Progression (Professional Values)**\n'
+        +'Describe each level of the affective domain hierarchy and how facilitators assess progression through observation checklists in '+p.name+':\n'
+        +'Receiving/Attending → Responding → Valuing → Organising → Characterising\n'
+        +'State: affective progression is assessed through co-created observation checklists (De Ketele framework) over the full '+p.years+'-year programme.\n\n'
+        +'**15.5 Dreyfus Model of Skill Acquisition (Professional Competency)**\n'
+        +'Map each Dreyfus level to the relevant semester of '+p.name+':\n'
+        +'Novice → Advanced Beginner → Competent → Proficient → Expert\n'
+        +'Brief descriptor for each level in the context of this discipline.\n\n'
+        +'**15.6 NAEP Achievement Level Benchmarks (Academic Performance)**\n'
+        +'Explain how formal academic attainment is benchmarked:\n'
+        +'- NAEP Basic: partial mastery of fundamental knowledge → below Two-Thirds Rule threshold\n'
+        +'- NAEP Proficient: solid academic performance → meets Two-Thirds Rule minimum\n'
+        +'- NAEP Advanced: superior performance beyond proficiency → Full Competent Level\n'
+        +'Map to KIU grading scale: F <55% (Not Competent) | D+ 55–64% (Two-Thirds Competent) | C/C+ 65–74% (Proficient) | B/B+ 75–79% (Merit) | A 80–100% (Distinction).\n\n'
+        +'**15.7 Academic Progression Rules**\n'
+        +'State: minimum pass mark 55% per course unit; minimum credits per semester to progress; GPA threshold for normal progression; Two-Thirds Rule applied at module level; both formative AND summative must be passed independently.\n\n'
+        +'**15.8 Supplementary Examinations**\n'
+        +'Eligibility: minimum 40% in course to sit supplementary; maximum mark achievable after supplementary is capped at 55% (Two-Thirds Competent level); maximum two supplementary attempts permitted.\n\n'
+        +'**15.9 Repeat, Probation and Discontinuation**\n'
+        +'State conditions for: repeating a semester/year; probationary GPA threshold; maximum duration of study; conditions for discontinuation; Senate appeal process; reinstatement criteria.\n\n'
+        +'**15.10 Credit Transfer and Recognition of Prior Learning (RPL)**\n'
+        +'Describe credit transfer per NCHE Uganda guidelines and UCATS. RPL procedures and evidence requirements. Maximum transferable credits. State that prior demonstrated competencies (not just academic credits) may be recognised under De Ketele\'s constructivist RPL framework.\n\n'
+        +'**15.11 Employability Progression Milestones**\n'
+        +'For each of the '+semCount+' semesters, state: (a) Dave\'s psychomotor level reached; (b) Dreyfus stage; (c) Employability level (Foundation/Emerging/Intermediate/Advanced/Full); (d) Specific job roles attainable at that point. Show the progressive development from Semester 1 to graduation.\n\n'+ctx;
     })(),
+
     gradLoad:(function(){
       var award=(p.award||'').toLowerCase();
       var isDip=award.indexOf('diploma')>=0||award.indexOf('dip')>=0;
@@ -2147,68 +2247,99 @@ function coursePrompt(c){
     +'5. Learner Voice and Choice: Describe 3 options learners can choose from for their product/approach\n'
     +'6. Critique and Revision: Describe the peer review + expert feedback + revision cycle\n'
     +'7. Public Product and Exhibition: Describe how learners present their product to an external audience\n\n'
+    +'**14.2b PBL Need-to-Know Questions**\n'
+    +'After stating the driving question, list 4-5 specific Need-to-Know questions that scaffold the learners\' inquiry process for this course. These questions guide what learners must research and investigate during the PBL task. Format: "What...?", "How...?", "Why...?" questions specific to this course content.\n\n'
     +'**14.3 OLH Community Engagement Activities ('+String(oh)+' OLH hours)**\n'
     +'Describe the specific community activities learners engage in for the '+String(oh)+' Other Learning Hours:\n'
     +'List specific fieldwork, community placements, industry visits, or experiential activities.\n\n'
-    +'**14.4 Other Delivery Methods**\n'
-    +'List and briefly describe: facilitated sessions, tutorials, self-directed learning, laboratory/practical sessions.\n\n'
+    +'**14.4 PBL Need-to-Know Questions**\n'
+    +'Alongside the Driving Question from 14.2, generate 4-5 Need-to-Know Questions that scaffold learner inquiry in this course. '
+    +'These questions guide what learners need to research and investigate to answer the Driving Question.\n'
+    +'Format: numbered list, each question starting with What, How, Why, When, or Who, specific to '+esc(c.name||'')+'.\n\n'
+    +'**14.5 Workplace-Integrated Learning (WIL) Tasks**\n'
+    +'Describe 2-3 specific WIL tasks for this course: industry visits, internship activities, community engagement tasks, or professional networking exercises. Link to the '+String(oh)+' OLH hours.\n\n'
+    +'**14.6 Other Delivery Methods**\n'
+    +'List briefly: facilitated sessions, tutorials, self-directed learning, e-learning, laboratory/practical sessions specific to '+esc(c.name||'')+'.\n\n'
     +'---\n\n'
     +'Write: **Mechanisms**: list 4 feedback mechanisms. **Schedule**: [sentence]. '
     +'**Improvement Process**: [sentence]. **Success Metrics**: [3 items].\n\n'
 
     +'Action 15: Assessment Framework and Competency Verification\n'
-    +'Write the complete assessment framework for this course unit.\n\n'
-    +'**THREE FORMS OF ASSESSMENT**\n'
-    +'This course uses all three NCDC/NCHE assessment types:\n\n'
-    +'**A. Assessment FOR Learning (Formative — Minimum 50%)**\n'
+    +'Write the complete CBE assessment framework for '+esc(c.name||'')+'. Structure as follows:\n\n'
+
+    +'**A. ASSESSMENT PHILOSOPHY**\n'
+    +'Write 2 sentences: assessment in CBET extends beyond knowledge measurement to ensuring learners can apply and demonstrate mastery in real-world contexts. Reference FOR/OF/AS learning framework.\n\n'
+
+    +'**B. ASSESSMENT FOR LEARNING (Formative — Minimum 50%)**\n'
     +'Produce a table: Activity | Weight\n'
-    +'Continuous Tests | 10%\n'
-    +'Practical Assignments | 15%\n'
-    +'Projects (Individual/Group) | 10%\n'
-    +'Case Studies | 5%\n'
-    +'Portfolio Development | 5%\n'
-    +'Participation/Professional Conduct | 5%\n'
+    +'Continuous Tests | 10% | Conversation-based, open-book, application-focused\n'
+    +'Practical Assignments | 15% | Product-based; tangible outputs per topic\n'
+    +'Projects (Individual/Group) | 10% | PBL tasks with public exhibition component\n'
+    +'Case Studies | 5% | Authentic scenario-based analysis\n'
+    +'Portfolio Development | 5% | Ongoing curation of evidence of competency\n'
+    +'Participation/Professional Conduct | 5% | Observation-based; affective domain\n'
     +'Total = 50%\n\n'
-    +'Describe how TRIANGULATION is applied in this course:\n'
-    +'(a) Observation — specific tasks/skills the facilitator observes in THIS course\n'
-    +'(b) Conversation — 3 specific discussion/questioning strategies used in THIS course\n'
-    +'(c) Product — 3 specific tangible outputs learners produce in THIS course\n'
-    +'Explain how evidence from all three sources cross-validates competency achievement.\n\n'
-    +'**B. Assessment OF Learning (Summative — Maximum 50%)**\n'
-    +'Produce a table: Assessment Task | Weight | Description\n'
-    +'Mid-Semester Test | 20% | Tests analytical and applied knowledge at midpoint\n'
-    +'End-of-Semester Examination | 30% | Integrated competency examination — case-based, applied\n'
-    +'Total = 50%\n\n'
-    +'Describe how summative assessment tests analysis, synthesis, evaluation, and integrated performance — NOT rote memorisation.\n'
-    +'N.B. Formative and summative assessments must be passed independently. A learner must pass both to pass the course.\n\n'
-    +'**C. Assessment AS Learning (Self-Assessment)**\n'
-    +'Describe 3 self-assessment and reflection activities specific to this course:\n'
-    +'1. A structured self-reflection journal activity\n'
-    +'2. Peer assessment task with specific criteria\n'
-    +'3. A goal-setting activity linked to course competencies\n\n'
-    +'**COMPETENCY ATTAINMENT RUBRIC — UNEB 5-LEVEL FRAMEWORK**\n'
-    +'Produce a rubric table for this course: Level | Name | Descriptor for THIS course\n'
-    +'1 | Imitation | [specific descriptor for this course at imitation level]\n'
-    +'2 | Manipulation | [specific descriptor]\n'
-    +'3 | Precision | [specific descriptor]\n'
-    +'4 | Articulation | [specific descriptor]\n'
-    +'5 | Naturalisation | [specific descriptor — graduation level]\n\n'
-    +'**SCIENTIFIC INVESTIGATION / PBL ASSESSMENT RUBRIC**\n'
-    +'For the PBL task defined in Action 14, produce a 4-level scoring rubric:\n'
-    +'Score 4: Elaborates connections between skills, applies to new/unfamiliar situations\n'
-    +'Score 3: Links skill to real-life importance, explains investigation approach\n'
-    +'Score 2: Lists specific skills with limited explanation\n'
-    +'Score 1: Lists general skills without linking to importance or application\n\n'
-    +'**RECORD KEEPING**\n'
-    +'Describe the record keeping tools for this course: Observation Checklists (when and how used), '
-    +'Portfolio (what learners include, how curated), Anecdotal Notes (format and timing), '
-    +'Learner Manual Files (what is stored).\n\n'
-    +'**KIU GRADING SCALE**\n'
-    +'A (Distinction): 80–100% | B+ (Merit Plus): 75–79% | B (Merit): 70–74% | '
-    +'C+ (Credit Plus): 65–69% | C (Credit): 60–64% | D+ (Pass Plus): 55–59% | F (Fail): Below 55%\n'
-    +'Minimum pass mark: 55%. Both formative and summative must be passed independently.\n\n'
-    +'**AUTHENTIC ASSESSMENTS** — List 3 real-world assessment tasks specific to this course.\n\n'
-    +'**READING LIST (APA 7th, 2018–2025)** — 8–10 references including 2+ East African sources.\n\n'
+    +'Describe the formative TRIANGULATION model for '+esc(c.name||'')+' specifically:\n'
+    +'(a) Observation — 3 specific observable behaviors the facilitator watches for in THIS course\n'
+    +'(b) Conversation — 3 specific questions/dialogues used to assess knowledge in THIS course\n'
+    +'(c) Product — 3 specific tangible outputs learners produce in THIS course\n\n'
+    +'**FORMATIVE INDEPENDENCE RULE:** Formative and summative must be passed independently. A learner who passes formative but fails summative has NOT passed the course.\n\n'
+
+    +'**C. ASSESSMENT OF LEARNING (Summative — Maximum 50%) — THREE INTEGRATION LEVELS**\n'
+    +'Summative assessment uses THREE levels as per Uganda NCDC/NCHE CBET framework:\n\n'
+    +'**C.1 Basic Integration Assessment (within one course unit)**\n'
+    +'Describe a specific basic integration task for '+esc(c.name||'')+': learner combines foundational competencies in a simple, contextualized problem situation. '
+    +'Write one example scenario and task question specific to THIS course.\n\n'
+    +'**C.2 Intermediate Integration Assessment (across multiple course units)**\n'
+    +'Describe a specific intermediate integration task: learner links competencies from multiple modules to address a moderately complex, authentic workplace situation. '
+    +'Write one example scenario and task question specific to THIS course and related courses.\n\n'
+    +'**C.3 Terminal Integration Assessment (programme/year culmination)**\n'
+    +'Describe the terminal integration assessment: learner synthesises ALL targeted competencies in a new, unfamiliar, real-world context. '
+    +'Write one example scenario (unexpected disruption or challenge) and task question specific to THIS course.\n'
+    +'Summative breakdown: Basic 15%, Intermediate 20%, Terminal 15% = Total 50%\n\n'
+
+    +'**D. ASSESSMENT AS LEARNING (Self-Assessment)**\n'
+    +'Describe 3 specific self-assessment activities for '+esc(c.name||'')+': cognitive regulation journal; self-audit of study/problem-solving strategies; goal map linked to programme competencies.\n\n'
+
+    +'**E. OBSERVATION CHECKLISTS**\n'
+    +'**E.1 Affective Domain Checklist (Krathwohl\'s 5 Levels)**\n'
+    +'For each level, write 2 specific observable checklist questions for '+esc(c.name||'')+' (total 10 questions):\n'
+    +'Level 1 — Receiving: Did the learner...? Did the learner...?\n'
+    +'Level 2 — Responding: Did the learner...? Did the learner...?\n'
+    +'Level 3 — Valuing: Did the learner...? Did the learner...?\n'
+    +'Level 4 — Organising: Did the learner...? Did the learner...?\n'
+    +'Level 5 — Characterising: Did the learner...? Did the learner...?\n\n'
+    +'**E.2 Psychomotor Domain Checklist (Dave\'s 5 Levels)**\n'
+    +'For each level, write 2 specific observable checklist questions for '+esc(c.name||'')+' (total 10 questions):\n'
+    +'Level 1 — Imitation | Level 2 — Manipulation | Level 3 — Precision | Level 4 — Articulation | Level 5 — Naturalisation\n\n'
+
+    +'**F. SCORING RUBRIC (5 Dimensions × 4 Levels)**\n'
+    +'Produce a scoring rubric table for the PBL/terminal assessment task. Dimensions:\n'
+    +'| Dimension | Score 4 (Mastery) | Score 3 (Proficient) | Score 2 (Developing) | Score 1 (Beginning) |\n'
+    +'1. Competency Application (specific to '+esc(c.name||'')+')\n'
+    +'2. Problem-Solving (using discipline knowledge)\n'
+    +'3. Professional Conduct (ethics, communication, collaboration)\n'
+    +'4. Adaptability (handling unexpected challenges)\n'
+    +'5. Message/Product Clarity (quality of output)\n'
+    +'Write specific descriptors for each cell — not generic.\n\n'
+
+    +'**G. MODULE CAPSTONE PROJECT**\n'
+    +'Describe one capstone portfolio project for '+esc(c.name||'')+' that demonstrates readiness for workplace and societal participation. Include:\n'
+    +'- Project title\n'
+    +'- Brief description (2-3 sentences)\n'
+    +'- What evidence learners curate into their portfolio\n'
+    +'- How it is assessed (criteria)\n\n'
+
+    +'**H. RECORD KEEPING AND ACHIEVEMENT DOCUMENTATION**\n'
+    +'Describe: Checklists (when/how used), Portfolios (what learners include), Anecdotal Notes (facilitator records), Learner Manual Files. State that each module is standalone, stackable, portable — not averaged across modules.\n\n'
+
+    +'**I. KIU GRADING SCALE AND MODULE CERTIFICATION**\n'
+    +'A (Distinction): 80–100% | B+ (Merit Plus): 75–79% | B (Merit): 70–74% | C+ (Credit Plus): 65–69% | C (Credit): 60–64% | D+ (Pass Plus): 55–59% | F (Fail): Below 55%\n'
+    +'Certification: results indicate whether learner has attained competency at two-thirds level (partial) or full competent level. Each passed module is a portable micro-credential contributing to the learner\'s progression record.\n\n'
+
+    +'**J. READING LIST (APA 7th edition, 2018–2025)**\n'
+    +'8–10 references specific to '+esc(c.name||'')+'. Include at least 2 East African/Ugandan sources.\n\n'
+
     +'---\nEND. Ensure every Action above is fully written. Total length should be comprehensive and detailed.';
 }
 
