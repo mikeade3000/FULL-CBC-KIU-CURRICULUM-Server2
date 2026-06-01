@@ -946,17 +946,31 @@ function switchTab(name){
   }
 }
 
+function getProgLevel(p){
+  /* Maps award type to Uganda Higher Education Qualifications Framework level */
+  var a=((p&&p.award)||'').toLowerCase();
+  if(a.match(/phd|doctor/))return 9;
+  if(a.match(/master|msc|mba|med|mphil/))return 8;
+  if(a.match(/post.?grad|pgdip|postgrad.*dip/))return 6;
+  if(a.match(/bachelor|bsc|ba |bba|bed|beng|bcom|b\.sc|b\.a|b\.ed/))return 7;
+  if(a.match(/diploma/))return 5;
+  return parseInt((p&&p.level)||7);
+}
+
 function assignCodes(){
   var p=getProg(),ss={};
-  /* 3-DIGIT CODE: Year(1) + Semester(1) + Serial(1) = e.g. COS 111, UCC 201 */
+  var lvl=getProgLevel(p); /* Level: 5=Diploma, 6=PGDip, 7=Bachelor, 8=Master, 9=PhD */
+  /* CODE FORMAT: PREFIX + Level(1) + Year(1) + Semester(1) + 2-digit Serial */
+  /* Examples: UCC 71101, COS 71103, DAR 51201 */
   courses.forEach(function(c){
     var sn=c.sem==='R'?'3':String(c.sem);
     var yr=String(c.year||1);
     var uk=getUK(c);
     if(uk){
+      /* UCC code — same level-prefixed format as all other courses */
       var ui=UCC_ORD.indexOf(uk);
-      var serial=String(ui>=0?ui+1:9);
-      c.code=c.prefix+' '+yr+sn+serial;
+      var serial=String(ui>=0?ui+1:9).padStart(2,'0');
+      c.code=c.prefix+' '+lvl+yr+sn+serial;
       var uD=UCC[uk];
       if(uD){c.DH=uD.DH;c.SH=uD.SH;c.AH=uD.AH;c.OH=uD.OH;c.type=uD.type||c.type;c.prefix=uD.prefix||c.prefix;c.locked=true;}
     }else if(c.lockedCode){
@@ -965,8 +979,8 @@ function assignCodes(){
       var k2=c.prefix+'_'+yr+'_'+sn;
       var uccN=courses.filter(function(x){return isUCC(x)&&x.year===c.year&&x.sem===c.sem;}).length;
       if(!ss[k2])ss[k2]=uccN+1;
-      var serial=String(ss[k2]++);
-      c.code=c.prefix+' '+yr+sn+serial;
+      var serial=String(ss[k2]++).padStart(2,'0');
+      c.code=c.prefix+' '+lvl+yr+sn+serial;
     }
   });
   /* Resolve duplicates */
@@ -979,7 +993,7 @@ function assignCodes(){
       var k3=c.prefix+'_'+yr+'_'+sn;
       if(!ss[k3])ss[k3]=10;
       var newCode;
-      do{newCode=c.prefix+' '+yr+sn+String(ss[k3]++);}
+      do{newCode=c.prefix+' '+lvl+yr+sn+String(ss[k3]++).padStart(2,'0');}
       while(usedCodes[newCode.toUpperCase()]);
       c.code=newCode;
       usedCodes[newCode.toUpperCase()]=true;
