@@ -448,7 +448,7 @@ var SECTIONS=[
   {key:'description',num:'4.',title:'Programme Description'},
   {key:'development',num:'5.',title:'Programme Development/Review Process'},
   {key:'rationale',num:'6.',title:'Programme Rationale/Justification'},
-  {key:'competences',num:'7.',title:'Programme Competences'},
+  {key:'competencies',num:'7.',title:'Programme Competencies'},
   {key:'outcomes',num:'8.',title:'Programme Learning Outcomes'},
   {key:'targetGroup',num:'9.',title:'Target Group'},
   {key:'admission',num:'10.',title:'Entry/Admission Requirements'},
@@ -1420,7 +1420,7 @@ function progDevDiagramDocx(){
    EMPLOYABILITY + OLH COMMUNITY SERVICE HELPERS
    ══════════════════════════════════════════════════════════════════ */
 
-/* Get employability statement for a semester using UNEB 5-level framework */
+/* Get employability statement for a semester using Dave (1970) psychomotor framework */
 function getEmployabilityStatement(year,sem,meta){
   var years=parseInt((meta&&meta.years)||2);
   var totalSems=years*2;
@@ -1614,7 +1614,7 @@ function renderPreview(){
       html+='<p><strong>Submitted to:</strong> National Council for Higher Education (NCHE), Uganda</p>';
       html+='<p style="margin-top:8px;font-weight:700;color:var(--nv)">'+esc(p.date)+'</p></div>';
 
-      var S1=[['intro','1.','Introduction'],['governance','2.','Governance and Management'],['nameCode','3.','Programme Name, Code and Duration'],['description','4.','Programme Description'],['development','5.','Programme Development/Review Process'],['rationale','6.','Programme Rationale/Justification'],['competences','7.','Programme Competences'],['outcomes','8.','Programme Learning Outcomes'],['targetGroup','9.','Target Group'],['admission','10.','Entry/Admission Requirements'],['humanRes','11.','Human Resources'],['infrastructure','12.','Physical Infrastructure'],['delivery','13.','Modes of Delivery'],['assessment','14.','Modes of Assessment'],['progression','15.','Progression'],['gradLoad','16.','Minimum Graduation Load']];
+      var S1=[['intro','1.','Introduction'],['governance','2.','Governance and Management'],['nameCode','3.','Programme Name, Code and Duration'],['description','4.','Programme Description'],['development','5.','Programme Development/Review Process'],['rationale','6.','Programme Rationale/Justification'],['competencies','7.','Programme Competencies'],['outcomes','8.','Programme Learning Outcomes'],['targetGroup','9.','Target Group'],['admission','10.','Entry/Admission Requirements'],['humanRes','11.','Human Resources'],['infrastructure','12.','Physical Infrastructure'],['delivery','13.','Modes of Delivery'],['assessment','14.','Modes of Assessment'],['progression','15.','Progression'],['gradLoad','16.','Minimum Graduation Load']];
       S1.forEach(function(s){
         html+=sH(s[0],s[1],s[2]);
         if(s[0]==='development')html+=progDevDiagramHTML();
@@ -1867,8 +1867,15 @@ function secPrompt(key){
       +'Explain: annual programme review meetings with stakeholders, updating of curriculum to reflect industry changes, periodic NCHE re-accreditation cycles, and integration of graduate tracer study findings. Output: revised curriculum submitted for re-accreditation.\n\n'
       +'End with one paragraph on the Triple Helix principle (Government + Industry + University) that underpins the entire process.\n'
       +'Total target: 400 words. Use "learners" not "students".\n\n'+ctx,
-    rationale:'Write Section 6: Programme Rationale and Justification. Justify the need: Uganda Vision 2040, National Development Plan III alignment, industry skills gap, regional demand, NCHE mandate. 350 words. Use "learners" not "students".\n\n'+ctx,
-    competences:(function(){
+    rationale:'Write Section 6: Programme Rationale and Justification for '+p.name+'.\n\n'
+      +'**6.1 National Development Context**\n'
+      +'Justify the programme using: Uganda Vision 2040, NDP III, skills gap in the '+p.name+' sector, NCHE CBET 2026 mandate.\n\n'
+      +'**6.2 Labour Market and Industry Alignment**\n'
+      +'Write 1 paragraph explaining that the curriculum of '+p.name+' is designed to be industry-first — modules are organised around real professional competency clusters required by employers, NOT around academic subject divisions. Emphasise that cross-cutting skills (communication, numeracy, digital literacy, entrepreneurship) are EMBEDDED within discipline-specific modules rather than taught as separate standalone subjects. For example, communication in a Computer Science programme is taught as \'Technical and Professional Communication for Computing\' — contextualised, not generic.\n\n'
+      +'**6.3 Programme Uniqueness and Regional Demand**\n'
+      +'State what makes this programme distinctive at KIU compared to equivalent programmes in Uganda and East Africa.\n\n'
+      +'Total: 350 words. Use "learners" not "students".\n\n'+ctx,
+    competencies:(function(){
       var discipline=p.name||'';
       var award=(p.award||'Diploma').replace(/\(.*?\)/g,'').trim();
       var isHealth=discipline.match(/health|nurs|medic|pharma|dental|clinical/i);
@@ -1886,7 +1893,7 @@ function secPrompt(key){
         :isEdu?'Uganda National Institute for Teacher Education (UNITE) / National Curriculum Development Centre (NCDC)'
         :isSocial?'Social Work Standards Council (SWSC) of Uganda'
         :'National Council for Higher Education (NCHE) and relevant industry bodies';
-      return 'Write Section 7: Programme Competences for '+p.name+' at Kampala International University.\n\n'
+      return 'Write Section 7: Programme Competencies for '+p.name+' at Kampala International University.\n\n'
         +'**FOUNDATIONAL CONCEPTUAL DISTINCTION — De Ketele (2010)**\n'
         +'Begin Section 7 with a brief conceptual table or paragraph that distinguishes between:\n'
         +'(a) **Programme Competencies** (plural — broad, intended learning outcomes): General statements of expected outcomes formulated by educators and curriculum designers. They describe the knowledge, skills, and attitudes the programme intends to instill. They serve as *reference points* for curriculum/programme design, assessment criteria, and alignment with industry, professional, and academic standards. Source: De Ketele (2010).\n'
@@ -1976,49 +1983,60 @@ function secPrompt(key){
         +'Write 3 bullet points on the expected standard of facilitation: active facilitation (not passive lecturing); use of formative assessment triangulation (observation, conversation, product); and inclusive, accessible delivery for all learners.\n\n'
         +'Total target: 350 words. Use "learners" and "facilitator" throughout — NEVER "students" or "lecturer".\n\n'+ctx;
     })(),
-        assessment:(function(){return 'Write Section 14: Modes and Strategies of Assessment for '+p.name+'.\n\n'
-      +'Structure this section with the following sub-sections:\n\n'
-      +'**14.1 Philosophy of Assessment**\n'
-      +'Assessment is a continuous, integral part of the CBE teaching and learning process. It serves three purposes: '
-      +'Assessment FOR Learning (formative, daily, informs next steps), Assessment OF Learning (summative snapshot of achievement), '
-      +'and Assessment AS Learning (self-assessment, reflection, and goal-setting by learners themselves). All three must operate together.\n\n'
-      +'**14.2 Formative Assessment (Minimum 50%)**\n'
-      +'Formative assessment is continuous, developmental, feedback-oriented, and competence-focused. '
-      +'Provide a table: Activity | Weight — Continuous Tests 10%, Practical Assignments 15%, '
-      +'Projects (Individual/Group) 10%, Case Studies 5%, Portfolio Development 5%, Participation/Professional Conduct 5%. Total = 50%.\n\n'
-      +'**14.3 The Formative Triangulation Model**\n'
-      +'Describe how facilitators use THREE evidence sources simultaneously:\n'
-      +'(a) Observation — watching learners work (assesses skills, values, attitudes)\n'
-      +'(b) Conversation — questioning and dialogue with learners (assesses knowledge and understanding)\n'
-      +'(c) Product — tangible learner outputs: reports, models, presentations, calculations\n'
-      +'Explain how evidence from one source cross-validates the other two (triangulation). '
-      +'N.B. Formative and summative assessments must be passed independently.\n\n'
-      +'**14.4 Summative Assessment (Maximum 50%)**\n'
-      +'Summative assessment evaluates cumulative competence. It emphasises higher-order cognitive skills: '
-      +'analysis, synthesis, evaluation, and integrated performance — NOT rote memorisation. '
-      +'Provide a table: End-of-Semester Examinations (30%), Capstone/Projects (10%), Practical Examinations (10%). Total = 50%.\n\n'
-      +'**14.5 Project-Based Learning (PBL) Assessment**\n'
-      +'Describe how PBL assessments must incorporate all 7 design elements:\n'
-      +'1. Driving Question; 2. Sustained Inquiry; 3. Authenticity (real-world contexts); '
-      +'4. Alignment to Learning Outcomes; 5. Learner Voice and Choice; '
-      +'6. Critique and Revision (peer and expert feedback); 7. Public Product and Exhibition.\n\n'
-      +'**14.6 Competency Attainment Rubric (UNEB 5-Level Framework)**\n'
-      +'All assessment is benchmarked against the Uganda National Examinations Board 5-level competency progression:\n'
-      +'Level 1: Imitation | Level 2: Manipulation | Level 3: Precision | Level 4: Articulation | Level 5: Naturalisation.\n'
-      +'Provide a brief descriptor for each level in the context of this programme.\n\n'
-      +'**14.7 Scientific Investigation and Generic Skills Assessment**\n'
-      +'For field, laboratory, and applied courses, use the 4-level scientific investigation rubric: '
-      +'Score 4 (connects skills to new situations), Score 3 (links skill to real-life), '
-      +'Score 2 (lists skills with limited explanation), Score 1 (lists general skills without application).\n'
-      +'Generic Skills (communication, collaboration, creativity, critical thinking) are assessed as part of subject learning outcomes '
-      +'using observation checklists and scoring rubrics — not separately.\n\n'
-      +'**14.8 Record Keeping and Moderation**\n'
-      +'Describe the record keeping tools: Checklists, Portfolios (learner-owned), Anecdotal Notes, Learner Manual Files. '
-      +'State the moderation process, internal quality assurance, and assessment appeals procedure.\n\n'
-      +'**14.9 Grading Scale**\n'
-      +'A — Distinction: 80–100% | B+ — Merit Plus: 75–79% | B — Merit: 70–74% | C+ — Credit Plus: 65–69% | '
-      +'C — Credit: 60–64% | D+ — Pass Plus: 55–59% | F — Fail: Below 55%. Pass Mark: 55% minimum to demonstrate competence.\n\n'
-      +'Use "learners" throughout. Approximately 500 words.\n\n'+ctx;})(),
+        assessment:(function(){
+      return 'Write Section 14: Modes and Strategies of Assessment for '+p.name+'.\n\n'
+        +'**CRITICAL SCORING MODEL — 50 + 50 (NOT 100%)**\n'
+        +'This programme uses a TWO-COMPONENT scoring model. Formative assessment has a maximum of **50 points** as a standalone component. Summative assessment has a maximum of **50 points** as a standalone component. These two components are NEVER combined into a single 100-point total. Both must be passed independently. A learner who passes formative but fails summative has NOT passed — and vice versa.\n\n'
+        +'Structure this section with the following sub-sections:\n\n'
+        +'**14.1 Philosophy of Assessment — De Ketele and Constructivist CBE**\n'
+        +'Explain: assessment is a continuous, contextualised process of verifying demonstrated competency — not a single measurement of knowledge. Three types operate simultaneously: Assessment FOR Learning (formative, informs teaching), Assessment OF Learning (summative, snapshot of mastery), and Assessment AS Learning (self-assessment, reflection). Reference De Ketele\'s co-created evaluation processes — learners participate in designing what evidence counts as mastery.\n\n'
+        +'**14.2 Formative Assessment — Maximum 50 Points (Standalone)**\n'
+        +'Provide a table: Activity | Points (out of 50)\n'
+        +'Continuous Tests | 10 points\n'
+        +'Practical Assignments | 15 points\n'
+        +'Projects (Individual/Group) | 10 points\n'
+        +'Case Studies | 5 points\n'
+        +'Portfolio Development | 5 points\n'
+        +'Participation/Professional Conduct | 5 points\n'
+        +'TOTAL FORMATIVE | 50 POINTS\n'
+        +'Pass mark for formative: 33/50 (two-thirds competency threshold per De Ketele). A learner who scores below 33/50 is "Not Yet Competent" in formative and must undertake remediation before summative assessment.\n\n'
+        +'**14.3 Formative Triangulation Model**\n'
+        +'Describe the three evidence sources used in formative assessment:\n'
+        +'(a) Observation — watching learners work; assesses skills, values, attitudes; recorded on checklists\n'
+        +'(b) Conversation — questioning and dialogue; assesses knowledge and understanding\n'
+        +'(c) Product — tangible learner outputs: reports, models, presentations, calculations\n'
+        +'Explain how all three sources cross-validate mastery. Formative assessment is scored INDEPENDENTLY — not averaged with summative.\n\n'
+        +'**14.4 Summative Assessment — Maximum 50 Points (Standalone)**\n'
+        +'Provide a table: Assessment Task | Points (out of 50) | Description\n'
+        +'End-of-Semester Examination | 30 points | Applied, case-based; tests analysis, synthesis, evaluation\n'
+        +'Capstone/Project Assessment | 10 points | Integrated authentic performance task\n'
+        +'Practical Examination | 10 points | Hands-on skills demonstration\n'
+        +'TOTAL SUMMATIVE | 50 POINTS\n'
+        +'Pass mark for summative: 33/50 (two-thirds competency threshold). State clearly: there is NO combined 100-point total. Formative (50 pts) and Summative (50 pts) are each assessed and reported independently.\n\n'
+        +'**14.5 Competency Determination — Dreyfus and German/Chambers Model**\n'
+        +'Following the Dreyfus skill acquisition model, Chambers\' competency framework, and the German vocational education (TVET) binary model, the final module outcome is determined as:\n'
+        +'- **COMPETENT**: Learner demonstrates ≥33/50 in BOTH formative AND summative (≥66.7% mastery on each component per De Ketele Two-Thirds Rule)\n'
+        +'- **NOT YET COMPETENT**: Learner scores <33/50 in either component; must undertake remediation and re-assessment\n'
+        +'State: there are no partial passes. A learner who scores 50/50 formative but 30/50 summative is NOT YET COMPETENT.\n\n'
+        +'**14.6 Three Summative Integration Levels (NCDC Framework)**\n'
+        +'Describe how summative assessment operates at three levels of complexity:\n'
+        +'Basic Integration (within one module) | Intermediate Integration (across modules) | Terminal Integration (full programme synthesis in new context)\n\n'
+        +'**14.7 Project-Based Learning Assessment**\n'
+        +'Describe PBL assessment incorporating all 7 design elements: Driving Question; Sustained Inquiry; Authenticity; Alignment to LOs; Learner Voice and Choice; Critique and Revision; Public Exhibition.\n\n'
+        +'**14.8 Record Keeping and Achievement Documentation**\n'
+        +'Checklists; Portfolios (learner-owned, curated); Anecdotal Notes (facilitator records); Learner Manual Files. Each module is standalone, stackable, and portable — results reported as COMPETENT or NOT YET COMPETENT, with points earned on each 50-point component.\n\n'
+        +'**14.9 KIU Scoring Scale (per 50-point component)**\n'
+        +'Provide a table: Score (out of 50) | Grade | Competency Determination\n'
+        +'40–50 | Distinction (80–100%) | COMPETENT\n'
+        +'37–39 | Merit (75–79%) | COMPETENT\n'
+        +'35–37 | Credit (70–74%) | COMPETENT\n'
+        +'33–34 | Pass (66–69%) | COMPETENT (Two-Thirds Threshold)\n'
+        +'28–32 | Developing (56–64%) | NOT YET COMPETENT — Remediation Required\n'
+        +'0–27  | Beginning (<55%) | NOT YET COMPETENT — Repeat Assessment\n'
+        +'State: 33/50 is the minimum competency threshold on each component (≥66.7% per De Ketele Two-Thirds Rule).\n\n'
+        +'Use "learners" not "students". Approximately 500 words.\n\n'+ctx;
+    })(),
+
     progression:(function(){
       var semCount=parseInt(p.years||2)*2;
       var twoThird=Math.round(100*2/3);
@@ -2032,7 +2050,7 @@ function secPrompt(key){
         +'(a) Definition: The Two-Thirds Rule specifies that learners must demonstrate mastery of at least two-thirds (≥66.7%) of the defined competencies of a module to qualify for progression to the next module or semester. This ensures both rigour (competency is genuinely demonstrated) and fairness (allowance for partial mastery without penalising minor gaps).\n'
         +'(b) Application in '+p.name+': In this programme, a learner who demonstrates mastery of fewer than two-thirds of a module\'s competencies is identified as "Not Yet Competent" and must engage in targeted remediation activities before re-assessment. A learner who achieves two-thirds or above is certified as "Competent" at that level and progresses.\n'
         +'(c) Two certification levels: (i) Two-Thirds Competent Level — learner demonstrates mastery of exactly two-thirds of competencies; may progress with a remediation plan for the remaining competencies; this constitutes a partial qualification (micro-credential); (ii) Full Competent Level — learner demonstrates mastery of all or near-all competencies; progresses without conditions. State the KIU minimum pass mark for full competency: 55%.\n\n'
-        +'**15.3 Dave\'s Psychomotor Framework (Primary UNEB Uganda Standard)**\n'
+        +'**15.3 Dave\'s Psychomotor Framework (Primary Dave / Dreyfus Uganda Standard)**\n'
         +'Describe each of the 5 levels with programme-specific examples for '+p.name+', mapped to each semester:\n'
         +'- Level 1 — Imitation: Learns by watching and copying; performs with direct guidance (Semester 1)\n'
         +'- Level 2 — Manipulation: Follows instructions independently; actions through memorisation (Semester 2)\n'
@@ -2100,7 +2118,7 @@ function secPrompt(key){
         +'Write ONE introductory paragraph (3 sentences) introducing the OLH distribution table that follows in the programme document. The OLH data across the programme is: '
         +oLHData.replace(/\n/g,' | ')+'\n\n'
         +'**19.7 Competence-Assessment Matrix**\n'
-        +'Create a table: Semester | Key Community Activity | Assessment Method | UNEB Competency Level Demonstrated. Complete for each semester of the programme.\n\n'
+        +'Create a table: Semester | Key Community Activity | Assessment Method | Dave / Dreyfus Competency Level Demonstrated. Complete for each semester of the programme.\n\n'
         +'**19.8 Assessment of Community Service per NCHE Directives**\n'
         +'Describe assessment using the NCDC/NCHE triangulation model: (a) Observation — checklists in community settings; (b) Conversation — structured reflection discussions with community supervisors; (c) Product — community project reports, portfolios, stakeholder presentations. State that formative and summative community assessments must be passed independently.\n\n'
         +'**19.9 Community Partners and Linkages**\n'
@@ -2117,6 +2135,13 @@ function secPrompt(key){
 function coursePrompt(c){
   var p=getProg(),uk=getUK(c),nh=getNH(c),cr=getCr(c);
   var dh=c.DH||0,sh=c.SH||0,ah=c.AH||0,oh=c.OH||0;
+  /* Labour-market alignment check: warn if non-UCC course name is generic */
+  var _cname=(c.name||'').toLowerCase();
+  var _genericNames=['english language','communication skills','computer literacy',
+    'introduction to computers','study skills','life skills','basic mathematics'];
+  if(!isUCC(c)&&_genericNames.some(function(g){return _cname.includes(g);})){
+    toast('\u26a0 "'+esc(c.name)+'" appears generic — consider a discipline-specific name aligned to '+esc(getProg().name||'your programme'),'e');
+  }
   /* FIXED: Always 17 weeks — 15 study + 1 revision + 1 examination */
   var wks=17;
   var totalH=nh;
@@ -2265,80 +2290,71 @@ function coursePrompt(c){
     +'**Improvement Process**: [sentence]. **Success Metrics**: [3 items].\n\n'
 
     +'Action 15: Assessment Framework and Competency Verification\n'
-    +'Write the complete CBE assessment framework for '+esc(c.name||'')+'. Structure as follows:\n\n'
+    +'Write the complete CBE assessment framework for '+esc(c.name||'')+' using the 50+50 point model.\n\n'
 
-    +'**A. ASSESSMENT PHILOSOPHY**\n'
-    +'Write 2 sentences: assessment in CBET extends beyond knowledge measurement to ensuring learners can apply and demonstrate mastery in real-world contexts. Reference FOR/OF/AS learning framework.\n\n'
+    +'**SCORING MODEL — 50 + 50 (NEVER combined into 100)**\n'
+    +'Formative assessment: maximum 50 points (standalone). Summative assessment: maximum 50 points (standalone). Both passed independently. Competency threshold: 33/50 on EACH component (De Ketele Two-Thirds Rule = 66.7%).\n'
+    +'Module outcome: COMPETENT (≥33/50 on BOTH) or NOT YET COMPETENT (<33/50 on either). No partial passes.\n\n'
 
-    +'**B. ASSESSMENT FOR LEARNING (Formative — Minimum 50%)**\n'
-    +'Produce a table: Activity | Weight\n'
-    +'Continuous Tests | 10% | Conversation-based, open-book, application-focused\n'
-    +'Practical Assignments | 15% | Product-based; tangible outputs per topic\n'
-    +'Projects (Individual/Group) | 10% | PBL tasks with public exhibition component\n'
-    +'Case Studies | 5% | Authentic scenario-based analysis\n'
-    +'Portfolio Development | 5% | Ongoing curation of evidence of competency\n'
-    +'Participation/Professional Conduct | 5% | Observation-based; affective domain\n'
-    +'Total = 50%\n\n'
-    +'Describe the formative TRIANGULATION model for '+esc(c.name||'')+' specifically:\n'
-    +'(a) Observation — 3 specific observable behaviors the facilitator watches for in THIS course\n'
-    +'(b) Conversation — 3 specific questions/dialogues used to assess knowledge in THIS course\n'
-    +'(c) Product — 3 specific tangible outputs learners produce in THIS course\n\n'
-    +'**FORMATIVE INDEPENDENCE RULE:** Formative and summative must be passed independently. A learner who passes formative but fails summative has NOT passed the course.\n\n'
+    +'**A. ASSESSMENT FOR LEARNING — Formative (max 50 points)**\n'
+    +'Table: Activity | Points\n'
+    +'Continuous Tests | 10\n'
+    +'Practical Assignments | 15\n'
+    +'Projects (Individual/Group) | 10\n'
+    +'Case Studies | 5\n'
+    +'Portfolio Development | 5\n'
+    +'Participation/Professional Conduct | 5\n'
+    +'TOTAL FORMATIVE | 50 POINTS\n\n'
+    +'Formative Triangulation for '+esc(c.name||'')+' specifically:\n'
+    +'(a) Observation — 3 specific observable tasks/skills watched in THIS course\n'
+    +'(b) Conversation — 3 specific dialogue/questioning strategies for THIS course\n'
+    +'(c) Product — 3 specific tangible outputs learners produce in THIS course\n'
+    +'Formative pass threshold: 33/50. Learner scoring <33 = NOT YET COMPETENT (formative) → remediation before summative.\n\n'
 
-    +'**C. ASSESSMENT OF LEARNING (Summative — Maximum 50%) — THREE INTEGRATION LEVELS**\n'
-    +'Summative assessment uses THREE levels as per Uganda NCDC/NCHE CBET framework:\n\n'
-    +'**C.1 Basic Integration Assessment (within one course unit)**\n'
-    +'Describe a specific basic integration task for '+esc(c.name||'')+': learner combines foundational competencies in a simple, contextualized problem situation. '
-    +'Write one example scenario and task question specific to THIS course.\n\n'
-    +'**C.2 Intermediate Integration Assessment (across multiple course units)**\n'
-    +'Describe a specific intermediate integration task: learner links competencies from multiple modules to address a moderately complex, authentic workplace situation. '
-    +'Write one example scenario and task question specific to THIS course and related courses.\n\n'
-    +'**C.3 Terminal Integration Assessment (programme/year culmination)**\n'
-    +'Describe the terminal integration assessment: learner synthesises ALL targeted competencies in a new, unfamiliar, real-world context. '
-    +'Write one example scenario (unexpected disruption or challenge) and task question specific to THIS course.\n'
-    +'Summative breakdown: Basic 15%, Intermediate 20%, Terminal 15% = Total 50%\n\n'
+    +'**B. ASSESSMENT AS LEARNING — Self-Assessment**\n'
+    +'3 self-assessment activities for '+esc(c.name||'')+': cognitive regulation journal; self-audit of competency progress; goal map aligned to module competencies.\n\n'
 
-    +'**D. ASSESSMENT AS LEARNING (Self-Assessment)**\n'
-    +'Describe 3 specific self-assessment activities for '+esc(c.name||'')+': cognitive regulation journal; self-audit of study/problem-solving strategies; goal map linked to programme competencies.\n\n'
+    +'**C. ASSESSMENT OF LEARNING — Summative (max 50 points) — 3 Integration Levels**\n'
+    +'Table: Assessment Task | Points\n'
+    +'C.1 Basic Integration (within one module) | 15 points — combines foundational competencies in simple context\n'
+    +'C.2 Intermediate Integration (across modules) | 20 points — links competencies across course units in workplace scenario\n'
+    +'C.3 Terminal Integration (new unfamiliar context) | 15 points — synthesises ALL competencies in disruption/challenge scenario\n'
+    +'TOTAL SUMMATIVE | 50 POINTS\n'
+    +'Summative pass threshold: 33/50. NO combined mark with formative.\n\n'
+    +'Write specific scenario and task question for each integration level in '+esc(c.name||'')+'.\n\n'
+
+    +'**D. COMPETENCY DETERMINATION — Dreyfus / Chambers / German TVET Model**\n'
+    +'Following the Dreyfus Model (Novice→Expert) and the German vocational education binary model:\n'
+    +'- **COMPETENT**: ≥33/50 formative AND ≥33/50 summative\n'
+    +'- **NOT YET COMPETENT**: <33/50 on either component → targeted remediation → re-assessment\n'
+    +'Describe the remediation process specifically for '+esc(c.name||'')+' (what activities, how long, who supports).\n\n'
 
     +'**E. OBSERVATION CHECKLISTS**\n'
-    +'**E.1 Affective Domain Checklist (Krathwohl\'s 5 Levels)**\n'
-    +'For each level, write 2 specific observable checklist questions for '+esc(c.name||'')+' (total 10 questions):\n'
-    +'Level 1 — Receiving: Did the learner...? Did the learner...?\n'
-    +'Level 2 — Responding: Did the learner...? Did the learner...?\n'
-    +'Level 3 — Valuing: Did the learner...? Did the learner...?\n'
-    +'Level 4 — Organising: Did the learner...? Did the learner...?\n'
-    +'Level 5 — Characterising: Did the learner...? Did the learner...?\n\n'
-    +'**E.2 Psychomotor Domain Checklist (Dave\'s 5 Levels)**\n'
-    +'For each level, write 2 specific observable checklist questions for '+esc(c.name||'')+' (total 10 questions):\n'
-    +'Level 1 — Imitation | Level 2 — Manipulation | Level 3 — Precision | Level 4 — Articulation | Level 5 — Naturalisation\n\n'
+    +'**E.1 Affective Domain — Krathwohl 5 Levels**\n'
+    +'For each level write 2 specific YES/NO observable questions for '+esc(c.name||'')+' (10 questions total):\n'
+    +'Level 1 Receiving | Level 2 Responding | Level 3 Valuing | Level 4 Organising | Level 5 Characterising\n\n'
+    +'**E.2 Psychomotor Domain — Dave (1970) 5 Levels**\n'
+    +'For each level write 2 specific YES/NO observable questions for '+esc(c.name||'')+' (10 questions total):\n'
+    +'Level 1 Imitation | Level 2 Manipulation | Level 3 Precision | Level 4 Articulation | Level 5 Naturalisation\n\n'
 
-    +'**F. SCORING RUBRIC (5 Dimensions × 4 Levels)**\n'
-    +'Produce a scoring rubric table for the PBL/terminal assessment task. Dimensions:\n'
-    +'| Dimension | Score 4 (Mastery) | Score 3 (Proficient) | Score 2 (Developing) | Score 1 (Beginning) |\n'
+    +'**F. SCORING RUBRIC (5 Dimensions × 4 Levels — out of 50 total)**\n'
+    +'Produce a rubric table: | Dimension | Score 4 (Mastery) | Score 3 (Proficient) | Score 2 (Developing) | Score 1 (Beginning) |\n'
     +'1. Competency Application (specific to '+esc(c.name||'')+')\n'
-    +'2. Problem-Solving (using discipline knowledge)\n'
-    +'3. Professional Conduct (ethics, communication, collaboration)\n'
-    +'4. Adaptability (handling unexpected challenges)\n'
+    +'2. Problem-Solving (discipline-specific)\n'
+    +'3. Professional Conduct (ethics, collaboration)\n'
+    +'4. Adaptability (handling novel challenges)\n'
     +'5. Message/Product Clarity (quality of output)\n'
-    +'Write specific descriptors for each cell — not generic.\n\n'
+    +'Each dimension: max 10 points (Score 4=10, 3=8, 2=5, 1=2). Total rubric = max 50 points.\n'
+    +'Write specific, discipline-relevant descriptors — not generic.\n\n'
 
     +'**G. MODULE CAPSTONE PROJECT**\n'
-    +'Describe one capstone portfolio project for '+esc(c.name||'')+' that demonstrates readiness for workplace and societal participation. Include:\n'
-    +'- Project title\n'
-    +'- Brief description (2-3 sentences)\n'
-    +'- What evidence learners curate into their portfolio\n'
-    +'- How it is assessed (criteria)\n\n'
+    +'Title, description (2-3 sentences), portfolio evidence learners curate, assessment criteria (mapped to rubric above).\n\n'
 
-    +'**H. RECORD KEEPING AND ACHIEVEMENT DOCUMENTATION**\n'
-    +'Describe: Checklists (when/how used), Portfolios (what learners include), Anecdotal Notes (facilitator records), Learner Manual Files. State that each module is standalone, stackable, portable — not averaged across modules.\n\n'
+    +'**H. RECORD KEEPING AND MODULE CERTIFICATION**\n'
+    +'Checklists, Portfolios, Anecdotal Notes, Learner Manual Files. Module result reported as COMPETENT or NOT YET COMPETENT. Each module is standalone, stackable, portable — a passed module = micro-credential contributing to programme qualification.\n\n'
 
-    +'**I. KIU GRADING SCALE AND MODULE CERTIFICATION**\n'
-    +'A (Distinction): 80–100% | B+ (Merit Plus): 75–79% | B (Merit): 70–74% | C+ (Credit Plus): 65–69% | C (Credit): 60–64% | D+ (Pass Plus): 55–59% | F (Fail): Below 55%\n'
-    +'Certification: results indicate whether learner has attained competency at two-thirds level (partial) or full competent level. Each passed module is a portable micro-credential contributing to the learner\'s progression record.\n\n'
-
-    +'**J. READING LIST (APA 7th edition, 2018–2025)**\n'
-    +'8–10 references specific to '+esc(c.name||'')+'. Include at least 2 East African/Ugandan sources.\n\n'
+    +'**I. READING LIST (APA 7th, 2018–2025)**\n'
+    +'8–10 references for '+esc(c.name||'')+'. Include 2+ East African sources. Include De Ketele (2010).\n\n'
 
     +'---\nEND. Ensure every Action above is fully written. Total length should be comprehensive and detailed.';
 }
@@ -3521,7 +3537,7 @@ function buildDocxParts(p,body){var now=new Date().toISOString();var numInst='';
 
 async function saveDocx(parts,fname,msg){if(typeof JSZip==='undefined'){toast('JSZip not loaded — refresh page','e');return;}try{var zip=new JSZip();zip.file('[Content_Types].xml',parts.CT);zip.folder('_rels').file('.rels',parts.RELS);var w=zip.folder('word');w.file('document.xml',parts.DOC);w.file('styles.xml',parts.STY);w.file('numbering.xml',parts.NUM);w.file('settings.xml',parts.SET);w.folder('_rels').file('document.xml.rels',parts.DRELS);zip.folder('docProps').file('core.xml',parts.CORE);var blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',compression:'DEFLATE',compressionOptions:{level:6}});var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=fname||'KIU.docx';document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(url);},5000);toast(msg||'\u2705 Downloaded!','s');}catch(e){toast('\u274c '+e.message,'e');}}
 
-async function buildDoc(p,cs,sc,cd){rN();var _oc=courses,_od=CD;if(cs&&cs.length){courses=cs;CD=cd||{};}assignCodes();var groups=groupBySem(),body=buildCover(p);var S1=[['intro','1.','Introduction'],['governance','2.','Governance and Management'],['nameCode','3.','Programme Name, Code and Duration'],['description','4.','Programme Description'],['development','5.','Programme Development/Review Process'],['rationale','6.','Programme Rationale/Justification'],['competences','7.','Programme Competences'],['outcomes','8.','Programme Learning Outcomes'],['targetGroup','9.','Target Group'],['admission','10.','Admission Requirements'],['humanRes','11.','Human Resources'],['infrastructure','12.','Physical Infrastructure'],['delivery','13.','Modes of Delivery'],['assessment','14.','Modes of Assessment'],['progression','15.','Progression'],['gradLoad','16.','Minimum Graduation Load']];S1.forEach(function(s){rN();body+=H1(s[1]+' '+s[2]);body+=t2w(sc&&sc[s[0]]&&sc[s[0]].text||'');if(s[0]==='development')body+=progDevDiagramDocx();body+=sp2(1);});body+='<w:p><w:pPr/><w:r><w:rPr/><w:br w:type="page"/></w:r></w:p>';body+=H1('17. Curriculum Structure');body+=buildMatrix(p);var S2=[['research','18.','Research and Innovation'],['community','19.','Community Engagement'],['policies','20.','Policies'],['financial','21.','Financial Resources'],['welfare','22.','Students Welfare']];S2.forEach(function(s){rN();body+=H1(s[1]+' '+s[2]);body+=t2w(sc&&sc[s[0]]&&sc[s[0]].text||'');if(s[0]==='community')body+=buildOLHTableDocx();body+=sp2(1);});body+='<w:p><w:pPr/><w:r><w:rPr/><w:br w:type="page"/></w:r></w:p>';body+=H1('DETAILED COURSE CONTENT');groups.forEach(function(g){body+=H2(getSL(g.year,g.sem));g.courses.forEach(function(c){var nh=getNH(c),cr=getCr(c),uk=getUK(c);rN();body+=H2(esc(c.code||'')+' | '+xes(c.name));var CW=14400,mC=[2000,5000,2000,5000],mData=[['Course Code:',c.code||'','Year/Semester:',getSL(c.year,c.sem)],['Notional Hours:',String(nh)+' NH','Credits:',String(uk==='WRC'?'5 (NCHE)':cr)],['NH Breakdown:','DLH:'+c.DH+' SLH:'+c.SH+' ALH:'+c.AH+' OLH:'+c.OH,'Type:',c.type]],mRows='';mData.forEach(function(row){mRows+=mkR(row.map(function(cell,i){return mkC(String(cell||''),{w:mC[i<2?i:i-2],fill:i%2===0?'EEF4F8':'FFFFFF',bc:'DDDDDD',sz:20,bold:i%2===0});}).join(''));});body+=mkTbl(mRows,CW,mC);body+=sp2(1);body+=t2w(cd&&cd[c.code]&&cd[c.code].text||'');body+=sp2(2);});});var result=buildDocxParts(p,body);courses=_oc;CD=_od;assignCodes();return result;}
+async function buildDoc(p,cs,sc,cd){rN();var _oc=courses,_od=CD;if(cs&&cs.length){courses=cs;CD=cd||{};}assignCodes();var groups=groupBySem(),body=buildCover(p);var S1=[['intro','1.','Introduction'],['governance','2.','Governance and Management'],['nameCode','3.','Programme Name, Code and Duration'],['description','4.','Programme Description'],['development','5.','Programme Development/Review Process'],['rationale','6.','Programme Rationale/Justification'],['competencies','7.','Programme Competencies'],['outcomes','8.','Programme Learning Outcomes'],['targetGroup','9.','Target Group'],['admission','10.','Admission Requirements'],['humanRes','11.','Human Resources'],['infrastructure','12.','Physical Infrastructure'],['delivery','13.','Modes of Delivery'],['assessment','14.','Modes of Assessment'],['progression','15.','Progression'],['gradLoad','16.','Minimum Graduation Load']];S1.forEach(function(s){rN();body+=H1(s[1]+' '+s[2]);body+=t2w(sc&&sc[s[0]]&&sc[s[0]].text||'');if(s[0]==='development')body+=progDevDiagramDocx();body+=sp2(1);});body+='<w:p><w:pPr/><w:r><w:rPr/><w:br w:type="page"/></w:r></w:p>';body+=H1('17. Curriculum Structure');body+=buildMatrix(p);var S2=[['research','18.','Research and Innovation'],['community','19.','Community Engagement'],['policies','20.','Policies'],['financial','21.','Financial Resources'],['welfare','22.','Students Welfare']];S2.forEach(function(s){rN();body+=H1(s[1]+' '+s[2]);body+=t2w(sc&&sc[s[0]]&&sc[s[0]].text||'');if(s[0]==='community')body+=buildOLHTableDocx();body+=sp2(1);});body+='<w:p><w:pPr/><w:r><w:rPr/><w:br w:type="page"/></w:r></w:p>';body+=H1('DETAILED COURSE CONTENT');groups.forEach(function(g){body+=H2(getSL(g.year,g.sem));g.courses.forEach(function(c){var nh=getNH(c),cr=getCr(c),uk=getUK(c);rN();body+=H2(esc(c.code||'')+' | '+xes(c.name));var CW=14400,mC=[2000,5000,2000,5000],mData=[['Course Code:',c.code||'','Year/Semester:',getSL(c.year,c.sem)],['Notional Hours:',String(nh)+' NH','Credits:',String(uk==='WRC'?'5 (NCHE)':cr)],['NH Breakdown:','DLH:'+c.DH+' SLH:'+c.SH+' ALH:'+c.AH+' OLH:'+c.OH,'Type:',c.type]],mRows='';mData.forEach(function(row){mRows+=mkR(row.map(function(cell,i){return mkC(String(cell||''),{w:mC[i<2?i:i-2],fill:i%2===0?'EEF4F8':'FFFFFF',bc:'DDDDDD',sz:20,bold:i%2===0});}).join(''));});body+=mkTbl(mRows,CW,mC);body+=sp2(1);body+=t2w(cd&&cd[c.code]&&cd[c.code].text||'');body+=sp2(2);});});var result=buildDocxParts(p,body);courses=_oc;CD=_od;assignCodes();return result;}
 
 async function downloadWordDoc(){
   if(typeof JSZip==='undefined'){toast('\u26a0 JSZip not loaded — refresh the page','e');return;}
