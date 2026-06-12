@@ -612,6 +612,11 @@ app.post('/api/course-detail', async (req, res) => {
 //  PROGRAMMES
 // ════════════════════════════════════════════════════════════════════════════
 
+/* ── Health check — used by frontend to wake up Render cold-start ── */
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', ts: Date.now(), service: 'kiu-cbe-backend' });
+});
+
 app.get('/api/programmes', async (req, res) => {
   try {
     const rows = await getRows(SHEET.PROGRAMMES);
