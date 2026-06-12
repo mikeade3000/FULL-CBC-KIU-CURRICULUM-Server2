@@ -1706,13 +1706,83 @@ async function findCrossProgContent(courseName,courseCode){
 function getUCCShared(){try{return JSON.parse(localStorage.getItem(UCC_SK)||'{}');}catch(e){return{};}}
 function setUCCShared(key,data){try{var s=getUCCShared();s[key]=data;localStorage.setItem(UCC_SK,JSON.stringify(s));}catch(e){}}
 
+/* ── Server wake-up tracker ──────────────────────────────────────── */
+var _lastServerOk=0; /* timestamp of last successful API call */
+var _serverWaking=false;
+
+/* ── Keep-alive: ping server every 10 min to prevent Render cold start ── */
+setInterval(function(){
+  fetch(API+'/api/health',{signal:AbortSignal.timeout(10000)})
+    .then(function(r){if(r.ok)_lastServerOk=Date.now();})
+    .catch(function(){});
+},600000); /* every 10 minutes */
+/* Initial warm-up ping on page load */
+setTimeout(function(){
+  fetch(API+'/api/health',{signal:AbortSignal.timeout(65000)})
+    .then(function(r){if(r.ok){_lastServerOk=Date.now();console.log('Server warm \u2714');}})
+    .catch(function(e){console.warn('Server cold on load:',e.message);});
+},2000);
+
+async function wakeServer(){
+  /* Ping /api/health — if server is cold, this warms it up */
+  if(_serverWaking)return;
+  var sinceOk=Date.now()-_lastServerOk;
+  if(sinceOk<600000)return; /* skip if server was OK in last 10 min */
+  _serverWaking=true;
+  toast('\u23f3 AI server is starting up — please wait up to 60 seconds...','i');
+  try{
+    await fetch(API+'/api/health',{signal:AbortSignal.timeout(65000)});
+    _lastServerOk=Date.now();
+  }catch(e){}
+  _serverWaking=false;
+}
+
 async function callAPI(prompt,sys,maxT){
   maxT=maxT||2000;
-  var r=await fetch(API+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({prompt:prompt,system:sys,maxTokens:maxT})});
-  if(!r.ok){var e=await r.text();throw new Error('API '+r.status+': '+e.slice(0,200));}
-  var d=await r.json();return d.content||d.text||'';
+  var MAX_RETRIES=2,lastErr=null;
+  for(var attempt=1;attempt<=MAX_RETRIES;attempt++){
+    try{
+      if(attempt>1){
+        toast('\u21ba Retry '+attempt+'/'+MAX_RETRIES+' — server was cold, retrying...','i');
+        await new Promise(function(res){setTimeout(res,15000);}); /* wait 15s between retries */
+      }
+      var r=await fetch(API+'/api/chat',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({prompt:prompt,system:sys,maxTokens:maxT}),
+        signal:AbortSignal.timeout(90000) /* 90s — allows Render cold start (30-60s) */
+      });
+      if(!r.ok){
+        var e=await r.text();
+        throw new Error('API '+r.status+': '+e.slice(0,200));
+      }
+      var d=await r.json();
+      _lastServerOk=Date.now(); /* record successful call */
+      return d.content||d.text||'';
+    }catch(e){
+      lastErr=e;
+      var isNetwork=e.name==='TypeError'||e.message==='Failed to fetch'
+        ||e.name==='AbortError'||e.message.includes('abort');
+      if(isNetwork&&attempt<MAX_RETRIES){
+        /* Wake server and retry */
+        toast('\u23f3 Server starting up (attempt '+attempt+'/'+MAX_RETRIES+') — waiting 20 seconds...','i');
+        await new Promise(function(res){setTimeout(res,20000);});
+        continue;
+      }
+      /* Final failure — throw with a helpful message */
+      if(isNetwork){
+        throw new Error(
+          'Server is starting up or temporarily unavailable. '+
+          'Please wait 30\u201360 seconds and click Generate again. '+
+          '(Render free tier cold-start)'
+        );
+      }
+      throw lastErr;
+    }
+  }
+  throw lastErr;
 }
+
 var SYS='You are a senior curriculum developer. '
   +'Write formal, professional academic programme documents following CBE framework and national higher education standards. '
   +'Be specific, substantive and detailed. Write in well-structured paragraphs. Do NOT use markdown headers with #. '
@@ -2543,6 +2613,8 @@ async function genSection(key,silent){
   if(dot){dot.className='sd r';dot.textContent='\u27f3';}if(item)item.className='si2 run';
   var sec=SECTIONS.find(function(s){return s.key===key;}),cur=document.getElementById('gen-cur'),curT=document.getElementById('gen-cur-txt');
   if(cur)cur.style.display='flex';if(curT&&sec)curT.textContent='Generating: '+sec.title+'...';
+  /* Wake server if it may be cold */
+  await wakeServer();
   try{
     var text=await callAPI(secPrompt(key),SYS,2000);
     SC[key]={text:text,done:true};
@@ -2552,7 +2624,12 @@ async function genSection(key,silent){
   }catch(e){
     if(btn){btn.disabled=false;btn.innerHTML='Generate';}
     if(dot){dot.className='sd p';dot.textContent='\u25cb';}if(item)item.className='si2';
-    if(!genAll&&!silent){if(cur)cur.style.display='none';toast('Error: '+e.message,'e');}
+    if(!genAll&&!silent){if(cur)cur.style.display='none';
+      var _em=e.message||'';
+      var _isCold=_em.includes('cold-start')||_em.includes('starting up')||_em.includes('Failed to fetch')||_em.includes('abort');
+      toast('\u274c '+(_isCold
+        ?'Server starting up — wait 30\u201360 seconds then click Generate again'
+        :'Error: '+_em.slice(0,120)),'e');}
   }
   updateProgress();
 }
@@ -2622,6 +2699,8 @@ async function genCourse(courseId){
   if(dot){dot.className='sd r';dot.textContent='\u27f3';}if(item)item.className='si2 run';
   var cur=document.getElementById('gen-cur'),curT=document.getElementById('gen-cur-txt');
   if(cur)cur.style.display='flex';if(curT)curT.textContent='Generating (15 Actions): '+c.name+'...';
+  /* Wake server if it may be cold */
+  await wakeServer();
   try{
     var text=await callAPI(coursePrompt(c),SYS,8000);
     CD[c.code]={text:text,done:true};
