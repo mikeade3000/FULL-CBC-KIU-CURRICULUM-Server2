@@ -4,9 +4,27 @@
 //  All API endpoints identical to v3 — index.html needs NO changes.
 // ══════════════════════════════════════════════════════════════════════════════
 
+// ── Fix for "Premature close" errors (node/gaxios/node-fetch keep-alive bug) ──
+// Node 18+ has a known defect where reused keep-alive pooled sockets throw
+// false-positive "Premature close" errors (nodejs/node #63989, node-fetch #1767).
+// This hit BOTH the Google Sheets auth (googleapis/gaxios) and OpenRouter calls.
+// Forcing fresh connections (keepAlive:false) sidesteps the poisoned-socket pool
+// entirely. The slight per-request connection overhead is negligible for this app.
+const http  = require('http');
+const https = require('https');
+http.globalAgent  = new http.Agent({ keepAlive: false });
+https.globalAgent = new https.Agent({ keepAlive: false });
+
 const express    = require('express');
 const cors       = require('cors');
-const fetch      = require('node-fetch');
+// ── Use Node 18+ native fetch instead of node-fetch@2 ─────────────────────────
+// node-fetch@2 has a well-documented bug on Node 18+ where reused keep-alive
+// sockets throw false-positive "Premature close" errors (node-fetch issues
+// #1735/#1767, nodejs/node #63989). Native fetch (undici) does not have this bug.
+// Falls back to node-fetch only if somehow running on Node <18.
+const fetch = (typeof globalThis.fetch === 'function')
+  ? globalThis.fetch.bind(globalThis)
+  : require('node-fetch');
 const { google } = require('googleapis');
 
 // ── Resilient fetch — retries transient network failures ──────────────────────
@@ -20,12 +38,15 @@ async function fetchWithRetry(url, options, maxAttempts = 3, baseDelayMs = 1500)
       return r; // success (any HTTP status — caller decides what to do with non-2xx)
     } catch (e) {
       lastErr = e;
-      const msg = (e && e.message) || '';
-      const transient = /premature close|socket hang up|ECONNRESET|ETIMEDOUT|EAI_AGAIN|network|timeout|aborted/i.test(msg)
-        || e.code === 'ECONNRESET' || e.code === 'ETIMEDOUT' || e.type === 'request-timeout';
+      // Native fetch wraps the real reason in e.cause; node-fetch puts it in e.message
+      const msg = ((e && e.message) || '') + ' ' + ((e && e.cause && e.cause.message) || '');
+      const code = (e && e.code) || (e && e.cause && e.cause.code) || '';
+      const transient = /premature close|socket hang up|ECONNRESET|ETIMEDOUT|EAI_AGAIN|network|timeout|aborted|fetch failed|terminated/i.test(msg)
+        || ['ECONNRESET', 'ETIMEDOUT', 'UND_ERR_SOCKET', 'UND_ERR_CONNECT_TIMEOUT'].includes(code)
+        || e.type === 'request-timeout';
       if (transient && attempt < maxAttempts) {
         const wait = baseDelayMs * attempt;
-        console.log(`⏳ fetch ${url.slice(0, 60)} attempt ${attempt}/${maxAttempts} failed (${msg}) — retrying in ${wait}ms`);
+        console.log(`⏳ fetch ${String(url).slice(0, 60)} attempt ${attempt}/${maxAttempts} failed (${msg.trim()}) — retrying in ${wait}ms`);
         await new Promise(res => setTimeout(res, wait));
         continue;
       }
@@ -291,12 +312,13 @@ app.post('/api/chat', async (req, res) => {
   try {
     const r = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
-      timeout: 120000, // 2-min cap per attempt (node-fetch v2 honours this)
+      signal: AbortSignal.timeout(120000), // 2-min cap per attempt (native fetch)
       headers: {
         'Content-Type':  'application/json',
         'Authorization': 'Bearer ' + apiKey,
         'HTTP-Referer':  'https://kiu.ac.ug',
         'X-Title':       'KIU CBE Programme Generator',
+        'Connection':    'close', // avoid undici keep-alive socket reuse (premature-close bug)
       },
       body: JSON.stringify({
         model:       'meta-llama/llama-3.3-70b-instruct',
