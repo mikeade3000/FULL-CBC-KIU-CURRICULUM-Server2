@@ -9,6 +9,32 @@ const cors       = require('cors');
 const fetch      = require('node-fetch');
 const { google } = require('googleapis');
 
+// ── Resilient fetch — retries transient network failures ──────────────────────
+// "Premature close", socket hang-ups, ECONNRESET and timeouts from the Render
+// instance to external APIs (OpenRouter, Google) are retried automatically.
+async function fetchWithRetry(url, options, maxAttempts = 3, baseDelayMs = 1500) {
+  let lastErr;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const r = await fetch(url, options);
+      return r; // success (any HTTP status — caller decides what to do with non-2xx)
+    } catch (e) {
+      lastErr = e;
+      const msg = (e && e.message) || '';
+      const transient = /premature close|socket hang up|ECONNRESET|ETIMEDOUT|EAI_AGAIN|network|timeout|aborted/i.test(msg)
+        || e.code === 'ECONNRESET' || e.code === 'ETIMEDOUT' || e.type === 'request-timeout';
+      if (transient && attempt < maxAttempts) {
+        const wait = baseDelayMs * attempt;
+        console.log(`⏳ fetch ${url.slice(0, 60)} attempt ${attempt}/${maxAttempts} failed (${msg}) — retrying in ${wait}ms`);
+        await new Promise(res => setTimeout(res, wait));
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw lastErr;
+}
+
 const app  = express();
 const PORT = process.env.PORT || 3001;
 
@@ -263,8 +289,9 @@ app.post('/api/chat', async (req, res) => {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'OPENROUTER_API_KEY not set on server' });
   try {
-    const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const r = await fetchWithRetry('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
+      timeout: 120000, // 2-min cap per attempt (node-fetch v2 honours this)
       headers: {
         'Content-Type':  'application/json',
         'Authorization': 'Bearer ' + apiKey,
@@ -288,7 +315,7 @@ app.post('/api/chat', async (req, res) => {
     const data = await r.json();
     res.json({ content: data.choices?.[0]?.message?.content || '', model: data.model });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: 'AI request failed after retries: ' + e.message });
   }
 });
 
@@ -1135,11 +1162,25 @@ app.get('/api/fetch-institution', async (req, res) => {
   }
 });
 
+// ── Retry wrapper for initSheets — handles Render cold-start network hiccups ──
+async function initSheetsWithRetry(maxAttempts = 5, delayMs = 10000) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const ok = await initSheets();
+    if (ok) return true;
+    if (attempt < maxAttempts) {
+      console.log(`⏳ Sheets init attempt ${attempt}/${maxAttempts} failed — retrying in ${delayMs/1000}s...`);
+      await new Promise(res => setTimeout(res, delayMs));
+    }
+  }
+  console.error(`❌ Sheets init failed after ${maxAttempts} attempts — API will run without storage until next deploy.`);
+  return false;
+}
+
 // ── Start ─────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`KIU CBE API v4.0 (Google Sheets) — port ${PORT}`);
   console.log(`SPREADSHEET_ID:              ${process.env.SPREADSHEET_ID              ? 'SET ✅' : 'NOT SET ⚠️'}`);
   console.log(`GOOGLE_SERVICE_ACCOUNT_JSON: ${process.env.GOOGLE_SERVICE_ACCOUNT_JSON ? 'SET ✅' : 'NOT SET ⚠️'}`);
   console.log(`OPENROUTER_API_KEY:          ${process.env.OPENROUTER_API_KEY          ? 'SET ✅' : 'NOT SET ⚠️'}`);
-  initSheets();
+  initSheetsWithRetry(5, 10000);
 });
